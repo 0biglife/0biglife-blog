@@ -1,30 +1,28 @@
+import "server-only";
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { remark } from "remark";
-import html from "remark-html";
+import { Post } from "./types";
 
-const postsDirectory = path.join(process.cwd(), "src/content");
+const contentDir = path.join(process.cwd(), "content");
 
-export async function getAllPosts() {
-  const files = fs.readdirSync(postsDirectory);
-  return files.map((fileName) => {
-    const slug = fileName.replace(".mdx", "");
-    const filePath = path.join(postsDirectory, fileName);
-    const fileContents = fs.readFileSync(filePath, "utf-8");
-    const { data } = matter(fileContents);
+export const getAllPosts = (): Post[] => {
+  const folders = fs.readdirSync(contentDir);
 
-    return { slug, title: data.title };
-  });
-}
+  return folders
+    .map((folder) => {
+      const filePath = path.join(contentDir, folder, "index.mdx");
+      const fileContents = fs.readFileSync(filePath, "utf-8");
+      const { data } = matter(fileContents);
 
-export async function getPostBySlug(slug: string) {
-  const filePath = path.join(postsDirectory, `${slug}.mdx`);
-  if (!fs.existsSync(filePath)) return null;
-
-  const fileContents = fs.readFileSync(filePath, "utf-8");
-  const { data, content } = matter(fileContents);
-  const processedContent = await remark().use(html).process(content);
-
-  return { title: data.title, content: processedContent.toString() };
-}
+      return {
+        slug: folder,
+        title: data.title,
+        date: data.date,
+        description: data.description,
+        thumbnail: `/api/image/${folder}/${data.thumbnail}`,
+        tags: data.tags,
+      };
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};

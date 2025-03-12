@@ -19,6 +19,10 @@ npm run dev
 /0biglife-blog
  ├── /public  → 정적 파일 (이미지, favicon 등)
  │    ├── favicon.ico
+ ├── /content  → 정적 블로그 게시글 저장 (MDX + 이미지 포함)
+ │    ├── /sample-post
+ │    │    ├── index.mdx
+ │    │    ├── thumnail.png
  ├── /src
  │    ├── /app  → Next.js App Router 페이지 관리
  │    │    ├── /blog
@@ -32,11 +36,6 @@ npm run dev
  │    │    │    ├── ThemeToggle.tsx  → 다크모드 전환 버튼
  │    │    │    ├── PostItem.tsx  → 블로그 목록의 개별 포스트 컴포넌트
  │    │    │    ├── PostContent.tsx  → 블로그 상세 페이지 컴포넌트
- │    ├── /content  → 정적 블로그 게시글 저장 (MDX + 이미지 포함)
- │    │    ├── /sample-post
- │    │    │    ├── index.mdx
- │    │    │    ├── cover.png
- │    │    │    ├── diagram.png
  │    │    ├── /...
  │    ├── /lib  → 데이터 및 유틸리티 함수
  │    │    ├── posts.ts  → MDX 파일을 읽고 HTML 변환하는 로직
