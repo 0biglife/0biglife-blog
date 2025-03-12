@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Update Logs
 
-## Getting Started
+#### 2024-03-12
 
-First, run the development server:
+- 디렉토리 정리
+- Chakra-ui 도입 및 테마 추가
+- Components : Header, Footer 추가
+
+## Commands
 
 ```bash
+npm run build
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Architecture
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+/0biglife-blog
+ ├── /public  → 정적 파일 (이미지, favicon 등)
+ │    ├── favicon.ico
+ ├── /src
+ │    ├── /app  → Next.js App Router 페이지 관리
+ │    │    ├── /blog
+ │    │    │    ├── /[slug]
+ │    │    │    │    ├── page.tsx
+ │    │    │    ├── page.tsx  → 블로그 목록 페이지
+ │    │    ├── /layout.tsx  → 사이트 전체 레이아웃 (헤더, 테마 전환 버튼 포함)
+ │    │    ├── /page.tsx  → 메인 페이지
+ │    ├── /components  → UI 및 공용 컴포넌트
+ │    │    ├── /ui
+ │    │    │    ├── ThemeToggle.tsx  → 다크모드 전환 버튼
+ │    │    │    ├── PostItem.tsx  → 블로그 목록의 개별 포스트 컴포넌트
+ │    │    │    ├── PostContent.tsx  → 블로그 상세 페이지 컴포넌트
+ │    ├── /content  → 정적 블로그 게시글 저장 (MDX + 이미지 포함)
+ │    │    ├── /sample-post
+ │    │    │    ├── index.mdx
+ │    │    │    ├── cover.png
+ │    │    │    ├── diagram.png
+ │    │    ├── /...
+ │    ├── /lib  → 데이터 및 유틸리티 함수
+ │    │    ├── posts.ts  → MDX 파일을 읽고 HTML 변환하는 로직
+ │    ├── /styles
+ │    │    ├── globals.css
+ ├── /next.config.js  → Next.js 설정 파일 (MDX 지원)
+ ├── /package.json
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- image를 aws s3에서 관리하는 방식에서 리포 내부에 포함하는 방식으로 교체
