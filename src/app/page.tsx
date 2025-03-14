@@ -1,23 +1,22 @@
-// "use client";
-import { getAllPosts } from "@/lib/posts";
+import { getAllDevLogs, getAllPosts } from "@/lib/posts";
 import {
   Box,
   Container,
-  Heading,
-  Text,
   Tabs,
   TabList,
   TabPanels,
   Tab,
   TabPanel,
-  Input,
-  VStack,
 } from "@chakra-ui/react";
-import { FeaturedSlider, PostList } from "@/components";
+import { SliderContainer, PostList, LogContainer, Title } from "@/components";
 import { Post } from "@/lib/types";
+
+const TOP_LEFT_TITLE = "Recently Featured";
+const TOP_RIGHT_TITLE = "Dev Logs";
 
 export default async function HomePage() {
   const posts = await getAllPosts();
+  const devLogs = await getAllDevLogs();
   const featuredPosts = posts.slice(0, 5);
 
   const frontendPosts = posts.filter((post: Post) =>
@@ -36,68 +35,57 @@ export default async function HomePage() {
   };
 
   return (
-    <Container maxW="container.lg">
+    <Container maxWidth="900px" userSelect={"none"}>
+      {/* TODO : Styling 가독성 고민 */}
       <Box
         display="flex"
         flexDirection={{ base: "column", sm: "row" }}
         justifyContent="space-between"
         width="100%"
-        // gap="20px"
-        gap={{ base: 6, md: 0 }}
       >
         <Box
           display="flex"
           width={{ base: "100%", sm: "70%" }}
-          maxWidth="600px"
           flexDirection="column"
-          justifyContent="space-between"
+          flexGrow={1}
+          minHeight="300px"
         >
-          <Heading
-            as="h1"
-            textAlign="left"
-            fontWeight="bold"
-            mb={6}
-            fontSize="22px"
-            fontStyle="italic"
-          >
-            Recently Featured
-          </Heading>
-          <FeaturedSlider posts={featuredPosts} />
+          <Title label={TOP_LEFT_TITLE} />
+          <SliderContainer posts={featuredPosts} />
         </Box>
         <Box
-          width="1px"
-          // mx={10}
+          width="1.4px"
           marginTop="52px"
-          bg="linear-gradient(to bottom, #ddd, transparent, #ddd)"
-          opacity={0.8}
+          bg="linear-gradient(to bottom, rgba(150, 150, 150, 0.2), transparent, rgba(150, 150, 150, 0.2))"
+          opacity={0.9}
+          ml="20px"
+          mr="20px"
         />
-        <Box width={{ base: "100%", sm: "25%" }} flexDirection="column">
-          <Heading
-            as="h1"
-            textAlign="left"
-            fontWeight="medium"
-            mb={6}
-            fontSize="22px"
-            fontStyle="italic"
-          >
-            Dev Logs
-          </Heading>
-          <Box>
-            <Text fontSize="12px">- 03/13: Slider, SSG</Text>
-          </Box>
+        <Box
+          width={{ base: "100%", sm: "30%" }}
+          flexDirection="column"
+          flexGrow={1}
+          minHeight="300px"
+        >
+          <Title label={TOP_RIGHT_TITLE} />
+          <LogContainer
+            logs={devLogs}
+            todayVisitorCount={12}
+            totalVisitorCount={82}
+          />
         </Box>
       </Box>
       <Box
         display="flex"
-        flexDirection={{ base: "column", md: "row" }}
+        flexDirection={{ base: "column", sm: "row" }}
         mt={10}
         gap={6}
       >
         <Box flex="3">
-          <Tabs variant="soft-rounded" colorScheme="blue">
+          <Tabs variant="line" colorScheme="teal">
             <TabList>
               {Object.keys(categorizedPosts).map((category) => (
-                <Tab key={category}>
+                <Tab key={category} fontSize={{ base: "sm", md: "md" }}>
                   {category.charAt(0).toUpperCase() + category.slice(1)}
                 </Tab>
               ))}
@@ -110,22 +98,6 @@ export default async function HomePage() {
               ))}
             </TabPanels>
           </Tabs>
-        </Box>
-
-        <Box flex="1" p={4} borderWidth="1px" borderRadius="lg">
-          <Heading as="h3" size="md" mb={4}>
-            🔍 Search
-          </Heading>
-          <Input placeholder="검색어 입력..." />
-
-          <VStack spacing={4} mt={6} align="stretch">
-            <Box p={3} bg="gray.100" borderRadius="md">
-              방문자 수: <strong>1,234</strong>
-            </Box>
-            <Box p={3} bg="gray.100" borderRadius="md">
-              총 조회 수: <strong>5,678</strong>
-            </Box>
-          </VStack>
         </Box>
       </Box>
     </Container>

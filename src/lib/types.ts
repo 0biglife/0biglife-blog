@@ -6,3 +6,9 @@ export type Post = {
   thumbnail: string;
   tags: string[];
 };
+
+export type DevLog = {
+  slug: string;
+  title: string;
+  date: string;
+};

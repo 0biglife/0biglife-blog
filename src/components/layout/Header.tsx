@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Box, Flex, Text } from "@chakra-ui/react";
-import ThemeToggle from "@/components/ui/ThemeToggle";
+import { ThemeToggle } from "@/components";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);

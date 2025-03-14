@@ -1,19 +1,23 @@
-import Footer from "./ui/Footer";
-import Header from "./ui/Header";
-import ThemeToggle from "./ui/ThemeToggle";
-import PostContent from "./ui/PostContent";
-import PostItem from "./ui/PostItem";
-import Chakra from "./ui/Chakra";
-import FeaturedSlider from "./ui/slider";
-import PostList from "./ui/PostList";
+import { Chakra, ThemeToggle } from "./chakra-ui";
+import { Footer, Header } from "./layout";
+import {
+  Title,
+  PostItem,
+  PostList,
+  PostContent,
+  LogContainer,
+  SliderContainer,
+} from "./template";
 
 export {
+  Title,
   Footer,
   Header,
   ThemeToggle,
   Chakra,
   PostContent,
-  FeaturedSlider,
   PostItem,
   PostList,
+  LogContainer,
+  SliderContainer,
 };
