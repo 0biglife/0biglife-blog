@@ -1,7 +1,33 @@
-"use client";
-import { ChakraProvider, ColorModeScript, Box, Flex } from "@chakra-ui/react";
-import theme from "@/styles/theme";
-import { Header, Footer } from "@/components";
+import { Chakra } from "@/components";
+
+export const metadata = {
+  title: "0biglife", // 페이지 제목
+  description: "프론트엔드 엔지니어 김민석입니다.",
+  icons: {
+    icon: "/favicon.png", // 기본 아이콘
+  },
+  metadataBase: new URL("https://0biglife.com"),
+  keywords: ["0biglife", "김민석", "React", "웹 개발", "기술 블로그"],
+  authors: [{ name: "0biglife", url: "https://0biglife.com" }],
+  creator: "0biglife",
+  openGraph: {
+    title: "0biglife 기술 블로그",
+    description: "프론트엔드 엔지니어 김민석입니다.",
+    url: "https://0biglife.com",
+    siteName: "0biglife blog",
+    images: [
+      {
+        url: "/blog.png",
+        width: 1200,
+        height: 630,
+        alt: "0biglife 블로그 대표 이미지",
+      },
+    ],
+    locale: "ko_KR",
+    type: "website",
+  },
+  // manifest: "/site.webmanifest", // PWA 지원 시 필요
+};
 
 export default function RootLayout({
   children,
@@ -9,9 +35,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <head>
-        <ColorModeScript initialColorMode={theme.config.initialColorMode} />
         <style>
           {`
             html, body {
@@ -24,24 +49,8 @@ export default function RootLayout({
           `}
         </style>
       </head>
-      <body>
-        <ChakraProvider theme={theme}>
-          <Flex direction="column" minH="100vh">
-            <Header />
-            <Box
-              as="main"
-              flex="1"
-              pt="104px"
-              pl="20px"
-              pr="20px"
-              pb="60px"
-              className="container mx-auto p-4"
-            >
-              {children}
-            </Box>
-            <Footer />
-          </Flex>
-        </ChakraProvider>
+      <body suppressHydrationWarning>
+        <Chakra>{children}</Chakra>
       </body>
     </html>
   );

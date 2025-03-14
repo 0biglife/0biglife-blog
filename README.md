@@ -25,6 +25,10 @@ npm run dev
  │    │    ├── thumnail.png
  ├── /src
  │    ├── /app  → Next.js App Router 페이지 관리
+ │    │    ├── /api
+ │    │    │    ├── /image
+ │    │    │    │    ├── /[...slug]
+ │    │    │    │    │    ├── route.ts
  │    │    ├── /blog
  │    │    │    ├── /[slug]
  │    │    │    │    ├── page.tsx

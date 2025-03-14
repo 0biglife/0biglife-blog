@@ -1,77 +1,133 @@
+// "use client";
 import { getAllPosts } from "@/lib/posts";
-import Image from "next/image";
-import { Box, Container, Heading, Text, Stack, Link } from "@chakra-ui/react";
+import {
+  Box,
+  Container,
+  Heading,
+  Text,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  Input,
+  VStack,
+} from "@chakra-ui/react";
+import { FeaturedSlider, PostList } from "@/components";
+import { Post } from "@/lib/types";
 
 export default async function HomePage() {
-  const posts = getAllPosts();
-  const featuredPost = posts[0];
+  const posts = await getAllPosts();
+  const featuredPosts = posts.slice(0, 5);
+
+  const frontendPosts = posts.filter((post: Post) =>
+    post.tags.some((tag) => tag.toLowerCase() === "frontend")
+  );
+  const backendPosts = posts.filter((post: Post) =>
+    post.tags.some((tag) => tag.toLowerCase() === "backend")
+  );
+  const kubernetesPosts = posts.filter((post: Post) =>
+    post.tags.some((tag) => tag.toLowerCase() === "kubernetes")
+  );
+  const categorizedPosts = {
+    frontend: frontendPosts,
+    backend: backendPosts,
+    kubernetes: kubernetesPosts,
+  };
 
   return (
-    <Container maxW="container.lg" py={8}>
-      <Heading
-        as="h1"
-        size="xl"
-        textAlign="center"
-        fontWeight="bold"
-        mb={6}
-        fontStyle={{ base: "italic" }}
+    <Container maxW="container.lg">
+      <Box
+        display="flex"
+        flexDirection={{ base: "column", sm: "row" }}
+        justifyContent="space-between"
+        width="100%"
+        // gap="20px"
+        gap={{ base: 6, md: 0 }}
       >
-        New Featured.
-      </Heading>
-      {featuredPost && (
         <Box
-          as={Link}
-          href={`/blog/${featuredPost.slug}`}
-          display="block"
-          borderRadius="lg"
-          overflow="hidden"
-          boxShadow="md"
-          transition="transform 0.2s ease-in-out"
-          _hover={{ transform: "scale(1.02)" }}
-          mb={10}
+          display="flex"
+          width={{ base: "100%", sm: "70%" }}
+          maxWidth="600px"
+          flexDirection="column"
+          justifyContent="space-between"
         >
-          <Image
-            src={featuredPost.thumbnail}
-            alt={featuredPost.title}
-            width={800}
-            height={400}
-            // unoptimized
-            blurDataURL={featuredPost.thumbnail} // blur-up 효과 적용
-            style={{ objectFit: "cover", width: "100%", height: "auto" }}
-            priority
-          />
-          <Box p={4}>
-            <Heading as="h2" size="lg" mb={2}>
-              {featuredPost.title}
-            </Heading>
-            <Text fontSize="md" color="gray.600">
-              {featuredPost.description}
-            </Text>
+          <Heading
+            as="h1"
+            textAlign="left"
+            fontWeight="bold"
+            mb={6}
+            fontSize="22px"
+            fontStyle="italic"
+          >
+            Recently Featured
+          </Heading>
+          <FeaturedSlider posts={featuredPosts} />
+        </Box>
+        <Box
+          width="1px"
+          // mx={10}
+          marginTop="52px"
+          bg="linear-gradient(to bottom, #ddd, transparent, #ddd)"
+          opacity={0.8}
+        />
+        <Box width={{ base: "100%", sm: "25%" }} flexDirection="column">
+          <Heading
+            as="h1"
+            textAlign="left"
+            fontWeight="medium"
+            mb={6}
+            fontSize="22px"
+            fontStyle="italic"
+          >
+            Dev Logs
+          </Heading>
+          <Box>
+            <Text fontSize="12px">- 03/13: Slider, SSG</Text>
           </Box>
         </Box>
-      )}
+      </Box>
+      <Box
+        display="flex"
+        flexDirection={{ base: "column", md: "row" }}
+        mt={10}
+        gap={6}
+      >
+        <Box flex="3">
+          <Tabs variant="soft-rounded" colorScheme="blue">
+            <TabList>
+              {Object.keys(categorizedPosts).map((category) => (
+                <Tab key={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </Tab>
+              ))}
+            </TabList>
+            <TabPanels>
+              {Object.values(categorizedPosts).map((posts, index) => (
+                <TabPanel key={index}>
+                  <PostList posts={posts} />
+                </TabPanel>
+              ))}
+            </TabPanels>
+          </Tabs>
+        </Box>
 
-      <Stack spacing={6}>
-        {posts.map((post) => (
-          <Box
-            as={Link}
-            key={post.slug}
-            href={`/blog/${post.slug}`}
-            p={4}
-            borderWidth="1px"
-            borderRadius="lg"
-            _hover={{ bg: "gray.50" }}
-          >
-            <Heading as="h3" size="md">
-              {post.title}
-            </Heading>
-            <Text fontSize="sm" color="gray.500">
-              {post.date}
-            </Text>
-            <Text mt={2}>{post.description}</Text>
-          </Box>
-        ))}
-      </Stack>
+        <Box flex="1" p={4} borderWidth="1px" borderRadius="lg">
+          <Heading as="h3" size="md" mb={4}>
+            🔍 Search
+          </Heading>
+          <Input placeholder="검색어 입력..." />
+
+          <VStack spacing={4} mt={6} align="stretch">
+            <Box p={3} bg="gray.100" borderRadius="md">
+              방문자 수: <strong>1,234</strong>
+            </Box>
+            <Box p={3} bg="gray.100" borderRadius="md">
+              총 조회 수: <strong>5,678</strong>
+            </Box>
+          </VStack>
+        </Box>
+      </Box>
     </Container>
   );
 }
