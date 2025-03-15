@@ -1,4 +1,4 @@
-import { Chakra } from "@/components";
+import { Chakra, ScrollToTopButton } from "@/components";
 
 export const metadata = {
   title: "0biglife", // 페이지 제목
@@ -50,7 +50,10 @@ export default function RootLayout({
         </style>
       </head>
       <body suppressHydrationWarning>
-        <Chakra>{children}</Chakra>
+        <Chakra>
+          {children}
+          <ScrollToTopButton />
+        </Chakra>
       </body>
     </html>
   );

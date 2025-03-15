@@ -29,6 +29,7 @@ const LogContainer = (props: LogContainerProps) => {
       flexGrow={1}
       minHeight="300px"
       maxHeight="500px"
+      height="90%"
     >
       <Box
         overflowY="scroll"
@@ -79,6 +80,7 @@ const LogContainer = (props: LogContainerProps) => {
         height="40px"
         gap="4x"
         mt="18px"
+        mb="4px"
         alignItems="flex-end"
       >
         <Text fontSize="12px">

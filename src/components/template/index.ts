@@ -4,6 +4,7 @@ import SliderContainer from "./SliderContainer";
 import PostContent from "./PostContent";
 import LogContainer from "./LogContainer";
 import Title from "./Title";
+import FilteredPostList from "./FilteredPostList";
 
 export {
   Title,
@@ -12,4 +13,5 @@ export {
   SliderContainer,
   PostContent,
   LogContainer,
+  FilteredPostList,
 };

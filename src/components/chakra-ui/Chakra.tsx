@@ -8,7 +8,7 @@ export default function Chakra({ children }: { children: React.ReactNode }) {
     <>
       <ColorModeScript initialColorMode={theme.config.initialColorMode} />
       <ChakraProvider theme={theme}>
-        <Flex direction="column" minH="100vh">
+        <Flex direction="column" minH="100vh" minWidth="320px">
           <Header />
           <Box
             as="main"

@@ -1,5 +1,5 @@
 import { Chakra, ThemeToggle } from "./chakra-ui";
-import { Footer, Header } from "./layout";
+import { Footer, Header, ScrollToTopButton } from "./layout";
 import {
   Title,
   PostItem,
@@ -7,6 +7,7 @@ import {
   PostContent,
   LogContainer,
   SliderContainer,
+  FilteredPostList,
 } from "./template";
 
 export {
@@ -20,4 +21,6 @@ export {
   PostList,
   LogContainer,
   SliderContainer,
+  FilteredPostList,
+  ScrollToTopButton,
 };

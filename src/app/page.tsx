@@ -1,15 +1,12 @@
 import { getAllDevLogs, getAllPosts } from "@/lib/posts";
+import { Box, Container } from "@chakra-ui/react";
 import {
-  Box,
-  Container,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
-} from "@chakra-ui/react";
-import { SliderContainer, PostList, LogContainer, Title } from "@/components";
-import { Post } from "@/lib/types";
+  SliderContainer,
+  LogContainer,
+  Title,
+  FilteredPostList,
+} from "@/components";
+// import { Post } from "@/lib/types";
 
 const TOP_LEFT_TITLE = "Recently Featured";
 const TOP_RIGHT_TITLE = "Dev Logs";
@@ -19,20 +16,20 @@ export default async function HomePage() {
   const devLogs = await getAllDevLogs();
   const featuredPosts = posts.slice(0, 5);
 
-  const frontendPosts = posts.filter((post: Post) =>
-    post.tags.some((tag) => tag.toLowerCase() === "frontend")
-  );
-  const backendPosts = posts.filter((post: Post) =>
-    post.tags.some((tag) => tag.toLowerCase() === "backend")
-  );
-  const kubernetesPosts = posts.filter((post: Post) =>
-    post.tags.some((tag) => tag.toLowerCase() === "kubernetes")
-  );
-  const categorizedPosts = {
-    frontend: frontendPosts,
-    backend: backendPosts,
-    kubernetes: kubernetesPosts,
-  };
+  // const frontendPosts = posts.filter((post: Post) =>
+  //   post.tags.some((tag) => tag.toLowerCase() === "frontend")
+  // );
+  // const backendPosts = posts.filter((post: Post) =>
+  //   post.tags.some((tag) => tag.toLowerCase() === "backend")
+  // );
+  // const kubernetesPosts = posts.filter((post: Post) =>
+  //   post.tags.some((tag) => tag.toLowerCase() === "kubernetes")
+  // );
+  // const categorizedPosts = {
+  //   frontend: frontendPosts,
+  //   backend: backendPosts,
+  //   kubernetes: kubernetesPosts,
+  // };
 
   return (
     <Container maxWidth="900px" userSelect={"none"}>
@@ -75,31 +72,7 @@ export default async function HomePage() {
           />
         </Box>
       </Box>
-      <Box
-        display="flex"
-        flexDirection={{ base: "column", sm: "row" }}
-        mt={10}
-        gap={6}
-      >
-        <Box flex="3">
-          <Tabs variant="line" colorScheme="teal">
-            <TabList>
-              {Object.keys(categorizedPosts).map((category) => (
-                <Tab key={category} fontSize={{ base: "sm", md: "md" }}>
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </Tab>
-              ))}
-            </TabList>
-            <TabPanels>
-              {Object.values(categorizedPosts).map((posts, index) => (
-                <TabPanel key={index}>
-                  <PostList posts={posts} />
-                </TabPanel>
-              ))}
-            </TabPanels>
-          </Tabs>
-        </Box>
-      </Box>
+      <FilteredPostList posts={posts} />
     </Container>
   );
 }

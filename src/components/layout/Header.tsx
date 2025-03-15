@@ -34,7 +34,7 @@ export default function Header() {
         left: 0,
         bottom: 0,
         width: "100%",
-        height: scrolled ? "2px" : "0px", // ✅ 스크롤 시 그라디언트 활성화
+        height: scrolled ? "2px" : "0px",
         background: scrolled
           ? "linear-gradient(to bottom, rgba(0, 0, 0, 0.05), transparent)"
           : "transparent",
