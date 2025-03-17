@@ -6,7 +6,6 @@ import {
   Title,
   FilteredPostList,
 } from "@/components";
-// import { Post } from "@/lib/types";
 
 const TOP_LEFT_TITLE = "Recently Featured";
 const TOP_RIGHT_TITLE = "Dev Logs";
@@ -15,21 +14,6 @@ export default async function HomePage() {
   const posts = await getAllPosts();
   const devLogs = await getAllDevLogs();
   const featuredPosts = posts.slice(0, 5);
-
-  // const frontendPosts = posts.filter((post: Post) =>
-  //   post.tags.some((tag) => tag.toLowerCase() === "frontend")
-  // );
-  // const backendPosts = posts.filter((post: Post) =>
-  //   post.tags.some((tag) => tag.toLowerCase() === "backend")
-  // );
-  // const kubernetesPosts = posts.filter((post: Post) =>
-  //   post.tags.some((tag) => tag.toLowerCase() === "kubernetes")
-  // );
-  // const categorizedPosts = {
-  //   frontend: frontendPosts,
-  //   backend: backendPosts,
-  //   kubernetes: kubernetesPosts,
-  // };
 
   return (
     <Container maxWidth="900px" userSelect={"none"}>
@@ -42,10 +26,11 @@ export default async function HomePage() {
       >
         <Box
           display="flex"
-          width={{ base: "100%", sm: "70%" }}
+          width={{ base: "100%", sm: "75%" }}
           flexDirection="column"
           flexGrow={1}
           minHeight="300px"
+          p={1}
         >
           <Title label={TOP_LEFT_TITLE} />
           <SliderContainer posts={featuredPosts} />
@@ -61,7 +46,7 @@ export default async function HomePage() {
         />
         <Box
           display={{ base: "none", sm: "flex" }}
-          width={{ base: "100%", sm: "30%" }}
+          width={{ base: "100%", sm: "25%" }}
           flexDirection="column"
           flexGrow={1}
           minHeight="300px"

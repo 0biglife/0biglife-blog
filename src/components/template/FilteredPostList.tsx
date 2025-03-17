@@ -8,19 +8,21 @@ import {
   Heading,
   HStack,
   useColorModeValue,
+  Divider,
+  IconButton,
 } from "@chakra-ui/react";
 import { PostList } from "@/components";
 import { Post } from "@/lib/types";
-import { TbTriangleInvertedFilled } from "react-icons/tb";
+import { TbGridDots, TbList, TbTriangleInvertedFilled } from "react-icons/tb";
 import { GoDotFill } from "react-icons/go";
 import { motion } from "framer-motion";
 
 export default function FilteredPostList({ posts }: { posts: Post[] }) {
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
     null
   );
-
   const [categories, setCategories] = useState(() => {
     const categoryMap: Record<
       string,
@@ -43,6 +45,10 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
     return categoryMap;
   });
 
+  const toggleViewMode = (mode: "list" | "grid") => {
+    setViewMode(mode);
+  };
+
   const toggleCategory = (category: string) => {
     setCategories((prev) => ({
       ...prev,
@@ -59,7 +65,6 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
   };
 
   const handleSubcategoryClick = (subcategory: string) => {
-    setSelectedCategory(null);
     setSelectedSubcategory((prev) =>
       prev === subcategory ? null : subcategory
     );
@@ -89,10 +94,47 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
       gap={6}
       width="100%"
     >
-      <Box width={{ base: "100%", sm: "70%" }}>
-        <PostList posts={filteredPosts} />
-      </Box>
+      <Box width={{ base: "100%", sm: "75%" }}>
+        <HStack justifyContent="space-between" mb={2}>
+          <HStack>
+            <Text
+              fontSize="14px"
+              ml={2}
+              color={selectedTextColor}
+              fontWeight="medium"
+            >
+              {selectedCategory ? selectedCategory : "전체보기"}
+              {selectedSubcategory ? ` / ${selectedSubcategory}` : ""}
+            </Text>
+            <Text fontSize="14px" color="red" ml={0} fontWeight="medium">
+              {filteredPosts.length}
+            </Text>
+          </HStack>
 
+          <HStack display={{ base: "none", sm: "flex" }}>
+            <IconButton
+              aria-label="view-list"
+              icon={<TbList size={20} />}
+              onClick={() => toggleViewMode("list")}
+              variant={viewMode === "list" ? "solid" : "outline"}
+              colorScheme="gray"
+              size="sm"
+            />
+            <IconButton
+              aria-label="view-grid"
+              icon={<TbGridDots size={20} />}
+              onClick={() => toggleViewMode("grid")}
+              variant={viewMode === "grid" ? "solid" : "outline"}
+              colorScheme="gray"
+              size="sm"
+            />
+          </HStack>
+        </HStack>
+
+        <Divider mb={4} />
+
+        <PostList posts={filteredPosts} viewMode={viewMode} />
+      </Box>
       <Box
         display={{ base: "none", sm: "flex" }}
         width="1.4px"
@@ -101,9 +143,10 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
       />
 
       <Box
-        width={{ base: "100%", sm: "30%" }}
+        width={{ base: "100%", sm: "25%" }}
         order={{ base: -1, sm: 1 }}
         flexDirection="column"
+        mb={4}
       >
         <Heading
           as="h1"
@@ -118,7 +161,8 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
         <VStack align="start" spacing={3} ml={1}>
           {Object.entries(categories).map(
             ([category, { subcategories, count, isOpen }]) => {
-              const isCategorySelected = selectedCategory === category;
+              const isCategorySelected =
+                !selectedSubcategory && selectedCategory === category;
 
               return (
                 <Box key={category} width="100%">
@@ -161,13 +205,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                       cursor="pointer"
                     >
                       {category}
-                      <Text
-                        as="span"
-                        fontSize="12px"
-                        color="gray.400"
-                        ml={1}
-                        verticalAlign="bottom"
-                      >
+                      <Text as="span" fontSize="12px" color="gray.400" ml={1}>
                         ({count})
                       </Text>
                     </Text>
@@ -189,7 +227,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                             selectedSubcategory === subcategory;
 
                           return (
-                            <Text
+                            <Box
                               key={subcategory}
                               fontSize="14px"
                               fontWeight={
@@ -223,7 +261,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                                   ({subCount})
                                 </Text>
                               </HStack>
-                            </Text>
+                            </Box>
                           );
                         }
                       )}

@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Box, Heading, Link, Text } from "@chakra-ui/react";
 import Image from "next/image";
 import { Post } from "@/lib/types";
 
@@ -22,6 +22,11 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
       width="100%"
       flexGrow={1}
       maxWidth="800px"
+      cursor="pointer"
+      role="group"
+      as={Link}
+      key={posts[currentIndex].slug}
+      href={`/blog/${posts[currentIndex].slug}`}
     >
       <Box
         display="flex"
@@ -34,7 +39,6 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
         borderRadius="10px"
         overflow="hidden"
         boxShadow="lg"
-        cursor="pointer"
         transition="box-shadow 0.2s ease-in-out"
         _hover={{ boxShadow: "xl", ".overlay": { opacity: 1 } }}
       >
@@ -42,9 +46,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
           src={posts[currentIndex].thumbnail}
           alt={posts[currentIndex].title}
           fill
-          style={{
-            objectFit: "cover",
-          }}
+          objectFit="cover"
         />
         <Box
           className="overlay"
@@ -79,7 +81,12 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
         justifyContent="space-between"
         alignContent="center"
       >
-        <Heading as="h3" size="md" fontWeight="semibold">
+        <Heading
+          as="h3"
+          size="md"
+          fontWeight="semibold"
+          _groupHover={{ textDecoration: "underline" }}
+        >
           {posts[currentIndex].title}
         </Heading>
         <Text fontSize="xs" color="gray.400">
