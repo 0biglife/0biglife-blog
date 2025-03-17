@@ -4,6 +4,14 @@ import path from "path";
 import matter from "gray-matter";
 import { DevLog, Post } from "./types";
 
+const categoryObj = {
+  // 서버에서 정렬(SSR) + 클라이언트측 불필요한 카테고리 연산 제거 + 순서 정의
+  Frontend: 1,
+  Backend: 2,
+  // DevOps: 3,
+  // AI: 4,
+};
+
 const contentPostDir = path.join(process.cwd(), "content/posts");
 const contentLogDir = path.join(process.cwd(), "content/dev-logs");
 const publicDir = path.join(process.cwd(), "public/assets/blog");
@@ -23,7 +31,7 @@ const getThumbnail = (folderName: string): string => {
 export const getAllPosts = (): Post[] => {
   const folders = fs.readdirSync(contentPostDir);
 
-  return folders
+  const posts = folders
     .map((folder) => {
       const filePath = path.join(contentPostDir, folder, "index.mdx");
       if (!fs.existsSync(filePath)) return null;
@@ -36,12 +44,27 @@ export const getAllPosts = (): Post[] => {
         title: data.title,
         date: data.date,
         description: data.description,
+        category: data.category,
+        subcategory: data.subcategory,
         thumbnail: getThumbnail(folder),
         tags: data.tags,
       };
     })
-    .filter((post): post is Post => post !== null)
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .filter((post): post is Post => post !== null);
+
+  posts.sort((a, b) => {
+    const categoryOrderA =
+      categoryObj[a.category as keyof typeof categoryObj] || 999;
+    const categoryOrderB =
+      categoryObj[b.category as keyof typeof categoryObj] || 999;
+
+    return (
+      categoryOrderA - categoryOrderB ||
+      new Date(b.date).getTime() - new Date(a.date).getTime()
+    );
+  });
+
+  return posts;
 };
 
 export const getPostBySlug = (slug: string) => {

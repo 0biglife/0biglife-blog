@@ -51,6 +51,7 @@ export default async function HomePage() {
           <SliderContainer posts={featuredPosts} />
         </Box>
         <Box
+          display={{ base: "none", sm: "flex" }}
           width="1.4px"
           marginTop="52px"
           bg="linear-gradient(to bottom, rgba(150, 150, 150, 0.2), transparent, rgba(150, 150, 150, 0.2))"
@@ -59,6 +60,7 @@ export default async function HomePage() {
           mr="20px"
         />
         <Box
+          display={{ base: "none", sm: "flex" }}
           width={{ base: "100%", sm: "30%" }}
           flexDirection="column"
           flexGrow={1}
