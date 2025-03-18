@@ -102,7 +102,7 @@ export const getAllDevLogs = (): DevLog[] => {
 
       const fileContents = fs.readFileSync(filePath, "utf-8");
       const { data } = matter(fileContents);
-      const slug = "dev-logs/" + folder;
+      const slug = folder;
 
       return {
         slug,
@@ -112,4 +112,23 @@ export const getAllDevLogs = (): DevLog[] => {
     })
     .filter((post): post is Post => post !== null)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+};
+
+export const getDevLogBySlug = async (slug: string): Promise<DevLog | null> => {
+  const filePath = path.join(contentLogDir, slug, "index.mdx");
+
+  if (!fs.existsSync(filePath)) return null;
+
+  const fileContents = fs.readFileSync(filePath, "utf-8");
+  const { data, content } = matter(fileContents);
+
+  // MDX 변환
+  const mdxSource = await serialize(content);
+
+  return {
+    slug,
+    title: data.title,
+    date: data.date,
+    content: mdxSource,
+  };
 };

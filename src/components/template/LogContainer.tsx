@@ -48,7 +48,7 @@ const LogContainer = (props: LogContainerProps) => {
           <Box
             as={Link}
             key={log.slug}
-            href={`/dev-log/${log.slug}`}
+            href={`/dev-logs/${log.slug}`}
             aria-label={`log-entry-${log.date}`}
             p={3}
             minWidth="140px"

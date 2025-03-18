@@ -19,4 +19,8 @@ export type DevLog = {
   slug: string;
   title: string;
   date: string;
+  content: MDXRemoteSerializeResult<
+    Record<string, unknown>,
+    Record<string, unknown>
+  >;
 };
