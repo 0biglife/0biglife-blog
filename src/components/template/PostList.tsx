@@ -89,7 +89,7 @@ const PostList = ({
               as={Link}
               role="group"
               key={post.slug}
-              href={`/blog/${post.slug}`}
+              href={`/posts/${post.slug}`}
               borderRadius="lg"
               display="flex"
               flexDirection={{ base: "column", sm: "row" }}
@@ -108,7 +108,7 @@ const PostList = ({
                 >
                   {post.title}
                 </Heading>
-                <Text mt={1} fontSize="14px" opacity={0.7}>
+                <Text mt={1} fontSize="14px" opacity={0.7} noOfLines={2}>
                   {post.description}
                 </Text>
                 <HStack mb={1} mt={1}>
@@ -129,7 +129,7 @@ const PostList = ({
                 borderRadius="md"
               >
                 <Image
-                  src={post.thumbnail || "/default-thumbnail.png"}
+                  src={post.thumbnail || "/assets/default-thumbnail.png"}
                   alt={post.title}
                   objectFit="cover"
                   width="100%"
@@ -146,13 +146,13 @@ const PostList = ({
             <Box
               as={Link}
               key={post.slug}
-              href={`/blog/${post.slug}`}
+              href={`/posts/${post.slug}`}
               borderRadius="lg"
               role="group"
               _hover={{ textDecoration: "none" }}
             >
               <Image
-                src={post.thumbnail || "/default-thumbnail.png"}
+                src={post.thumbnail || "/assets/default-thumbnail.png"}
                 alt={post.title}
                 borderRadius="md"
                 mb="8px"

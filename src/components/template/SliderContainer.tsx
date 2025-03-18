@@ -26,7 +26,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
       role="group"
       as={Link}
       key={posts[currentIndex].slug}
-      href={`/blog/${posts[currentIndex].slug}`}
+      href={`/posts/${posts[currentIndex].slug}`}
     >
       <Box
         display="flex"
@@ -55,7 +55,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
           left="0"
           width="100%"
           height="100%"
-          bgGradient="linear(to-b, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 100%)"
+          bgGradient="linear(to-b, rgba(0,0,0,0) 10%, rgba(0,0,0,0.8) 100%)"
           opacity="0"
           transition="opacity 0.3s ease-in-out"
           display="flex"
@@ -64,6 +64,16 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
           p={3}
           gap="4px"
         >
+          <Text
+            fontSize="xs"
+            color="gray.200"
+            fontWeight="regular"
+            ml="4px"
+            mr="4px"
+            alignSelf="flex-end"
+          >
+            Updated: {posts[currentIndex].date}
+          </Text>
           <Text fontSize="xs" color="gray.200" ml="4px" mr="4px">
             {posts[currentIndex].description}
           </Text>
@@ -89,9 +99,6 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
         >
           {posts[currentIndex].title}
         </Heading>
-        <Text fontSize="xs" color="gray.400">
-          Updated: {posts[currentIndex].date}
-        </Text>
       </Box>
     </Box>
   );

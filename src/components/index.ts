@@ -1,25 +1,26 @@
 import { Chakra, ThemeToggle } from "./chakra-ui";
-import { Title, Footer, Header, ScrollToTopButton } from "./layout";
+import { Title, Footer, Header, CopyButton, ScrollToTopButton } from "./layout";
 import {
-  PostItem,
   PostList,
-  PostContent,
   LogContainer,
   SliderContainer,
   FilteredPostList,
+  MarkdownRenderer,
+  TableOfContents,
 } from "./template";
 
 export {
   Title,
   Footer,
   Header,
+  CopyButton,
   ThemeToggle,
   Chakra,
-  PostContent,
-  PostItem,
   PostList,
   LogContainer,
   SliderContainer,
   FilteredPostList,
   ScrollToTopButton,
+  TableOfContents,
+  MarkdownRenderer,
 };

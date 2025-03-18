@@ -1,6 +1,6 @@
 "use client";
 import { DevLog } from "@/lib/types";
-import { Box, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Link, Text, useColorModeValue } from "@chakra-ui/react";
 
 interface LogContainerProps {
   logs: DevLog[];
@@ -46,7 +46,9 @@ const LogContainer = (props: LogContainerProps) => {
       >
         {logs.map((log) => (
           <Box
-            key={`log-${log.date}`}
+            as={Link}
+            key={log.slug}
+            href={`/dev-log/${log.slug}`}
             aria-label={`log-entry-${log.date}`}
             p={3}
             minWidth="140px"

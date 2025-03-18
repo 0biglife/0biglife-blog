@@ -1,7 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Box, Flex, Text } from "@chakra-ui/react";
+import { Box, Flex, Link } from "@chakra-ui/react";
+import NextLink from "next/link";
 import { ThemeToggle } from "@/components";
+
+// const BLOG_URL = "0biglife.com"
+const BLOG_URL = "http://localhost:3000";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -42,9 +46,17 @@ export default function Header() {
       }}
     >
       <Flex justifyContent="space-between" alignItems="center">
-        <Text fontWeight="bold" fontStyle="italic" style={{ fontSize: "22px" }}>
+        <Link
+          as={NextLink}
+          href={BLOG_URL}
+          fontWeight="bold"
+          fontStyle="italic"
+          fontSize="22px"
+          _hover={{ textDecoration: "none", opacity: 0.5 }}
+        >
           0biglife.
-        </Text>
+        </Link>
+
         <ThemeToggle />
       </Flex>
     </Box>

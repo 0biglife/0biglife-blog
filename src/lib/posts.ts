@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import { DevLog, Post } from "./types";
+import { serialize } from "next-mdx-remote/serialize";
 
 const categoryObj = {
   // 서버에서 정렬(SSR) + 클라이언트측 불필요한 카테고리 연산 제거 + 순서 정의
@@ -14,18 +15,18 @@ const categoryObj = {
 
 const contentPostDir = path.join(process.cwd(), "content/posts");
 const contentLogDir = path.join(process.cwd(), "content/dev-logs");
-const publicDir = path.join(process.cwd(), "public/assets/blog");
+const publicDir = path.join(process.cwd(), "public/assets/posts");
 
 const getThumbnail = (folderName: string): string => {
   const folderPath = path.join(publicDir, folderName);
-  if (!fs.existsSync(folderPath)) return "/default-thumbnail.png"; // 기본 썸네일
+  if (!fs.existsSync(folderPath)) return "/assets/default-thumbnail.png"; // 기본 썸네일
 
   const files = fs.readdirSync(folderPath);
   const thumbnailFile = files.find((file) => /^thumbnail\./.test(file));
 
   return thumbnailFile
-    ? `/assets/blog/${folderName}/${thumbnailFile}`
-    : "/default-thumbnail.png";
+    ? `/assets/posts/${folderName}/${thumbnailFile}`
+    : "/assets/default-thumbnail.png";
 };
 
 export const getAllPosts = (): Post[] => {
@@ -67,7 +68,7 @@ export const getAllPosts = (): Post[] => {
   return posts;
 };
 
-export const getPostBySlug = (slug: string) => {
+export const getPostBySlug = async (slug: string): Promise<Post | null> => {
   const filePath = path.join(contentPostDir, slug, "index.mdx");
 
   if (!fs.existsSync(filePath)) return null;
@@ -75,14 +76,19 @@ export const getPostBySlug = (slug: string) => {
   const fileContents = fs.readFileSync(filePath, "utf-8");
   const { data, content } = matter(fileContents);
 
+  // MDX 변환
+  const mdxSource = await serialize(content);
+
   return {
     slug,
     title: data.title,
     date: data.date,
     description: data.description,
-    thumbnail: `/assets/blog/${slug}/thumbnail.png`,
+    category: data.category || null,
+    subcategory: data.subcategory || null,
+    thumbnail: getThumbnail(filePath),
     tags: data.tags,
-    content,
+    content: mdxSource,
   };
 };
 
