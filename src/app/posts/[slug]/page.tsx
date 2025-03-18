@@ -44,7 +44,7 @@ export default async function PostDetailPage({ params }: Props) {
   if (!post) return notFound();
 
   return (
-    <Box maxW="4xl" minW="300px" mx="auto" py={10} px={6}>
+    <Box minW="300px">
       <PostContent
         title={post.title}
         date={post.date}

@@ -25,7 +25,7 @@ export default function TableOfContents({ toc }: { toc: Heading[] }) {
 
   return (
     <Box
-      minW="150px"
+      minW="250px"
       display={{ base: "none", lg: "flex" }}
       flexDirection="column"
       p={4}

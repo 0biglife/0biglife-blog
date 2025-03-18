@@ -40,8 +40,20 @@ export default function PostContent(props: Props) {
   }, []);
 
   return (
-    <Box display="flex" width="full" flexDirection="row">
-      <Box flex={{ base: "1", lg: "3" }} width="full" flexDirection="column">
+    <Box
+      display="flex"
+      width="full"
+      py={10}
+      px={0}
+      flexDirection="row"
+      justifyContent="center"
+    >
+      <Box
+        flex={{ base: "1", lg: "3" }}
+        minW="200px"
+        maxW="800px"
+        flexDirection="column"
+      >
         <Heading as="h1" fontSize="3xl">
           {title}
         </Heading>
