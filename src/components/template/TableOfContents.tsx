@@ -1,15 +1,45 @@
 "use client";
 
 import { Box, Link, VStack, Text, useColorModeValue } from "@chakra-ui/react";
+import { useEffect, useRef, useState } from "react";
 
-interface Heading {
-  id: string;
-  text: string;
-  level: number;
-}
-
-export default function TableOfContents({ toc }: { toc: Heading[] }) {
+export default function TableOfContents() {
   const textColor = useColorModeValue("gray.500", "white");
+
+  const [toc, setToc] = useState<{ id: string; text: string; level: number }[]>(
+    []
+  );
+  const observerRef = useRef<MutationObserver | null>(null);
+
+  useEffect(() => {
+    if (observerRef.current) return;
+
+    observerRef.current = new MutationObserver(() => {
+      const headings = Array.from(document.querySelectorAll("h2")).map(
+        (heading) => ({
+          id: heading.id,
+          text: heading.textContent || "",
+          level: heading.tagName === "H2" ? 2 : 3,
+        })
+      );
+
+      setToc((prevToc) => {
+        if (JSON.stringify(prevToc) !== JSON.stringify(headings))
+          return headings;
+        return prevToc;
+      });
+    });
+
+    observerRef.current.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+    };
+  }, []);
 
   if (toc.length === 0) return null;
 
@@ -28,12 +58,11 @@ export default function TableOfContents({ toc }: { toc: Heading[] }) {
       minW="200px"
       display={{ base: "none", lg: "flex" }}
       flexDirection="column"
-      p={4}
-      ml={16}
+      ml={20}
     >
       <Box pos="fixed">
         <Text
-          fontSize={20}
+          fontSize={22}
           fontWeight="semibold"
           mb={3}
           fontStyle="italic"

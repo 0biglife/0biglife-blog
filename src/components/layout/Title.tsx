@@ -12,7 +12,7 @@ const Title = (props: TitleProps) => {
     <Heading
       as="h1"
       textAlign="left"
-      fontWeight="medium"
+      fontWeight="semibold"
       mb={6}
       fontSize="22px"
       fontStyle="italic"

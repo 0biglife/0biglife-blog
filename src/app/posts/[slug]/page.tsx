@@ -21,6 +21,7 @@ import { notFound } from "next/navigation";
 import { Box, Heading, HStack, Text } from "@chakra-ui/react";
 import { getAllPosts, getPostBySlug } from "@/lib/posts";
 import Image from "next/image";
+import { TableOfContents } from "@/components";
 
 type Params = Promise<{ slug: string }>;
 
@@ -78,10 +79,6 @@ export default async function PostDetailPage({ params }: { params: Params }) {
   const post = await getPostBySlug(decodedSlug);
   if (!post) return notFound();
 
-  console.log("--------------");
-  console.log("post : ", post);
-  console.log("--------------");
-
   return (
     <Box minW="300px">
       <Box
@@ -95,7 +92,7 @@ export default async function PostDetailPage({ params }: { params: Params }) {
         <Box
           flex={{ base: "1", lg: "3" }}
           minW="200px"
-          maxW="700px"
+          maxW="760px"
           flexDirection="column"
         >
           <Heading as="h1" fontSize="3xl">
@@ -135,7 +132,7 @@ export default async function PostDetailPage({ params }: { params: Params }) {
             {post.content}
           </Box>
         </Box>
-        {/* <TableOfContents toc={toc} /> */}
+        <TableOfContents />
       </Box>
     </Box>
   );

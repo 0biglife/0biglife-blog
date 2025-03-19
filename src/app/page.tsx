@@ -50,6 +50,7 @@ export default async function HomePage() {
           flexDirection="column"
           flexGrow={1}
           minHeight="300px"
+          p={1}
         >
           <Title label={TOP_RIGHT_TITLE} />
           <LogContainer
