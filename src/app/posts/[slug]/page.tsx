@@ -9,20 +9,18 @@
  * 2. 클라이언트 컴포넌트가 mdx 데이터 사용하면 useState 관련 오류 발생
  * - serialize() 실행 위치를 서버에서 반환하도록 변경(즉, getPostBySlug에서 처리)
  *
- * 3. MDXRemote props type 통일
- * - 서버/클라이언트 컴포넌트 엄격한 구분 필요
- * - 직렬화된 JSON이 아니라 MDXRemoteSerializeResult 타입을 받아야함
- *
+ * 3. next-mdx-remote 에서 @next/mdx로 교체 고민
+ * - next-mdx-remote에서 고려사항
+ *   - MDXRemote props type 통일
+ *   - 서버/클라이언트 컴포넌트 엄격한 구분 필요
+ *   - 직렬화된 JSON이 아니라 MDXRemoteSerializeResult 타입을 받아야함
  */
 
 import "server-only";
 import { notFound } from "next/navigation";
 import { Box, Heading, HStack, Text } from "@chakra-ui/react";
 import { getAllPosts, getPostBySlug } from "@/lib/posts";
-// import PostContent from "./PostContent";
-import { MDXRemote } from "next-mdx-remote/rsc";
 import Image from "next/image";
-import { MarkdownRenderer } from "@/components";
 
 type Params = Promise<{ slug: string }>;
 
@@ -80,6 +78,10 @@ export default async function PostDetailPage({ params }: { params: Params }) {
   const post = await getPostBySlug(decodedSlug);
   if (!post) return notFound();
 
+  console.log("--------------");
+  console.log("post : ", post);
+  console.log("--------------");
+
   return (
     <Box minW="300px">
       <Box
@@ -130,10 +132,7 @@ export default async function PostDetailPage({ params }: { params: Params }) {
             />
           </Box>
           <Box className="prose lg:prose-lg" flex="1">
-            <MDXRemote
-              source={post.content.compiledSource}
-              components={MarkdownRenderer}
-            />
+            {post.content}
           </Box>
         </Box>
         {/* <TableOfContents toc={toc} /> */}
@@ -141,67 +140,3 @@ export default async function PostDetailPage({ params }: { params: Params }) {
     </Box>
   );
 }
-
-/**
- * 
----
-
-_test 테스트_
-
-```javascript
-const response = await testAPI({ body: "test" });
-try {
-  // test
-} catch (e) {
-  console.error("error occurred: ", e);
-  setIsLoading(false);
-}
-// test finished
-```
-
-`ㅅㄷㄴㅅ` 아아아
-
-## 이미지 테스트
-
-일반 이미지:
-![설명](1.png)
-
-GIF 이미지:
-![GIF 설명](https://media.giphy.com/media/3o7TKMt1VVNkHV2PaE/giphy.gif)
-
----
-
-## 리스트 테스트
-
-### 순서 없는 리스트
-
-- 첫 번째 아이템
-- 두 번째 아이템
-- 세 번째 아이템
-
-### 순서 있는 리스트
-
-1. 첫 번째 항목
-2. 두 번째 항목
-3. 세 번째 항목
-
----
-
-## 블록 인용 테스트
-
-> 이 부분은 **블록 인용**입니다.  
-> "Next.js는 훌륭한 프레임워크입니다." - 개발자 누구나
-
----
-
-## 코드 블록 테스트
-
-```tsx
-import React from "react";
-
-export default function TestComponent() {
-  return <div>Hello, MDX + Chakra UI!</div>;
-}
-```
-
- */

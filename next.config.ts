@@ -1,6 +1,7 @@
 const nextConfig = {
   pageExtensions: ["ts", "tsx", "mdx"],
   reactStrictMode: true,
+  transpilePackages: ["next-mdx-remote"],
   experimental: {
     mdxRs: true,
     // mdxRs: true,

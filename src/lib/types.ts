@@ -1,4 +1,5 @@
-import { MDXRemoteSerializeResult } from "next-mdx-remote";
+// import { MDXRemoteSerializeResult } from "next-mdx-remote";
+import { ReactNode } from "react";
 
 export type Post = {
   slug: string;
@@ -9,20 +10,20 @@ export type Post = {
   subcategory: string;
   thumbnail: string;
   tags: string[];
-  // content: string;
-  content: MDXRemoteSerializeResult<
-    Record<string, unknown>,
-    Record<string, unknown>
-  >;
+  content: ReactNode;
+  // content: MDXRemoteSerializeResult<
+  //   Record<string, unknown>,
+  //   Record<string, unknown>
+  // >;
 };
 
 export type DevLog = {
   slug: string;
   title: string;
   date: string;
-  // content: string;
-  content: MDXRemoteSerializeResult<
-    Record<string, unknown>,
-    Record<string, unknown>
-  >;
+  content: ReactNode;
+  // content: MDXRemoteSerializeResult<
+  //   Record<string, unknown>,
+  //   Record<string, unknown>
+  // >;
 };

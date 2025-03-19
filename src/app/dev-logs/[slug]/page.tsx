@@ -1,9 +1,7 @@
 import "server-only";
 import { notFound } from "next/navigation";
-import { Box, Heading, HStack, Text } from "@chakra-ui/react";
+import { Box, Heading, Text } from "@chakra-ui/react";
 import { getAllDevLogs, getDevLogBySlug } from "@/lib/posts";
-import { MDXRemote } from "next-mdx-remote/rsc";
-import { MarkdownRenderer } from "@/components";
 
 type Params = Promise<{ slug: string }>;
 
@@ -27,13 +25,11 @@ export default async function DevLogDetailPage({ params }: { params: Params }) {
           <Heading as="h1" fontSize="3xl">
             {devLog.title}
           </Heading>
-          <HStack mb={1} mt={4}>
-            <Text fontSize="smaller" color="gray.500">
-              {devLog.date}
-            </Text>
-          </HStack>
+          <Text mt={2} mb={2} fontSize="smaller" color="gray.500">
+            {devLog.date}
+          </Text>
           <Box className="prose lg:prose-lg" flex="1">
-            <MDXRemote source={devLog.content} components={MarkdownRenderer} />
+            {devLog.content}
           </Box>
         </Box>
       </Box>

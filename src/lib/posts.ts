@@ -12,7 +12,9 @@ import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
 import { DevLog, Post } from "./types";
-import { serialize } from "next-mdx-remote/serialize";
+import { compileMDX } from "next-mdx-remote/rsc";
+import { MarkdownRenderer } from "@/components";
+import { errorLog } from "./utils";
 
 const categoryObj = {
   // 서버에서 정렬(SSR) + 클라이언트측 불필요한 카테고리 연산 제거 + 순서 정의
@@ -89,14 +91,14 @@ export const getAllPosts = (): Post[] => {
 
 export const getPostBySlug = async (slug: string): Promise<Post | null> => {
   if (!slug) {
-    console.error("🚨 [getPostBySlug] Slug is undefined or empty");
+    errorLog("[getPostBySlug] Slug is undefined or empty");
     return null;
   }
 
   const filePath = path.join(contentPostDir, slug, "index.mdx");
 
   if (!fs.existsSync(filePath)) {
-    console.error(`🚨 [getPostBySlug] File does not exist: ${filePath}`);
+    errorLog("[getPostBySlug] File does not exist:", filePath);
     return null;
   }
 
@@ -104,23 +106,16 @@ export const getPostBySlug = async (slug: string): Promise<Post | null> => {
   const { data, content } = matter(fileContents);
 
   if (!data.title || !data.date) {
-    console.error(
-      `🚨 [getPostBySlug] Missing required fields in frontmatter: ${slug}`
-    );
+    errorLog("[getPostBySlug] Missing required fields in frontmatter:", slug);
     return null;
   }
 
   const transformedContent = transformImagePaths(content, slug);
 
-  const mdxSource = await serialize(transformedContent, {
-    mdxOptions: {
-      remarkPlugins: [],
-      rehypePlugins: [],
-      development: false,
-    },
+  const mdxSource = await compileMDX({
+    source: transformedContent,
+    components: MarkdownRenderer,
   });
-
-  console.log(`✅ [getPostBySlug] Successfully fetched post: ${slug}`);
 
   return {
     slug,
@@ -131,7 +126,7 @@ export const getPostBySlug = async (slug: string): Promise<Post | null> => {
     subcategory: data.subcategory || null,
     thumbnail: getThumbnail(slug),
     tags: data.tags,
-    content: mdxSource,
+    content: mdxSource.content,
   };
 };
 
@@ -165,18 +160,15 @@ export const getDevLogBySlug = async (slug: string): Promise<DevLog | null> => {
   const fileContents = fs.readFileSync(filePath, "utf-8");
   const { data, content } = matter(fileContents);
 
-  const mdxSource = await serialize(content, {
-    mdxOptions: {
-      remarkPlugins: [],
-      rehypePlugins: [],
-      development: false,
-    },
+  const mdxSource = await compileMDX({
+    source: content,
+    components: MarkdownRenderer,
   });
 
   return {
     slug,
     title: data.title,
     date: data.date,
-    content: mdxSource,
+    content: mdxSource.content,
   };
 };

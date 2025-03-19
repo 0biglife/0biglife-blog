@@ -14,3 +14,14 @@ export function extractHeadings(content: string) {
 
   return headings;
 }
+
+export function devLog(...args: unknown[]) {
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔍 [DEV LOG]:", ...args);
+  }
+}
+
+export function errorLog(message: string, error?: unknown) {
+  console.error("🚨 [ERROR]:", message);
+  if (error) console.error(error);
+}
