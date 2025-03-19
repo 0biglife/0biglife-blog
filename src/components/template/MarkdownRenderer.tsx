@@ -15,18 +15,22 @@ import { CopyButton } from "@/components";
 
 export const MarkdownRenderer = {
   // 이미지
-  img: (props: React.ImgHTMLAttributes<HTMLImageElement>) => (
-    <Image
-      src={props.src as string}
-      width="800px"
-      height="400px"
-      borderRadius="lg"
-      objectFit="cover"
-      mx="auto"
-      my={4}
-      alt={props.alt || "image"}
-    />
-  ),
+  img: function Img(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+    return (
+      <Image
+        alt={props.alt || "image"}
+        src={props.src as string}
+        width="800px"
+        height="400px"
+        borderRadius="lg"
+        objectFit="cover"
+        mx="auto"
+        my={4}
+        cursor="pointer"
+        _hover={{ opacity: 0.8 }}
+      />
+    );
+  },
 
   // 제목 : id for TableOfContents
   h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => {

@@ -86,13 +86,13 @@ const LogContainer = (props: LogContainerProps) => {
         alignItems="flex-end"
       >
         <Text fontSize="12px">
-          {TODAY}{" "}
+          {TODAY} (실데이터 구현중){" "}
           <Text as="span" fontWeight="semibold" ml="8px">
             {todayVisitorCount}
           </Text>
         </Text>
         <Text fontSize="12px">
-          {TOTAL}{" "}
+          {TOTAL} (실데이터 구현중){" "}
           <Text as="span" fontWeight="semibold" ml="6px">
             {totalVisitorCount}
           </Text>

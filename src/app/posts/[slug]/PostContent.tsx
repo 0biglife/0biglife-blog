@@ -1,6 +1,5 @@
 "use client";
-
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import { Box, Heading, HStack, Text } from "@chakra-ui/react";
 import { MarkdownRenderer } from "@/components";
@@ -16,14 +15,23 @@ type Props = {
   content: MDXRemoteSerializeResult;
 };
 
-export default function PostContent(props: Props) {
-  const { title, date, thumbnail, category, subcategory, content } = props;
+export default function PostContent({
+  title,
+  date,
+  thumbnail,
+  category,
+  subcategory,
+  content,
+}: Props) {
   const [toc, setToc] = useState<{ id: string; text: string; level: number }[]>(
     []
   );
+  const observerRef = useRef<MutationObserver | null>(null);
 
   useEffect(() => {
-    const observer = new MutationObserver(() => {
+    if (observerRef.current) return;
+
+    observerRef.current = new MutationObserver(() => {
       const headings = Array.from(document.querySelectorAll("h2")).map(
         (heading) => ({
           id: heading.id,
@@ -31,12 +39,23 @@ export default function PostContent(props: Props) {
           level: heading.tagName === "H2" ? 2 : 3,
         })
       );
-      setToc(headings);
+
+      setToc((prevToc) => {
+        if (JSON.stringify(prevToc) !== JSON.stringify(headings))
+          return headings;
+        return prevToc;
+      });
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    observerRef.current.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
 
-    return () => observer.disconnect();
+    return () => {
+      observerRef.current?.disconnect();
+      observerRef.current = null;
+    };
   }, []);
 
   return (
@@ -51,7 +70,7 @@ export default function PostContent(props: Props) {
       <Box
         flex={{ base: "1", lg: "3" }}
         minW="200px"
-        maxW="800px"
+        maxW="700px"
         flexDirection="column"
       >
         <Heading as="h1" fontSize="3xl">
@@ -77,9 +96,15 @@ export default function PostContent(props: Props) {
           overflow="hidden"
           boxShadow="lg"
           mt={6}
-          mb={6}
+          mb={12}
         >
-          <Image src={thumbnail} alt={title} fill objectFit="cover" />
+          <Image
+            src={thumbnail}
+            alt={title}
+            fill
+            priority
+            style={{ objectFit: "cover" }}
+          />
         </Box>
         <Box className="prose lg:prose-lg" flex="1">
           <MDXRemote {...content} components={MarkdownRenderer} />

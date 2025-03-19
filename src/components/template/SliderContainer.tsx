@@ -46,7 +46,8 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
           src={posts[currentIndex].thumbnail}
           alt={posts[currentIndex].title}
           fill
-          objectFit="cover"
+          priority
+          style={{ objectFit: "cover" }}
         />
         <Box
           className="overlay"

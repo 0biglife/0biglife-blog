@@ -21,6 +21,7 @@ export default function CopyButton({ content }: { content: string }) {
 
   return (
     <IconButton
+      display={{ base: "none", sm: "flex" }}
       zIndex={2}
       aria-label="copy-code"
       icon={

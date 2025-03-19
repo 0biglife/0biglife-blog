@@ -9,6 +9,7 @@ export type Post = {
   subcategory: string;
   thumbnail: string;
   tags: string[];
+  // content: string;
   content: MDXRemoteSerializeResult<
     Record<string, unknown>,
     Record<string, unknown>
@@ -19,6 +20,7 @@ export type DevLog = {
   slug: string;
   title: string;
   date: string;
+  // content: string;
   content: MDXRemoteSerializeResult<
     Record<string, unknown>,
     Record<string, unknown>
