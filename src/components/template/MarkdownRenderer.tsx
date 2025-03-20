@@ -17,18 +17,26 @@ export const MarkdownRenderer = {
   // 이미지
   img: function Img(props: React.ImgHTMLAttributes<HTMLImageElement>) {
     return (
-      <Image
-        alt={props.alt || "image"}
-        src={props.src as string}
-        width="800px"
-        height="400px"
-        borderRadius="lg"
-        objectFit="cover"
-        mx="auto"
-        my={4}
-        cursor="pointer"
-        _hover={{ opacity: 0.8 }}
-      />
+      <Box display="flex" flexDirection="column" alignItems="center" my={4}>
+        <Image
+          alt={props.alt || "image"}
+          src={props.src as string}
+          width="800px"
+          height="400px"
+          borderRadius="4px"
+          border="0.5px solid"
+          borderColor="gray.200"
+          objectFit="cover"
+          mx="auto"
+          // cursor="pointer"
+          // _hover={{ opacity: 0.8 }}
+        />
+        {props.alt && (
+          <Text fontSize="sm" color="gray.500" mt={3} textAlign="center">
+            {props.alt}
+          </Text>
+        )}
+      </Box>
     );
   },
 
@@ -174,6 +182,7 @@ export const MarkdownRenderer = {
   // 링크
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <Link
+      as="link"
       color="blue.500"
       textDecoration="underline"
       _hover={{ color: "blue.700" }}

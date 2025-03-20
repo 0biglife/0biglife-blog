@@ -7,13 +7,13 @@ import {
   Text,
   Heading,
   HStack,
-  useColorModeValue,
   Divider,
   IconButton,
 } from "@chakra-ui/react";
 import { PostList } from "@/components";
 import { Post } from "@/lib/types";
 import { TbGridDots, TbList, TbTriangleInvertedFilled } from "react-icons/tb";
+import { CATEGORY_TITLE } from "@/lib/constant";
 import { GoDotFill } from "react-icons/go";
 import { motion } from "framer-motion";
 
@@ -45,11 +45,9 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
     return categoryMap;
   });
 
-  const toggleViewMode = (mode: "list" | "grid") => {
-    setViewMode(mode);
-  };
+  const toggleViewMode = (mode: "list" | "grid") => setViewMode(mode);
 
-  const toggleCategory = (category: string) => {
+  const toggleCategory = (category: string) =>
     setCategories((prev) => ({
       ...prev,
       [category]: {
@@ -57,18 +55,16 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
         isOpen: !prev[category].isOpen,
       },
     }));
-  };
 
   const handleCategoryClick = (category: string) => {
     setSelectedCategory((prev) => (prev === category ? null : category));
     setSelectedSubcategory(null);
   };
 
-  const handleSubcategoryClick = (subcategory: string) => {
+  const handleSubcategoryClick = (subcategory: string) =>
     setSelectedSubcategory((prev) =>
       prev === subcategory ? null : subcategory
     );
-  };
 
   const filteredPosts = useMemo(() => {
     const filtered = posts.filter(
@@ -81,9 +77,6 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
       new Map(filtered.map((post) => [post.slug, post])).values()
     );
   }, [posts, selectedCategory, selectedSubcategory]);
-
-  const selectedTextColor = useColorModeValue("black", "white");
-  const notSelectedTextColor = useColorModeValue("gray.500", "gray.300");
 
   return (
     <Box
@@ -100,8 +93,9 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
             <Text
               fontSize="14px"
               ml={2}
-              color={selectedTextColor}
+              color="black"
               fontWeight="medium"
+              _dark={{ color: "white" }}
             >
               {selectedCategory ? selectedCategory : "전체보기"}
               {selectedSubcategory ? ` / ${selectedSubcategory}` : ""}
@@ -156,7 +150,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
           fontSize="18px"
           fontStyle="italic"
         >
-          Category
+          {CATEGORY_TITLE}
         </Heading>
         <VStack align="start" spacing={3} ml={1}>
           {Object.entries(categories).map(
@@ -191,18 +185,21 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                     <Text
                       fontSize="16px"
                       fontWeight={isCategorySelected ? "bold" : "normal"}
-                      color={
-                        isCategorySelected
-                          ? selectedTextColor
-                          : notSelectedTextColor
-                      }
+                      color={isCategorySelected ? "black" : "gray.500"}
+                      _dark={{
+                        color: isCategorySelected ? "white" : "gray.300",
+                      }}
                       onClick={() => handleCategoryClick(category)}
                       _hover={{
                         fontWeight: "bold",
-                        color: selectedTextColor,
                         textDecoration: "underline",
+                        color: "black",
+                        _dark: {
+                          color: "white",
+                        },
                       }}
                       cursor="pointer"
+                      noOfLines={1}
                     >
                       {category}
                       <Text as="span" fontSize="12px" color="gray.400" ml={1}>
@@ -234,15 +231,19 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                                 isSubcategorySelected ? "bold" : "normal"
                               }
                               color={
-                                isSubcategorySelected
-                                  ? selectedTextColor
-                                  : notSelectedTextColor
+                                isSubcategorySelected ? "black" : "gray.500"
                               }
+                              _dark={{
+                                color: "white",
+                              }}
                               cursor="pointer"
                               _hover={{
                                 fontWeight: "bold",
-                                color: selectedTextColor,
                                 textDecoration: "underline",
+                                color: "black",
+                                _dark: {
+                                  color: "white",
+                                },
                               }}
                               onClick={() =>
                                 handleSubcategoryClick(subcategory)
@@ -250,7 +251,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                             >
                               <HStack spacing={1} align="center">
                                 <GoDotFill size={8} />
-                                <Text as="span" ml={1}>
+                                <Text as="span" ml={1} noOfLines={1}>
                                   {subcategory}
                                 </Text>
                                 <Text

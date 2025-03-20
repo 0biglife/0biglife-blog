@@ -17,7 +17,7 @@ export const metadata = {
     siteName: "0biglife blog",
     images: [
       {
-        url: "/blog.png",
+        url: "/favicon.png",
         width: 1200,
         height: 630,
         alt: "0biglife 블로그 대표 이미지",
@@ -25,6 +25,9 @@ export const metadata = {
     ],
     locale: "ko_KR",
     type: "website",
+  },
+  alternates: {
+    canonical: "https://0biglife.com", // Canonical URL, 원본 페이지 인식하여 SEO 점수 향상
   },
   // manifest: "/site.webmanifest", // PWA 지원 시 필요
 };

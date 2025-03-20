@@ -1,11 +1,9 @@
 "use client";
 
-import { Box, Link, VStack, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Link, VStack, Text } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 
 export default function TableOfContents() {
-  const textColor = useColorModeValue("gray.500", "white");
-
   const [toc, setToc] = useState<{ id: string; text: string; level: number }[]>(
     []
   );
@@ -73,12 +71,16 @@ export default function TableOfContents() {
         <VStack align="start" spacing={2}>
           {toc.map((heading) => (
             <Link
+              arial-label={`index for ${heading.text}`}
               key={heading.id}
               onClick={() => handleScrollTo(heading.id)}
               fontSize="13px"
               fontWeight="medium"
               pl={heading.level === 3 ? 4 : 0}
-              color={textColor}
+              color="gray.500"
+              _dark={{
+                color: "white",
+              }}
               _hover={{ color: "blue.400" }}
               cursor="pointer"
               noOfLines={1}

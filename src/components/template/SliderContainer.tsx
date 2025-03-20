@@ -3,10 +3,11 @@ import { useState, useEffect } from "react";
 import { Box, Heading, Link, Text } from "@chakra-ui/react";
 import Image from "next/image";
 import { Post } from "@/lib/types";
+import { THUMNAIL_DATE_TEXT } from "@/lib/constant";
 
 const SliderContainer = ({ posts }: { posts: Post[] }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  // const currentIndex = 0;
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % posts.length);
@@ -23,8 +24,8 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
       flexGrow={1}
       maxWidth="800px"
       cursor="pointer"
-      role="group"
       as={Link}
+      aria-label={`read more about ${posts[currentIndex].title}`}
       key={posts[currentIndex].slug}
       href={`/posts/${posts[currentIndex].slug}`}
     >
@@ -47,6 +48,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
           alt={posts[currentIndex].title}
           fill
           priority
+          sizes="(max-width: 800px) 100vw, 800px"
           style={{ objectFit: "cover" }}
         />
         <Box
@@ -73,7 +75,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
             mr="4px"
             alignSelf="flex-end"
           >
-            Updated: {posts[currentIndex].date}
+            {THUMNAIL_DATE_TEXT} {posts[currentIndex].date}
           </Text>
           <Text fontSize="xs" color="gray.200" ml="4px" mr="4px">
             {posts[currentIndex].description}
@@ -93,7 +95,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
         alignContent="center"
       >
         <Heading
-          as="h3"
+          as="h1"
           size="md"
           fontWeight="semibold"
           _groupHover={{ textDecoration: "underline" }}

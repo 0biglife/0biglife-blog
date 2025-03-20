@@ -1,20 +1,18 @@
 "use client";
 
 import {
-  Box,
-  Button,
-  Heading,
-  Link,
-  Text,
-  useColorModeValue,
-  VStack,
-} from "@chakra-ui/react";
+  BLOG_EMAIL,
+  HOME_BUTTON_TEXT,
+  NOT_FOUND_HELP_BACKWARD_TEXT,
+  NOT_FOUND_HELP_FORWARD_TEXT,
+  NOT_FOUND_MESSAGE,
+  NOT_FOUND_STATUS_CODE,
+} from "@/lib/constant";
+import { Box, Button, Heading, Link, Text, VStack } from "@chakra-ui/react";
 import { useRouter } from "next/navigation";
 
 export default function NotFoundPage() {
   const router = useRouter();
-
-  const textColor = useColorModeValue("black", "white");
 
   return (
     <Box
@@ -26,24 +24,25 @@ export default function NotFoundPage() {
       textAlign="center"
       p={6}
     >
-      <Heading as="h1" size="2xl" color={textColor}>
-        404
+      <Heading as="h1" size="2xl" _dark={{ color: "white" }}>
+        {NOT_FOUND_STATUS_CODE}
       </Heading>
-      <Text fontSize="1rem" mt={4} color={textColor}>
-        페이지를 찾을 수 없습니다.
+      <Text fontSize="1rem" mt={4} _dark={{ color: "white" }}>
+        {NOT_FOUND_MESSAGE}
       </Text>
-      <Text fontSize="0.9rem" mt={2} color={textColor}>
-        혹시 문제가 발생하였다면
+      <Text fontSize="0.9rem" mt={2} _dark={{ color: "white" }}>
+        {NOT_FOUND_HELP_FORWARD_TEXT}
         <Link
+          aria-label="gmail"
           href="mailto:0biglife@gmail.com"
           color="blue.500"
           fontWeight="bold"
           ml={1}
           mr={1}
         >
-          0biglife@gmail.com
+          {BLOG_EMAIL}
         </Link>
-        로 요청해주세요.
+        {NOT_FOUND_HELP_BACKWARD_TEXT}
       </Text>
       <VStack spacing={4} mt={6}>
         <Button
@@ -51,7 +50,7 @@ export default function NotFoundPage() {
           fontSize="14px"
           onClick={() => router.push("/")}
         >
-          홈으로 돌아가기
+          {HOME_BUTTON_TEXT}
         </Button>
       </VStack>
     </Box>

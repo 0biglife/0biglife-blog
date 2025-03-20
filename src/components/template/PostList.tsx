@@ -7,13 +7,14 @@ import {
   Text,
   Stack,
   Link,
-  Image,
   SimpleGrid,
   IconButton,
   HStack,
   Button,
 } from "@chakra-ui/react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
+import Image from "next/image";
+import { EMPTY_POST } from "@/lib/constant";
 
 const PostList = ({
   posts,
@@ -76,7 +77,7 @@ const PostList = ({
   if (!posts || posts.length === 0)
     return (
       <Text fontSize="md" color="gray.500">
-        게시글이 없습니다.
+        {EMPTY_POST}
       </Text>
     );
 
@@ -87,7 +88,7 @@ const PostList = ({
           {currentPosts.map((post: Post) => (
             <Box
               as={Link}
-              role="group"
+              aria-label={`read more about ${post.title}`}
               key={post.slug}
               href={`/posts/${post.slug}`}
               borderRadius="lg"
@@ -100,7 +101,7 @@ const PostList = ({
             >
               <Box flex="1">
                 <Heading
-                  as="h3"
+                  as="h1"
                   size="24px"
                   mb={1}
                   fontWeight="semibold"
@@ -115,8 +116,8 @@ const PostList = ({
                   <Text fontSize="12px">
                     {post.category}/{post.subcategory}
                   </Text>
-                  <Text fontSize="12px" color="gray.500">
-                    · {post.date}
+                  <Text fontSize="12px" color="gray.200" opacity={0.7}>
+                    {`- `} {post.date}
                   </Text>
                 </HStack>
               </Box>
@@ -131,10 +132,11 @@ const PostList = ({
                 <Image
                   src={post.thumbnail || "/assets/default-thumbnail.png"}
                   alt={post.title}
-                  objectFit="cover"
-                  width="100%"
-                  height="auto"
-                  style={{ aspectRatio: "4 / 3" }}
+                  width={160} // 지정된 크기로 최적화
+                  height={120}
+                  layout="intrinsic" // 브라우저에서 크기 자동 조정
+                  sizes="(max-width: 800px) 100vw, 800px"
+                  style={{ objectFit: "cover", aspectRatio: "4 / 3" }}
                 />
               </Box>
             </Box>
@@ -145,23 +147,23 @@ const PostList = ({
           {currentPosts.map((post: Post) => (
             <Box
               as={Link}
+              aria-label={`read more about ${post.title}`}
               key={post.slug}
               href={`/posts/${post.slug}`}
               borderRadius="lg"
-              role="group"
               _hover={{ textDecoration: "none" }}
             >
               <Image
                 src={post.thumbnail || "/assets/default-thumbnail.png"}
                 alt={post.title}
-                borderRadius="md"
-                mb="8px"
-                objectFit="cover"
-                width="100%"
-                height="160px"
+                width={160} // 지정된 크기로 최적화
+                height={120}
+                layout="intrinsic" // 브라우저에서 크기 자동 조정
+                sizes="(max-width: 800px) 100vw, 800px"
+                style={{ objectFit: "cover", aspectRatio: "1/1" }}
               />
               <Heading
-                as="h3"
+                as="h1"
                 size="20px"
                 fontWeight="semibold"
                 _groupHover={{ textDecoration: "underline" }}

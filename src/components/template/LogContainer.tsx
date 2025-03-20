@@ -1,6 +1,7 @@
 "use client";
+import { TESTING, TODAY_COUNT, TOTAL_COUNT } from "@/lib/constant";
 import { DevLog } from "@/lib/types";
-import { Box, Link, Text, useColorModeValue } from "@chakra-ui/react";
+import { Box, Link, Text } from "@chakra-ui/react";
 
 interface LogContainerProps {
   logs: DevLog[];
@@ -8,18 +9,8 @@ interface LogContainerProps {
   totalVisitorCount: number;
 }
 
-const TODAY = "Today";
-const TOTAL = "Total";
-
 const LogContainer = (props: LogContainerProps) => {
   const { logs, todayVisitorCount, totalVisitorCount } = props;
-
-  const textColor = useColorModeValue("gray.600", "gray.300");
-  const hoverTextColor = useColorModeValue("black", "white");
-  const hoverBg = useColorModeValue(
-    "rgba(0, 0, 0, 0.05)",
-    "rgba(255, 255, 255, 0.1)"
-  );
 
   return (
     <Box
@@ -58,13 +49,20 @@ const LogContainer = (props: LogContainerProps) => {
             mb="8px"
             borderRadius="md"
             boxShadow="sm"
-            color={textColor}
+            color="gray.600"
+            _dark={{
+              color: "gray.300",
+            }}
             _hover={{
               boxShadow: "md",
               textDecoration: "underline",
-              color: hoverTextColor,
+              color: "black",
+              bg: "rgba(0, 0, 0, 0.05)",
+              _dark: {
+                color: "white",
+                bg: "rgba(255, 255, 255, 0.1)",
+              },
               fontWeight: "semibold",
-              bg: hoverBg,
             }}
             cursor="pointer"
             transition="all 0.2s ease-in-out"
@@ -86,13 +84,13 @@ const LogContainer = (props: LogContainerProps) => {
         alignItems="flex-end"
       >
         <Text fontSize="12px">
-          {TODAY} (실데이터 구현중){" "}
+          {TODAY_COUNT} ({TESTING}){" "}
           <Text as="span" fontWeight="semibold" ml="8px">
             {todayVisitorCount}
           </Text>
         </Text>
         <Text fontSize="12px">
-          {TOTAL} (실데이터 구현중){" "}
+          {TOTAL_COUNT} ({TESTING}){" "}
           <Text as="span" fontWeight="semibold" ml="6px">
             {totalVisitorCount}
           </Text>

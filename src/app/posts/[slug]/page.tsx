@@ -38,11 +38,9 @@ export async function generateStaticParams() {
 // SEO 최적화를 위한 메타 데이터 설정 : OG 아직 고민 단계
 export async function generateMetadata({ params }: { params: Params }) {
   const { slug } = await params;
-
   if (!slug) return notFound();
 
   const decodedSlug = decodeURIComponent(slug ?? "");
-
   const post = await getPostBySlug(decodedSlug);
   if (!post) {
     console.error(`🔴 [generateMetadata] Post not found for slug: ${slug}`);
@@ -64,6 +62,36 @@ export async function generateMetadata({ params }: { params: Params }) {
       title: post.title,
       description: post.description,
       images: [post.thumbnail],
+    },
+    structuredData: {
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: post.title,
+      datePublished: post.date,
+      author: {
+        "@type": "Person",
+        name: "0biglife",
+        url: "https://0biglife.com",
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "0biglife",
+        logo: {
+          "@type": "ImageObject",
+          url: "https://0biglife.com/favicon.png",
+        },
+      },
+      image: {
+        "@type": "ImageObject",
+        url: post.thumbnail,
+        width: 1200,
+        height: 630,
+      },
+      mainEntityOfPage: {
+        "@type": "WebPage",
+        "@id": `https://0biglife.com/posts/${post.slug}`,
+      },
+      url: `https://0biglife.com/posts/${post.slug}`,
     },
   };
 }

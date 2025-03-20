@@ -25,6 +25,7 @@ export default function Footer() {
           fontSize={12}
         >
           <Link
+            aria-label="linkedin"
             href="https://www.linkedin.com/in/0biglife/"
             isExternal
             _hover={{ color: "blue.500" }}
@@ -41,6 +42,7 @@ export default function Footer() {
           fontSize={12}
         >
           <Link
+            aria-label="gmail"
             href="mailto:your-email@example.com?subject=Hello&body=..."
             _hover={{ color: "red.500" }}
           >
@@ -56,6 +58,7 @@ export default function Footer() {
           fontSize={12}
         >
           <Link
+            aria-label="tistory"
             href="https://0biglife.tistory.com/"
             isExternal
             _hover={{ color: "green.500" }}
