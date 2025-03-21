@@ -34,6 +34,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
         position="relative"
         width="100%"
         flexGrow={1}
+        minWidth="300px"
         minHeight="200px"
         maxHeight="400px"
         aspectRatio="4/3"
@@ -46,11 +47,20 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
         <Image
           src={posts[currentIndex].thumbnail}
           alt={posts[currentIndex].title}
-          fill
-          priority
+          width={800}
+          height={600} // 4:3 비율
           sizes="(max-width: 800px) 100vw, 800px"
-          style={{ objectFit: "cover" }}
+          style={{
+            width: "100%",
+            height: "auto",
+            objectFit: "cover",
+            borderRadius: "10px",
+          }}
+          priority={
+            posts[currentIndex].thumbnail !== "/assets/default-thumbnail.webp"
+          }
         />
+
         <Box
           className="overlay"
           position="absolute"

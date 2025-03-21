@@ -75,11 +75,7 @@ const PostList = ({
   };
 
   if (!posts || posts.length === 0)
-    return (
-      <Text fontSize="md" color="gray.500">
-        {EMPTY_POST}
-      </Text>
-    );
+    return <Text fontSize="md">{EMPTY_POST}</Text>;
 
   return (
     <Box ml={1}>
@@ -116,27 +112,35 @@ const PostList = ({
                   <Text fontSize="12px">
                     {post.category}/{post.subcategory}
                   </Text>
-                  <Text fontSize="12px" color="gray.200" opacity={0.7}>
+                  <Text
+                    fontSize="12px"
+                    color="gray.800"
+                    opacity={0.7}
+                    _dark={{
+                      color: "white",
+                    }}
+                  >
                     {`- `} {post.date}
                   </Text>
                 </HStack>
               </Box>
               <Box
+                position="relative"
                 flexShrink={0}
                 width={{ base: "100%", sm: "160px" }}
-                height={{ base: "auto", sm: "120px" }}
                 order={{ base: -1, sm: 1 }}
                 overflow="hidden"
                 borderRadius="md"
+                aspectRatio="4 / 3"
               >
                 <Image
                   src={post.thumbnail || "/assets/default-thumbnail.png"}
                   alt={post.title}
-                  width={160} // 지정된 크기로 최적화
-                  height={120}
-                  layout="intrinsic" // 브라우저에서 크기 자동 조정
+                  fill
                   sizes="(max-width: 800px) 100vw, 800px"
-                  style={{ objectFit: "cover", aspectRatio: "4 / 3" }}
+                  style={{
+                    objectFit: "cover",
+                  }}
                 />
               </Box>
             </Box>
@@ -160,19 +164,22 @@ const PostList = ({
                 height={120}
                 layout="intrinsic" // 브라우저에서 크기 자동 조정
                 sizes="(max-width: 800px) 100vw, 800px"
-                style={{ objectFit: "cover", aspectRatio: "1/1" }}
+                style={{
+                  objectFit: "cover",
+                  aspectRatio: "1/1",
+                  borderRadius: "12px",
+                }}
               />
               <Heading
                 as="h1"
                 size="20px"
+                mt={2}
                 fontWeight="semibold"
                 _groupHover={{ textDecoration: "underline" }}
               >
                 {post.title}
               </Heading>
-              <Text fontSize="12px" color="gray.500">
-                {post.date}
-              </Text>
+              <Text fontSize="12px">{post.date}</Text>
             </Box>
           ))}
         </SimpleGrid>

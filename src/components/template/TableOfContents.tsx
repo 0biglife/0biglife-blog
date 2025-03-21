@@ -1,5 +1,6 @@
 "use client";
 
+import { TABLE_OF_CONTENTS_TITLE } from "@/lib/constant";
 import { Box, Link, VStack, Text } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 
@@ -66,12 +67,13 @@ export default function TableOfContents() {
           fontStyle="italic"
           userSelect="none"
         >
-          Index
+          {TABLE_OF_CONTENTS_TITLE}
         </Text>
         <VStack align="start" spacing={2}>
           {toc.map((heading) => (
             <Link
-              arial-label={`index for ${heading.text}`}
+              href={`#${heading.id}`}
+              aria-label={`index for ${heading.text}`}
               key={heading.id}
               onClick={() => handleScrollTo(heading.id)}
               fontSize="13px"

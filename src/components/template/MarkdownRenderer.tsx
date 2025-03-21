@@ -1,108 +1,129 @@
-import {
-  Heading,
-  Text,
-  Image,
-  Box,
-  ListItem,
-  OrderedList,
-  UnorderedList,
-  Link,
-  Divider,
-} from "@chakra-ui/react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark as DarkCodeStyle } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { CopyButton } from "@/components";
+import Image from "next/image";
+import React from "react";
 
 export const MarkdownRenderer = {
-  // 이미지
-  img: function Img(props: React.ImgHTMLAttributes<HTMLImageElement>) {
+  img: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+    const alt = props.alt || "image";
+    const src = props.src || "";
+
     return (
-      <Box display="flex" flexDirection="column" alignItems="center" my={4}>
+      <span
+        style={{
+          display: "block",
+          margin: "1.5rem 0",
+          textAlign: "center",
+        }}
+      >
         <Image
-          alt={props.alt || "image"}
-          src={props.src as string}
-          width="800px"
-          height="400px"
-          borderRadius="4px"
-          border="0.5px solid"
-          borderColor="gray.200"
-          objectFit="cover"
-          mx="auto"
-          // cursor="pointer"
-          // _hover={{ opacity: 0.8 }}
+          alt={alt}
+          src={src}
+          width={800}
+          height={0}
+          style={{
+            maxWidth: "100%",
+            height: "auto",
+            borderRadius: "4px",
+            border: "1px solid #e2e8f0",
+            objectFit: "cover",
+          }}
         />
-        {props.alt && (
-          <Text fontSize="sm" color="gray.500" mt={3} textAlign="center">
-            {props.alt}
-          </Text>
+        {alt && (
+          <span
+            style={{
+              display: "block",
+              fontSize: "0.8rem",
+              marginTop: "0.75rem",
+              opacity: 0.6,
+            }}
+          >
+            {alt}
+          </span>
         )}
-      </Box>
+      </span>
     );
   },
 
-  // 제목 : id for TableOfContents
-  h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => {
-    // const id = props.children?.toString().replace(/\s+/g, "-").toLowerCase();
-    return (
-      <Heading
-        as="h1"
-        fontSize="3xl"
-        fontWeight="bold"
-        my={6}
-        // id={id}
-        {...props}
-      />
-    );
-  },
-
+  h1: (props: React.HTMLAttributes<HTMLHeadingElement>) => (
+    <h1
+      style={{ fontSize: "2rem", fontWeight: "bold", margin: "2rem 0 1rem" }}
+      {...props}
+    />
+  ),
   h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => {
-    const id = props.children?.toString().replace(/\s+/g, "-").toLowerCase();
+    const id =
+      typeof props.children === "string"
+        ? props.children.toLowerCase().replace(/\s+/g, "-")
+        : undefined;
+
     return (
-      <Heading
-        as="h2"
-        fontSize="2xl"
-        fontWeight="bold"
-        my={5}
+      <h2
         id={id}
+        style={{
+          fontSize: "1.5rem",
+          fontWeight: "bold",
+          margin: "1.5rem 0 1rem",
+        }}
         {...props}
       />
     );
   },
   h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => {
-    const id = props.children?.toString().replace(/\s+/g, "-").toLowerCase();
+    const id =
+      typeof props.children === "string"
+        ? props.children.toLowerCase().replace(/\s+/g, "-")
+        : undefined;
+
     return (
-      <Heading
-        as="h3"
-        fontSize="xl"
-        fontWeight="semibold"
-        my={4}
+      <h3
         id={id}
+        style={{
+          fontSize: "1.25rem",
+          fontWeight: 600,
+          margin: "1.25rem 0 0.75rem",
+        }}
         {...props}
       />
     );
   },
 
-  // 본문
-  p: (props: React.HTMLAttributes<HTMLParagraphElement>) => (
-    <Text fontSize="md" lineHeight="1.7" my={3} {...props} />
-  ),
+  // ✅ 핵심 수정: p 내부 block 요소 감지 시 div로 변경
+  p: (props: React.HTMLAttributes<HTMLParagraphElement>) => {
+    const children = React.Children.toArray(props.children);
 
-  // 인라인 코드
+    const hasBlockLevel = children.some((child) => {
+      if (!React.isValidElement(child)) return false;
+
+      const tag = typeof child.type === "string" ? child.type : "";
+
+      // Image 컴포넌트도 block처럼 처리
+      return ["div", "pre", "figure", "Image"].includes(tag);
+    });
+
+    const Tag = hasBlockLevel ? "div" : "p";
+
+    return (
+      <Tag
+        style={{ fontSize: "1rem", lineHeight: "1.7", margin: "1rem 0" }}
+        {...props}
+      />
+    );
+  },
+
   inlineCode: ({ children }: { children?: React.ReactNode }) => (
-    <Text
-      as="code"
-      px={2}
-      py={1}
-      borderRadius="4px"
-      bg="gray.200"
-      color="black"
-      userSelect="none"
-      _dark={{ bg: "darkgray.200", opacity: 0.6, color: "black" }}
-      fontSize="sm"
-      fontFamily="monospace"
+    <code
+      style={{
+        background: "#e2e8f0",
+        padding: "2px 6px",
+        borderRadius: "4px",
+        fontSize: "0.875rem",
+        fontFamily: "monospace",
+      }}
     >
       {children}
-    </Text>
+    </code>
   ),
 
   code: ({
@@ -114,78 +135,63 @@ export const MarkdownRenderer = {
   }) => {
     const match = /language-(\w+)/.exec(className || "");
     if (!match) {
-      return MarkdownRenderer.inlineCode({ children });
+      return <code>{children}</code>;
     }
 
     return (
-      <Box
-        position="relative"
-        as="pre"
-        userSelect="none"
-        _dark={{ bg: "gray.800", opacity: 1 }}
-        overflowX="auto"
-      >
+      <div style={{ position: "relative", margin: "1.5rem 0" }}>
         <CopyButton content={String(children).trim()} />
         <SyntaxHighlighter
-          showLineNumbers
-          language={match ? match[1] : "tsx"}
+          language={match[1]}
           style={DarkCodeStyle}
           customStyle={{
+            padding: "1rem",
             fontSize: "14px",
-            margin: "20px 0px",
             borderRadius: "6px",
-            backgroundColor: "black",
-            opacity: 0.9,
+            backgroundColor: "#1e1e1e",
+            overflowX: "auto",
           }}
           wrapLongLines
+          showLineNumbers
         >
           {String(children).trim()}
         </SyntaxHighlighter>
-      </Box>
+      </div>
     );
   },
 
-  // 구분선
-  hr: () => <Divider my={6} />,
+  hr: () => <hr style={{ margin: "2rem 0", borderColor: "#e2e8f0" }} />,
 
-  // 리스트
   ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
-    <UnorderedList spacing={2} ml={5} {...props} />
+    <ul style={{ marginLeft: "1.5rem", marginBottom: "1rem" }} {...props} />
   ),
   ol: (props: React.HTMLAttributes<HTMLOListElement>) => (
-    <OrderedList spacing={2} ml={5} {...props} />
+    <ol style={{ marginLeft: "1.5rem", marginBottom: "1rem" }} {...props} />
   ),
   li: (props: React.HTMLAttributes<HTMLLIElement>) => (
-    <ListItem fontSize="md" {...props} />
+    <li style={{ fontSize: "1rem", marginBottom: "0.5rem" }} {...props} />
   ),
 
-  // 블록 인용
-  blockquote: function Blockquote(
-    props: React.HTMLAttributes<HTMLQuoteElement>
-  ) {
-    return (
-      <Box
-        as="blockquote"
-        borderLeft="4px solid"
-        borderColor="gray.300"
-        pl={4}
-        py={2}
-        my={4}
-        fontStyle="italic"
-        bg="gray.50"
-        _dark={{ bg: "gray.700", color: "gray.300" }}
-        {...props}
-      />
-    );
-  },
+  blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
+    <blockquote
+      style={{
+        borderLeft: "4px solid #cbd5e0",
+        paddingLeft: "1rem",
+        margin: "1rem 0",
+        fontStyle: "italic",
+        background: "#f7fafc",
+        color: "#4a5568",
+      }}
+      {...props}
+    />
+  ),
 
-  // 링크
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
-    <Link
-      as="link"
-      color="blue.500"
-      textDecoration="underline"
-      _hover={{ color: "blue.700" }}
+    <a
+      style={{
+        color: "#3182ce",
+        textDecoration: "underline",
+      }}
       {...props}
     />
   ),

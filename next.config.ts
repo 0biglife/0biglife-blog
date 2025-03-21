@@ -8,6 +8,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 const nextConfig = withBundleAnalyzer({
   pageExtensions: ["ts", "tsx", "mdx"],
   reactStrictMode: true,
+  compress: true, // gzip 압축 활성화 -> JS 실행 최적화
   transpilePackages: ["next-mdx-remote"],
   experimental: {
     mdxRs: true,
@@ -43,6 +44,8 @@ const nextConfig = withBundleAnalyzer({
   //   ];
   // },
 
+  // 정적 리소스(HTML, JS, 이미지 등)의 캐시 정책을 브라우저와 CDN에게 알려주는 역할
+  // 수정 여부 추후 고민 : 일단, 30일 캐시 + 1일 재검증 여유
   // async headers() {
   //   return [
   //     {
@@ -50,14 +53,14 @@ const nextConfig = withBundleAnalyzer({
   //       headers: [
   //         {
   //           key: "Cache-Control",
-  //           value: "public, max-age=86400, stale-while-revalidate=3600",
+  //           value: "public, max-age=2592000, stale-while-revalidate=86400",
   //         },
   //       ],
   //     },
   //   ];
   // },
-
-  // compress: true, // gzip 압축 활성화 -> JS 실행 최적화
+  // -> output: export SSG 방식에서는 headers() 설정이 적용되지않음..
+  // -> 왜 ? next export 방식은 정적 HTML + 정적 파일만 생성하기 때문에, 커스텀 서버 없이는 헤더 설정을 적용할 수 업음..
 });
 
 export default nextConfig;

@@ -31,23 +31,41 @@ const publicDir = path.join(process.cwd(), "public/assets/posts");
 // 썸네일 경로
 const getThumbnail = (folderName: string): string => {
   const folderPath = path.join(publicDir, folderName);
-  if (!fs.existsSync(folderPath)) return "/assets/default-thumbnail.png"; // 기본 썸네일
+  if (!fs.existsSync(folderPath)) return "/assets/default-thumbnail.webp";
 
   const files = fs.readdirSync(folderPath);
-  const thumbnailFile = files.find((file) => /^thumbnail\./.test(file));
 
-  return thumbnailFile
-    ? `/assets/posts/${folderName}/${thumbnailFile}`
-    : "/assets/default-thumbnail.png";
+  const webpFile = files.find((file) =>
+    /^thumbnail-optimized\.webp$/.test(file)
+  );
+
+  if (webpFile) return `/assets/posts/${folderName}/${webpFile}`;
+
+  const originalWebpFile = files.find((file) => /^thumbnail\.webp$/.test(file));
+  if (originalWebpFile)
+    return `/assets/posts/${folderName}/${originalWebpFile}`;
+
+  const optimizedFile = files.find((file) =>
+    /^thumbnail-optimized\.(png|jpg|jpeg)$/.test(file)
+  );
+  if (optimizedFile) return `/assets/posts/${folderName}/${optimizedFile}`;
+
+  const fallbackFile = files.find((file) =>
+    /^thumbnail\.(png|jpg|jpeg)$/.test(file)
+  );
+  return fallbackFile
+    ? `/assets/posts/${folderName}/${fallbackFile}`
+    : "/assets/default-thumbnail.webp";
 };
 
 // mdx 내부 이미지에 경로 주입
 const transformImagePaths = (content: string, slug: string): string => {
-  // 정규식 처리로 했기에 완벽하지 않음 -> 추후 개선 필요
-  return content.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, altText, src) => {
-    if (src.startsWith("http")) return match;
-    return `![${altText}](/assets/posts/${slug}/${src})`;
-  });
+  return content.replace(
+    /!\[(.*?)\]\((?!https?:\/\/)(.*?)\.(jpg|jpeg|png)\)/g,
+    (match, alt, srcBase) => {
+      return `![${alt}](/assets/posts/${slug}/${srcBase}-optimized.webp)`;
+    }
+  );
 };
 
 export const getAllPosts = (): Post[] => {

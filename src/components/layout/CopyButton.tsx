@@ -33,7 +33,7 @@ export default function CopyButton({ content }: { content: string }) {
       }
       size="sm"
       position="absolute"
-      top={8}
+      top={3}
       right={3}
       bg="gray.300"
       opacity={0.7}

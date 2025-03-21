@@ -129,6 +129,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
 
         <PostList posts={filteredPosts} viewMode={viewMode} />
       </Box>
+
       <Box
         display={{ base: "none", sm: "flex" }}
         width="1.4px"
@@ -185,10 +186,6 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                     <Text
                       fontSize="16px"
                       fontWeight={isCategorySelected ? "bold" : "normal"}
-                      color={isCategorySelected ? "black" : "gray.500"}
-                      _dark={{
-                        color: isCategorySelected ? "white" : "gray.300",
-                      }}
                       onClick={() => handleCategoryClick(category)}
                       _hover={{
                         fontWeight: "bold",
@@ -202,7 +199,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                       noOfLines={1}
                     >
                       {category}
-                      <Text as="span" fontSize="12px" color="gray.400" ml={1}>
+                      <Text as="span" fontSize="12px" ml={1}>
                         ({count})
                       </Text>
                     </Text>
@@ -230,12 +227,6 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                               fontWeight={
                                 isSubcategorySelected ? "bold" : "normal"
                               }
-                              color={
-                                isSubcategorySelected ? "black" : "gray.500"
-                              }
-                              _dark={{
-                                color: "white",
-                              }}
                               cursor="pointer"
                               _hover={{
                                 fontWeight: "bold",
@@ -254,11 +245,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                                 <Text as="span" ml={1} noOfLines={1}>
                                   {subcategory}
                                 </Text>
-                                <Text
-                                  as="span"
-                                  fontSize="12px"
-                                  color="gray.400"
-                                >
+                                <Text as="span" fontSize="12px">
                                   ({subCount})
                                 </Text>
                               </HStack>

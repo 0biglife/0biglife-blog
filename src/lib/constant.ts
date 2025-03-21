@@ -22,6 +22,7 @@ export const HOME_BUTTON_TEXT = "홈으로 돌아가기";
 export const EMPTY_TITLE = "No Title"; // 제거
 export const EMPTY_POST = "No Post";
 export const THUMNAIL_DATE_TEXT = "Updated: ";
+export const TABLE_OF_CONTENTS_TITLE = "Index";
 
 // etc
 export const TESTING = "테스트중";

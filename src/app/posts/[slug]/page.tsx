@@ -49,7 +49,7 @@ export async function generateMetadata({ params }: { params: Params }) {
 
   return {
     title: post.title,
-    description: post.description,
+    description: `0biglife Blog Post about '${post.title}'`,
     openGraph: {
       title: post.title,
       description: post.description,
@@ -130,7 +130,7 @@ export default async function PostDetailPage({ params }: { params: Params }) {
             <Text fontSize="smaller">
               {post.category}/{post.subcategory}
             </Text>
-            <Text fontSize="smaller" color="gray.500">
+            <Text fontSize="smaller" opacity={0.8}>
               · {post.date}
             </Text>
           </HStack>
@@ -152,7 +152,7 @@ export default async function PostDetailPage({ params }: { params: Params }) {
               src={post.thumbnail}
               alt={post.title}
               fill
-              priority
+              priority={post.thumbnail !== "/assets/default-thumbnail.webp"}
               style={{ objectFit: "cover" }}
             />
           </Box>

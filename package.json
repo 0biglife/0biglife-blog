@@ -7,8 +7,8 @@
     "start": "next start",
     "lint": "next lint",
     "serve": "npx serve out",
-    "prebuild": "npx tsx convert-images.ts",
-    "build": "npm run prebuild && next build && npm run sitemap",
+    "optimize:images": "ts-node scripts/optimize-images.js",
+    "build": "npm run optimize:images && next build && npm run sitemap",
     "sitemap": "npx next-sitemap"
   },
   "dependencies": {
