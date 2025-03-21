@@ -1,46 +1,11 @@
 "use client";
 
 import { TABLE_OF_CONTENTS_TITLE } from "@/lib/constant";
+import { TOCItem } from "@/lib/types";
 import { Box, Link, VStack, Text } from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
 
-export default function TableOfContents() {
-  const [toc, setToc] = useState<{ id: string; text: string; level: number }[]>(
-    []
-  );
-  const observerRef = useRef<MutationObserver | null>(null);
-
-  useEffect(() => {
-    if (observerRef.current) return;
-
-    observerRef.current = new MutationObserver(() => {
-      const headings = Array.from(document.querySelectorAll("h2")).map(
-        (heading) => ({
-          id: heading.id,
-          text: heading.textContent || "",
-          level: heading.tagName === "H2" ? 2 : 3,
-        })
-      );
-
-      setToc((prevToc) => {
-        if (JSON.stringify(prevToc) !== JSON.stringify(headings))
-          return headings;
-        return prevToc;
-      });
-    });
-
-    observerRef.current.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-
-    return () => {
-      observerRef.current?.disconnect();
-      observerRef.current = null;
-    };
-  }, []);
-
-  if (toc.length === 0) return null;
+export default function TableOfContents({ toc }: { toc: TOCItem[] }) {
+  if (!toc || toc.length === 0) return null;
 
   const handleScrollTo = (id: string) => {
     const element = document.getElementById(id);
@@ -75,7 +40,10 @@ export default function TableOfContents() {
               href={`#${heading.id}`}
               aria-label={`index for ${heading.text}`}
               key={heading.id}
-              onClick={() => handleScrollTo(heading.id)}
+              onClick={(e) => {
+                e.preventDefault();
+                handleScrollTo(heading.id);
+              }}
               fontSize="13px"
               fontWeight="medium"
               pl={heading.level === 3 ? 4 : 0}

@@ -113,7 +113,7 @@ export default async function PostDetailPage({ params }: { params: Params }) {
         display="flex"
         width="full"
         py={10}
-        px={0}
+        px={4}
         flexDirection="row"
         justifyContent="center"
       >
@@ -160,7 +160,7 @@ export default async function PostDetailPage({ params }: { params: Params }) {
             {post.content}
           </Box>
         </Box>
-        <TableOfContents />
+        <TableOfContents toc={post.toc ?? []} />
       </Box>
     </Box>
   );

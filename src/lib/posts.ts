@@ -11,7 +11,7 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { DevLog, Post } from "./types";
+import { DevLog, Post, TOCItem } from "./types";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { MarkdownRenderer } from "@/components";
 import { errorLog } from "./utils";
@@ -135,6 +135,8 @@ export const getPostBySlug = async (slug: string): Promise<Post | null> => {
     components: MarkdownRenderer,
   });
 
+  const toc = extractTOC(content);
+
   return {
     slug,
     title: data.title,
@@ -145,6 +147,7 @@ export const getPostBySlug = async (slug: string): Promise<Post | null> => {
     thumbnail: getThumbnail(slug),
     tags: data.tags,
     content: mdxSource.content,
+    toc,
   };
 };
 
@@ -166,7 +169,7 @@ export const getAllDevLogs = (): DevLog[] => {
         date: data.date,
       };
     })
-    .filter((post): post is Post => post !== null)
+    .filter((post): post is DevLog => post !== null)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
@@ -189,4 +192,24 @@ export const getDevLogBySlug = async (slug: string): Promise<DevLog | null> => {
     date: data.date,
     content: mdxSource.content,
   };
+};
+
+export const extractTOC = (mdx: string): TOCItem[] => {
+  const headingRegex = /^(###?)[ \t]+(.+)$/gm;
+
+  const result: TOCItem[] = [];
+  let match: RegExpExecArray | null;
+
+  while ((match = headingRegex.exec(mdx))) {
+    const level = match[1] === "##" ? 2 : 3;
+    const text = match[2].trim();
+    const id = text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-");
+
+    result.push({ id, text, level });
+  }
+
+  return result;
 };

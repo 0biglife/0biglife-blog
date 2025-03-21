@@ -68,7 +68,9 @@ const LogContainer = (props: LogContainerProps) => {
             transition="all 0.2s ease-in-out"
           >
             <Text fontSize="12px">{log.date}</Text>
-            <Text fontSize="12px">{log.title}</Text>
+            <Text fontSize="12px" noOfLines={3}>
+              {log.title}
+            </Text>
           </Box>
         ))}
       </Box>

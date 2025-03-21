@@ -1,4 +1,3 @@
-// import { MDXRemoteSerializeResult } from "next-mdx-remote";
 import { ReactNode } from "react";
 
 export type Post = {
@@ -11,10 +10,7 @@ export type Post = {
   thumbnail: string;
   tags: string[];
   content: ReactNode;
-  // content: MDXRemoteSerializeResult<
-  //   Record<string, unknown>,
-  //   Record<string, unknown>
-  // >;
+  toc?: TOCItem[];
 };
 
 export type DevLog = {
@@ -22,8 +18,10 @@ export type DevLog = {
   title: string;
   date: string;
   content: ReactNode;
-  // content: MDXRemoteSerializeResult<
-  //   Record<string, unknown>,
-  //   Record<string, unknown>
-  // >;
+};
+
+export type TOCItem = {
+  id: string;
+  text: string;
+  level: number;
 };
