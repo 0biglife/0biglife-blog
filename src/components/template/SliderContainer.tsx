@@ -56,7 +56,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
             objectFit: "cover",
             borderRadius: "10px",
           }}
-          priority
+          // priority
         />
 
         <Box

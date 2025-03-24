@@ -118,7 +118,9 @@ export default async function PostDetailPage({ params }: { params: Params }) {
         display="flex"
         width="full"
         py={10}
-        px={10}
+        // px={10}
+        // px={1}
+        px={{ base: 0, sm: 10 }}
         flexDirection="row"
         justifyContent="center"
       >
@@ -157,7 +159,7 @@ export default async function PostDetailPage({ params }: { params: Params }) {
               src={post.thumbnail}
               alt={post.title}
               fill
-              priority={post.thumbnail !== "/assets/default-thumbnail.webp"}
+              // priority={post.thumbnail !== "/assets/default-thumbnail.webp"}
               style={{ objectFit: "cover" }}
             />
           </Box>
