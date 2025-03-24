@@ -47,9 +47,14 @@ export async function generateMetadata({ params }: { params: Params }) {
     return notFound();
   }
 
+  const url = `https://0biglife.com/posts/${post.slug}`;
+
   return {
     title: post.title,
     description: `0biglife Blog Post about '${post.title}'`,
+    alternates: {
+      canonical: url,
+    },
     openGraph: {
       title: post.title,
       description: post.description,
