@@ -4,8 +4,7 @@ import { Box, Flex, Link } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { ThemeToggle } from "@/components";
 
-// const BLOG_URL = "0biglife.com"
-const BLOG_URL = "http://localhost:3000";
+const BLOG_URL = "0biglife.com";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
