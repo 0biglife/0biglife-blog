@@ -32,7 +32,7 @@ export default function PostContent({
   devLogs,
 }: PostContentProps) {
   return (
-    <Container maxWidth="900px" userSelect={"none"}>
+    <Container maxWidth="900px" userSelect={"none"} px={{ base: 0, sm: 5 }}>
       <Box
         display="flex"
         flexDirection={{ base: "column", sm: "row" }}

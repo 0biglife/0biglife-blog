@@ -118,9 +118,7 @@ export default async function PostDetailPage({ params }: { params: Params }) {
         display="flex"
         width="full"
         py={10}
-        // px={10}
-        // px={1}
-        px={{ base: 0, sm: 5, md: 10 }}
+        px={1}
         flexDirection="row"
         justifyContent="center"
       >

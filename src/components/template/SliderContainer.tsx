@@ -34,7 +34,6 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
         position="relative"
         width="100%"
         flexGrow={1}
-        minWidth="300px"
         minHeight="200px"
         maxHeight="400px"
         aspectRatio="4/3"
