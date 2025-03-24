@@ -56,9 +56,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
             objectFit: "cover",
             borderRadius: "10px",
           }}
-          priority={
-            posts[currentIndex].thumbnail !== "/assets/default-thumbnail.webp"
-          }
+          priority
         />
 
         <Box
