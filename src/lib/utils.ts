@@ -15,11 +15,15 @@ export function extractHeadings(content: string) {
   return headings;
 }
 
-export function devLog(...args: unknown[]) {
-  if (process.env.NODE_ENV === "development") {
-    console.log("🔍 [LOG]:", ...args);
-  }
-}
+export const slugify = (text: string): string => {
+  const raw = text
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
+    .replace(/\s+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return raw || "section";
+};
 
 export function errorLog(message: string, error?: unknown) {
   console.error("🚨 [ERROR]:", message);

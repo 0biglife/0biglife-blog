@@ -35,11 +35,12 @@ export default function TableOfContents({ toc }: { toc: TOCItem[] }) {
           {TABLE_OF_CONTENTS_TITLE}
         </Text>
         <VStack align="start" spacing={2}>
-          {toc.map((heading) => (
+          {toc.map((heading, index) => (
             <Link
               href={`#${heading.id}`}
               aria-label={`index for ${heading.text}`}
-              key={heading.id}
+              key={heading.id || `${heading.text}-${index}`}
+              // key={heading.id}
               onClick={(e) => {
                 e.preventDefault();
                 handleScrollTo(heading.id);

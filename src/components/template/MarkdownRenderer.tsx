@@ -3,6 +3,7 @@ import { oneDark as DarkCodeStyle } from "react-syntax-highlighter/dist/esm/styl
 import { CopyButton } from "@/components";
 import Image from "next/image";
 import React from "react";
+import { slugify } from "@/lib/utils";
 
 export const MarkdownRenderer = {
   img: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
@@ -54,9 +55,7 @@ export const MarkdownRenderer = {
   ),
   h2: (props: React.HTMLAttributes<HTMLHeadingElement>) => {
     const id =
-      typeof props.children === "string"
-        ? props.children.toLowerCase().replace(/\s+/g, "-")
-        : undefined;
+      typeof props.children === "string" ? slugify(props.children) : undefined;
 
     return (
       <h2
@@ -65,6 +64,7 @@ export const MarkdownRenderer = {
           fontSize: "1.5rem",
           fontWeight: "bold",
           margin: "1.5rem 0 1rem",
+          marginTop: "2rem",
         }}
         {...props}
       />
@@ -72,9 +72,7 @@ export const MarkdownRenderer = {
   },
   h3: (props: React.HTMLAttributes<HTMLHeadingElement>) => {
     const id =
-      typeof props.children === "string"
-        ? props.children.toLowerCase().replace(/\s+/g, "-")
-        : undefined;
+      typeof props.children === "string" ? slugify(props.children) : undefined;
 
     return (
       <h3

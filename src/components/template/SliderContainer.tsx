@@ -87,7 +87,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
           >
             {THUMNAIL_DATE_TEXT} {posts[currentIndex].date}
           </Text>
-          <Text fontSize="xs" color="gray.200" ml="4px" mr="4px">
+          <Text fontSize="xs" color="gray.200" ml="4px" mr="4px" noOfLines={2}>
             {posts[currentIndex].description}
           </Text>
         </Box>

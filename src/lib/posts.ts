@@ -14,7 +14,7 @@ import matter from "gray-matter";
 import { DevLog, Post, TOCItem } from "./types";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { MarkdownRenderer } from "@/components";
-import { errorLog } from "./utils";
+import { errorLog, slugify } from "./utils";
 
 const categoryObj = {
   // 서버에서 정렬(SSR) + 클라이언트측 불필요한 카테고리 연산 제거 + 순서 정의
@@ -195,20 +195,26 @@ export const getDevLogBySlug = async (slug: string): Promise<DevLog | null> => {
 };
 
 export const extractTOC = (mdx: string): TOCItem[] => {
-  const headingRegex = /^(###?)[ \t]+(.+)$/gm;
+  const headingRegex = /^ {0,3}(#{2,3})[ \t]+(.+)$/gm;
 
   const result: TOCItem[] = [];
+  const slugCount: Record<string, number> = {};
+
   let match: RegExpExecArray | null;
 
   while ((match = headingRegex.exec(mdx))) {
     const level = match[1] === "##" ? 2 : 3;
     const text = match[2].trim();
-    const id = text
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, "")
-      .replace(/\s+/g, "-");
+    let slug = slugify(text);
 
-    result.push({ id, text, level });
+    if (slugCount[slug]) {
+      slugCount[slug]++;
+      slug = `${slug}-${slugCount[slug]}`;
+    } else {
+      slugCount[slug] = 1;
+    }
+
+    result.push({ id: slug, text, level });
   }
 
   return result;

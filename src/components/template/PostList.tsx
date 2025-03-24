@@ -175,6 +175,7 @@ const PostList = ({
                 size="20px"
                 mt={2}
                 fontWeight="semibold"
+                noOfLines={2}
                 _groupHover={{ textDecoration: "underline" }}
               >
                 {post.title}
