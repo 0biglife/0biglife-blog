@@ -1,6 +1,9 @@
-import sharp from "sharp";
-import fs from "fs";
-import path from "path";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const sharp = require("sharp");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const fs = require("fs");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const path = require("path");
 
 const baseDir = path.join(process.cwd(), "public/assets/posts");
 
