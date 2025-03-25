@@ -35,6 +35,7 @@ export async function getBlogAnalytics() {
       metrics: [{ name: METRIC_VIEW_NAME }],
     },
   });
+  console.log("[GA] Today result:", JSON.stringify(todayRes.data, null, 2));
 
   const totalRes = await analyticsData.properties.runReport({
     property: propertyId,
@@ -43,6 +44,7 @@ export async function getBlogAnalytics() {
       metrics: [{ name: METRIC_VIEW_NAME }],
     },
   });
+  console.log("[GA] Total result:", JSON.stringify(totalRes.data, null, 2));
 
   console.log("[lib/ga] : ", todayRes, totalRes);
   return {
