@@ -9,16 +9,6 @@ export async function getBlogAnalytics() {
   const privateKey = process.env.GA_PRIVATE_KEY?.replace(/\\n/g, "\n");
   const clientEmail = process.env.GA_CLIENT_EMAIL;
 
-  console.log("GA_PROPERTY_ID : ", process.env.GA_PROPERTY_ID);
-  console.log("GA_PRIVATE_KEY : ", process.env.GA_PRIVATE_KEY);
-  console.log("GA_CLIENT_EMAIL : ", process.env.GA_CLIENT_EMAIL);
-
-  console.log("GA_ENV", {
-    propertyId,
-    clientEmail,
-    hasKey: !!privateKey,
-  });
-
   const auth = new google.auth.JWT({
     email: clientEmail,
     key: privateKey,
