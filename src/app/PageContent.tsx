@@ -8,6 +8,7 @@ import {
 import { Title } from "@/components";
 import { Box, Container } from "@chakra-ui/react";
 import { DevLog, Post } from "@/lib/types";
+import { useEffect, useState } from "react";
 
 // Next.js 15 부터는 `ssr: false` 사용 불가능으로 클라이언트 컴포넌트 따로 분리
 const SliderContainer = dynamic(
@@ -24,17 +25,29 @@ interface PostContentProps {
   posts: Post[];
   featuredPosts: Post[];
   devLogs: DevLog[];
-  todayViews: string;
-  totalViews: string;
 }
 
 export default function PostContent({
   posts,
   featuredPosts,
   devLogs,
-  todayViews,
-  totalViews,
 }: PostContentProps) {
+  const [views, setViews] = useState({ today: "0", total: "0" });
+
+  useEffect(() => {
+    const fetchViews = async () => {
+      try {
+        const res = await fetch("/api/analytics");
+        const { todayViews, totalViews } = await res.json();
+        setViews({ today: todayViews, total: totalViews });
+      } catch (error) {
+        console.error("Failed to fetch ga:", error);
+      }
+    };
+
+    fetchViews();
+  }, []);
+
   return (
     <Container maxWidth="900px" userSelect={"none"} px={{ base: 0, sm: 5 }}>
       <Box
@@ -74,8 +87,8 @@ export default function PostContent({
           <Title label={BLOG_RIGHT_TOP_CATEGORY} />
           <LogContainer
             logs={devLogs}
-            todayViews={todayViews}
-            totalViews={totalViews}
+            todayViews={views.today}
+            totalViews={views.total}
           />
         </Box>
       </Box>

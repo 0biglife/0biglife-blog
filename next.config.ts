@@ -29,7 +29,7 @@ const nextConfig = withBundleAnalyzer({
     styledComponents: true,
     // removeConsole: true, // 콘솔 로그 제거(번들 크기 감소용)
   },
-  output: "export", // 정적 사이트(SSG) 최적화
+  output: "standalone", // 정적 사이트(SSG) 최적화 -> standalone으로 변경(GA)
   // npm run build -> out/posts/{html} 검토
   // + Next.js 15부터는 next export 없이 outpput: "export" 로 전부 대체
 
