@@ -42,16 +42,11 @@ export default function PostContent({
     try {
       const res = await fetch("/api/analytics");
       const { todayViews, totalViews } = await res.json();
-      console.log("[fetch] log : ", todayViews, totalViews);
       setViews({ today: todayViews, total: totalViews });
     } catch (error) {
       console.error("Failed to fetch ga:", error);
     }
   };
-
-  useEffect(() => {
-    console.log("[views] : ", views);
-  }, [views]);
 
   return (
     <Container maxWidth="900px" userSelect={"none"} px={{ base: 0, sm: 5 }}>
