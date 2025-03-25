@@ -1,9 +1,19 @@
 import { google } from "googleapis";
 
+let cachedData: { todayViews: string; totalViews: string } | null = null;
+let lastFetched = 0;
+
+const GOOGLE_API_URL = "https://www.googleapis.com/auth/analytics.readonly";
+const METRIC_VIEW_NAME = "screenPageViews";
+const BLOG_START_DATE = "2025-03-20";
+
 export async function getBlogAnalytics() {
-  const GOOGLE_API_URL = "https://www.googleapis.com/auth/analytics.readonly";
-  const METRIC_VIEW_NAME = "screenPageViews";
-  const BLOG_START_DATE = "2025-03-20";
+  const now = Date.now();
+  const CACHE_DURATION = 1000 * 60 * 10; // 5분 캐시
+
+  if (cachedData && now - lastFetched < CACHE_DURATION) {
+    return cachedData;
+  }
 
   const propertyId = process.env.GA_PROPERTY_ID || "";
   const privateKey = process.env.GA_PRIVATE_KEY?.split(String.raw`\n`).join(
@@ -40,8 +50,13 @@ export async function getBlogAnalytics() {
     },
   });
 
-  return {
+  const result = {
     todayViews: todayRes.data.rows?.[0]?.metricValues?.[0]?.value || "0",
     totalViews: totalRes.data.rows?.[0]?.metricValues?.[0]?.value || "0",
   };
+
+  cachedData = result;
+  lastFetched = now;
+
+  return result;
 }
