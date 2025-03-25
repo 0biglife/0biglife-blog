@@ -1,5 +1,7 @@
 import { Chakra, ScrollToTopButton } from "@/components";
 
+const GOOGLE_ANALYTICS_ID = process.env.GA_ID;
+
 export const metadata = {
   title: "0biglife", // 페이지 제목
   description: "프론트엔드 엔지니어 김민석입니다.",
@@ -51,6 +53,26 @@ export default function RootLayout({
             }
           `}
         </style>
+        {GOOGLE_ANALYTICS_ID && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${GOOGLE_ANALYTICS_ID}`}
+            />
+            <script
+              dangerouslySetInnerHTML={{
+                __html: `
+                  window.dataLayer = window.dataLayer || [];
+                  function gtag(){dataLayer.push(arguments);}
+                  gtag('js', new Date());
+                  gtag('config', '${GOOGLE_ANALYTICS_ID}', {
+                    page_path: window.location.pathname,
+                  });
+                `,
+              }}
+            />
+          </>
+        )}
       </head>
       <body suppressHydrationWarning>
         <Chakra>

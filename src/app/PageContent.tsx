@@ -24,12 +24,16 @@ interface PostContentProps {
   posts: Post[];
   featuredPosts: Post[];
   devLogs: DevLog[];
+  todayViews: string;
+  totalViews: string;
 }
 
 export default function PostContent({
   posts,
   featuredPosts,
   devLogs,
+  todayViews,
+  totalViews,
 }: PostContentProps) {
   return (
     <Container maxWidth="900px" userSelect={"none"} px={{ base: 0, sm: 5 }}>
@@ -70,8 +74,8 @@ export default function PostContent({
           <Title label={BLOG_RIGHT_TOP_CATEGORY} />
           <LogContainer
             logs={devLogs}
-            todayVisitorCount={12}
-            totalVisitorCount={82}
+            todayViews={todayViews}
+            totalViews={totalViews}
           />
         </Box>
       </Box>

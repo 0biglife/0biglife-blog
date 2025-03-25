@@ -1,16 +1,16 @@
 "use client";
-import { TESTING, TODAY_COUNT, TOTAL_COUNT } from "@/lib/constant";
+import { TODAY_COUNT, TOTAL_COUNT } from "@/lib/constant";
 import { DevLog } from "@/lib/types";
 import { Box, Link, Text } from "@chakra-ui/react";
 
 interface LogContainerProps {
   logs: DevLog[];
-  todayVisitorCount: number;
-  totalVisitorCount: number;
+  todayViews: string;
+  totalViews: string;
 }
 
 const LogContainer = (props: LogContainerProps) => {
-  const { logs, todayVisitorCount, totalVisitorCount } = props;
+  const { logs, todayViews, totalViews } = props;
 
   return (
     <Box
@@ -86,15 +86,15 @@ const LogContainer = (props: LogContainerProps) => {
         alignItems="flex-end"
       >
         <Text fontSize="12px">
-          {TODAY_COUNT} ({TESTING}){" "}
+          {TODAY_COUNT}
           <Text as="span" fontWeight="semibold" ml="8px">
-            {todayVisitorCount}
+            {todayViews}
           </Text>
         </Text>
         <Text fontSize="12px">
-          {TOTAL_COUNT} ({TESTING}){" "}
+          {TOTAL_COUNT}
           <Text as="span" fontWeight="semibold" ml="6px">
-            {totalVisitorCount}
+            {totalViews}
           </Text>
         </Text>
       </Box>

@@ -27,7 +27,7 @@ const nextConfig = withBundleAnalyzer({
   },
   compiler: {
     styledComponents: true,
-    removeConsole: true, // 콘솔 로그 제거(번들 크기 감소용)
+    // removeConsole: true, // 콘솔 로그 제거(번들 크기 감소용)
   },
   output: "export", // 정적 사이트(SSG) 최적화
   // npm run build -> out/posts/{html} 검토
