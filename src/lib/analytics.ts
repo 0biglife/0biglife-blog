@@ -4,11 +4,20 @@ const GOOGLE_API_URL = "https://www.googleapis.com/auth/analytics.readonly";
 const METRIC_VIEW_NAME = "screenPageViews";
 const BLOG_START_DATE = "2025-03-20";
 
-const GA_PROPERTY_ID = process.env.GA_PROPERTY_ID || "";
+const propertyId = process.env.GA_PROPERTY_ID || "";
 const privateKey = process.env.GA_PRIVATE_KEY?.replace(/\\n/g, "\n");
 const clientEmail = process.env.GA_CLIENT_EMAIL;
 
+console.log("GA_PROPERTY_ID : ", propertyId);
+console.log("GA_PRIVATE_KEY : ", privateKey);
+console.log("GA_CLIENT_EMAIL : ", clientEmail);
+
 export async function getBlogAnalytics() {
+  console.log("GA_ENV", {
+    propertyId,
+    clientEmail,
+    hasKey: !!privateKey,
+  });
   const auth = new google.auth.JWT({
     email: clientEmail,
     key: privateKey,
@@ -20,7 +29,7 @@ export async function getBlogAnalytics() {
   const today = new Date().toISOString().split("T")[0];
 
   const todayRes = await analyticsData.properties.runReport({
-    property: GA_PROPERTY_ID,
+    property: propertyId,
     requestBody: {
       dateRanges: [{ startDate: today, endDate: today }],
       metrics: [{ name: METRIC_VIEW_NAME }],
@@ -28,7 +37,7 @@ export async function getBlogAnalytics() {
   });
 
   const totalRes = await analyticsData.properties.runReport({
-    property: GA_PROPERTY_ID,
+    property: propertyId,
     requestBody: {
       dateRanges: [{ startDate: BLOG_START_DATE, endDate: today }],
       metrics: [{ name: METRIC_VIEW_NAME }],

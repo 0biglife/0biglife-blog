@@ -11,7 +11,7 @@ export async function GET() {
     console.log("[api route] : ", NextResponse.json(result));
     return NextResponse.json(result);
   } catch (e) {
-    console.error("GA fetch error:", e);
+    console.log("GA fetch error:", e);
     return NextResponse.json({ todayViews: "0", totalViews: "0" });
   }
 }
