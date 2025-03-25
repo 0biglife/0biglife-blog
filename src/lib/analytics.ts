@@ -15,14 +15,10 @@ export async function getBlogAnalytics() {
     scopes: [GOOGLE_API_URL],
   });
 
-  const analyticsData = google.analyticsdata({
-    version: "v1beta",
-    auth,
-  });
+  const analyticsData = google.analyticsdata({ version: "v1beta", auth });
 
   const today = new Date().toISOString().split("T")[0];
 
-  // 오늘 하루 조회수
   const todayRes = await analyticsData.properties.runReport({
     property: GA_PROPERTY_ID,
     requestBody: {
@@ -31,7 +27,6 @@ export async function getBlogAnalytics() {
     },
   });
 
-  // 누적 조회수
   const totalRes = await analyticsData.properties.runReport({
     property: GA_PROPERTY_ID,
     requestBody: {

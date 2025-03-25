@@ -34,15 +34,15 @@ const nextConfig = withBundleAnalyzer({
   // + Next.js 15부터는 next export 없이 outpput: "export" 로 전부 대체
 
   // 기존 검색 엔진에 남아있는 이전 블로그 게시글은 모두 deleted Page로 리다이렉트
-  async redirects() {
-    return [
-      {
-        source: "/post/:slug",
-        destination: "/",
-        permanent: true,
-      },
-    ];
-  },
+  // async redirects() {
+  //   return [
+  //     {
+  //       source: "/post/:slug",
+  //       destination: "/",
+  //       permanent: true,
+  //     },
+  //   ];
+  // },
 
   // 정적 리소스(HTML, JS, 이미지 등)의 캐시 정책을 브라우저와 CDN에게 알려주는 역할
   // 수정 여부 추후 고민 : 일단, 30일 캐시 + 1일 재검증 여유
