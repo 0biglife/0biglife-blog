@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic"; // runtime
 export async function GET() {
   try {
     const result = await getBlogAnalytics();
+    console.log("[api route] : ", NextResponse.json(result));
     return NextResponse.json(result);
   } catch (e) {
     console.error("GA fetch error:", e);

@@ -35,6 +35,7 @@ export async function getBlogAnalytics() {
     },
   });
 
+  console.log("[lib/ga] : ", todayRes, totalRes);
   return {
     todayViews: todayRes.data.rows?.[0]?.metricValues?.[0]?.value || "0",
     totalViews: totalRes.data.rows?.[0]?.metricValues?.[0]?.value || "0",

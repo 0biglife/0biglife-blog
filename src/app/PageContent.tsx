@@ -52,6 +52,7 @@ export default function PostContent({
   useEffect(() => {
     console.log("[views] : ", views);
   }, [views]);
+
   return (
     <Container maxWidth="900px" userSelect={"none"} px={{ base: 0, sm: 5 }}>
       <Box
