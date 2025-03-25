@@ -1,13 +1,17 @@
 import { google } from "googleapis";
 
-const GOOGLE_API_URL = "https://www.googleapis.com/auth/analytics.readonly";
-const METRIC_VIEW_NAME = "screenPageViews";
-const BLOG_START_DATE = "2025-03-20";
-
 export async function getBlogAnalytics() {
+  const GOOGLE_API_URL = "https://www.googleapis.com/auth/analytics.readonly";
+  const METRIC_VIEW_NAME = "screenPageViews";
+  const BLOG_START_DATE = "2025-03-20";
+
   const propertyId = process.env.GA_PROPERTY_ID || "";
   const privateKey = process.env.GA_PRIVATE_KEY?.replace(/\\n/g, "\n");
   const clientEmail = process.env.GA_CLIENT_EMAIL;
+
+  console.log("GA_PROPERTY_ID : ", process.env.GA_PROPERTY_ID);
+  console.log("GA_PRIVATE_KEY : ", process.env.GA_PRIVATE_KEY);
+  console.log("GA_CLIENT_EMAIL : ", process.env.GA_CLIENT_EMAIL);
 
   console.log("GA_ENV", {
     propertyId,
