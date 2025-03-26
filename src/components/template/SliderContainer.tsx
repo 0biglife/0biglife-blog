@@ -11,7 +11,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % posts.length);
-    }, 4000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [posts.length]);

@@ -157,7 +157,6 @@ export default async function PostDetailPage({ params }: { params: Params }) {
               src={post.thumbnail}
               alt={post.title}
               fill
-              // priority={post.thumbnail !== "/assets/default-thumbnail.webp"}
               style={{ objectFit: "cover" }}
             />
           </Box>

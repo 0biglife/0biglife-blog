@@ -37,7 +37,21 @@ folders.forEach((folder) => {
           smartSubsample: true,
         })
         .toFile(outputPath)
-        .then(() => console.log(`✅ Optimized: ${outputPath}`))
+        .then(() => {
+          console.log(`✅ Optimized: ${outputPath}`);
+
+          // 기존 이미지 삭제
+          fs.unlink(inputPath, (err) => {
+            if (err) {
+              console.error(
+                `❌ Failed to delete original image: ${inputPath}`,
+                err
+              );
+            } else {
+              console.log(`🗑️ Deleted original: ${inputPath}`);
+            }
+          });
+        })
         .catch((err) => console.error(`❌ Error: ${err}`));
     }
   });

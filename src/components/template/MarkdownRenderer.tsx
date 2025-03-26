@@ -26,7 +26,7 @@ export const MarkdownRenderer = {
           style={{
             maxWidth: "100%",
             height: "auto",
-            borderRadius: "4px",
+            borderRadius: "6px",
             border: "1px solid #e2e8f0",
             objectFit: "cover",
           }}
@@ -87,6 +87,23 @@ export const MarkdownRenderer = {
     );
   },
 
+  h4: (props: React.HTMLAttributes<HTMLHeadingElement>) => {
+    const id =
+      typeof props.children === "string" ? slugify(props.children) : undefined;
+
+    return (
+      <h4
+        id={id}
+        style={{
+          fontSize: "1rem",
+          fontWeight: 700,
+          margin: "1rem 0 0.75rem",
+        }}
+        {...props}
+      />
+    );
+  },
+
   // ✅ 핵심 수정: p 내부 block 요소 감지 시 div로 변경
   p: (props: React.HTMLAttributes<HTMLParagraphElement>) => {
     const children = React.Children.toArray(props.children);
@@ -109,6 +126,13 @@ export const MarkdownRenderer = {
       />
     );
   },
+
+  gray: (props: React.HTMLAttributes<HTMLElement>) => (
+    <span style={{ color: "#718096" }} {...props} />
+  ),
+  red: (props: React.HTMLAttributes<HTMLElement>) => (
+    <span style={{ color: "#e53e3e" }} {...props} />
+  ),
 
   inlineCode: ({ children }: { children?: React.ReactNode }) => (
     <code
@@ -170,19 +194,19 @@ export const MarkdownRenderer = {
     <li style={{ fontSize: "1rem", marginBottom: "0.5rem" }} {...props} />
   ),
 
-  blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
-    <blockquote
-      style={{
-        borderLeft: "4px solid #cbd5e0",
-        paddingLeft: "1rem",
-        margin: "1rem 0",
-        fontStyle: "italic",
-        background: "#f7fafc",
-        color: "#4a5568",
-      }}
-      {...props}
-    />
-  ),
+  // blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
+  //   <blockquote
+  //     style={{
+  //       borderLeft: "4px solid #cbd5e0",
+  //       paddingLeft: "1rem",
+  //       margin: "1rem 0",
+  //       fontStyle: "italic",
+  //       background: "#f7fafc",
+  //       color: "#4a5568",
+  //     }}
+  //     {...props}
+  //   />
+  // ),
 
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a

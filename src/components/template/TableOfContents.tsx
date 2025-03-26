@@ -48,11 +48,17 @@ export default function TableOfContents({ toc }: { toc: TOCItem[] }) {
               fontSize="13px"
               fontWeight="medium"
               pl={heading.level === 3 ? 4 : 0}
-              color="gray.500"
+              color="gray.600"
               _dark={{
                 color: "white",
+                opacity: 0.8,
               }}
-              _hover={{ color: "blue.400" }}
+              _hover={{
+                color: "blue.400",
+                _dark: {
+                  color: "blue.400",
+                },
+              }}
               cursor="pointer"
               noOfLines={1}
             >

@@ -24,7 +24,7 @@ const PostList = ({
   viewMode: "list" | "grid";
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = viewMode === "list" ? 5 : 9;
+  const postsPerPage = viewMode === "list" ? 6 : 9;
 
   const totalPages = Math.ceil(posts.length / postsPerPage);
   const startIndex = (currentPage - 1) * postsPerPage;
@@ -80,10 +80,11 @@ const PostList = ({
   return (
     <Box ml={1}>
       {viewMode === "list" ? (
-        <Stack spacing={6}>
+        <Stack spacing={4}>
           {currentPosts.map((post: Post) => (
             <Box
               as={Link}
+              role="group"
               aria-label={`read more about ${post.title}`}
               key={post.slug}
               href={`/posts/${post.slug}`}
@@ -160,14 +161,14 @@ const PostList = ({
               <Image
                 src={post.thumbnail || "/assets/default-thumbnail.png"}
                 alt={post.title}
-                width={160} // 지정된 크기로 최적화
+                width={200}
                 height={120}
-                layout="intrinsic" // 브라우저에서 크기 자동 조정
+                layout="intrinsic"
                 sizes="(max-width: 800px) 100vw, 800px"
                 style={{
                   objectFit: "cover",
                   aspectRatio: "1/1",
-                  borderRadius: "12px",
+                  borderRadius: "6px",
                 }}
               />
               <Heading
