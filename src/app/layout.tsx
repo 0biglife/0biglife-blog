@@ -1,4 +1,5 @@
 import { Chakra, ScrollToTopButton } from "@/components";
+import "./globals.css";
 
 const GOOGLE_ANALYTICS_ID = process.env.GA_ID;
 

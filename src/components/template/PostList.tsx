@@ -162,12 +162,12 @@ const PostList = ({
                 src={post.thumbnail || "/assets/default-thumbnail.png"}
                 alt={post.title}
                 width={200}
-                height={120}
+                height={100}
                 layout="intrinsic"
                 sizes="(max-width: 800px) 100vw, 800px"
                 style={{
                   objectFit: "cover",
-                  aspectRatio: "1/1",
+                  aspectRatio: "4/3",
                   borderRadius: "6px",
                 }}
               />

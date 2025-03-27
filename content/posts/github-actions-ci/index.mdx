@@ -1,0 +1,229 @@
+---
+title: "Github Actions로 사내 프로젝트 CI/CD 구축하기(1)"
+date: "2025-03-10"
+description: "이번 게시글은 Helm에 대해 다룬다. 총 6일간 사내 솔루션 설치 방식에 elm Chart와 Helm Repository를 적용하였으며, csp별 K8s 리소스 통합 과정과 테스트 코드를 포함한 기술 세션 공유를 진행하였다. 솔루션의 첫인상과도 같은 설치 서비스가 정돈되고, 불편한 외부 레지스트리를 걷어내는 유의미한 시간이었다."
+thumbnail: "thumbnail.png"
+category: "Productivity"
+subcategory: "CI/CD"
+tags: []
+---
+
+## 들어가며
+
+빌드와 배포까지 수행하는 개발자라면 코드 구현하는 렌더링 작업과는 달리 빌드하는 시간이 길수록 답답하다고 느끼거나 속도 개선에 대한 욕구가 조금은 있었을테다. 빌드 자동화를 구현하는 것은 매번 미뤄지는 일이며, 실제로 조금의 시간만 들여보면 시간 대비 굉장히 가성비 있는 일임을 알 수 있다. 따라서, 이번 작은 사내 프론트엔드 프로젝트를 매번 VSCode Terminal 하나를 열어 빌드하는 일을 편리하게 만드는 데 목적이 있다.
+
+## Github Actions
+
+Github Actions는 Github에서 제공하는 CI/CD 플랫폼이다. CI/CD(Continuous Integration/Continuous Deployment)는 지속적 통합과 지속적 배포를 의미하며, 개발자가 작성하는 코드 작업 외에 빌드와 배포와 같은 **워크플로우를 자동화**할 수 있게 도와주는 강력한 툴!이다.
+
+### Workflow
+
+**워크플로우**는 Github Actions를 구축하기 위한 일종의 프로세스다. Github Actions의 자동화된 프로세스를 정의하는 `YAML` 파일로 구성되며, 이 파일은 프로젝트의 `.github/workflows/` 디렉토리에 위치하여 해당 프로젝트에 대한 특정 프로세스를 실행시킨다.
+
+> `.github/workflows` 디렉토리는 Github가 자동으로 인식하는 것을 시작으로 구현된다. 이 디렉토리 내부의 `.yml` 또는 `.yaml` 파일을 워크플로우 설정으로 인식하여 여러 워크플로우 파일을 동작시킬 수 있다.
+
+```yaml
+{root}/
+├── .github/ # <-- 동일하게 생성
+│   └── workflows/
+│       ├── ci.yml
+│       └── deploy.yml
+├── .husky/
+├── .next/
+├── .storybook/
+├── src/
+├── ...
+└── README.md
+```
+
+### Event
+
+워크플로우를 트리거하는 특정 규칙이다. push, pull_request, schedule ... 등이 있다. 이 중에서 필자는 Github 사이트에서 버튼을 동작시켜 원할 때마다 수동으로 이미지 빌드를 해주는 방식을 구현할 것이다. 즉, `workflow_dispatch`를 쓰는 것.
+
+- `push` : 코드 푸시 시 실행
+- `pull_request` : PR 생성/수정 시 실행
+- `workflow_dispatch` : 수동 실행
+- `schedule` : 정해진 시간에 실행
+
+### Job
+
+워크플로우 안에서 실행되는 단위 작업이며, 각 잡은 **여러 스탭**(Step)으로 구성되어 **병렬로 처리**된다. (순서가 필요할 경우 `needs`로 설정 가능하다.) 아래 예시에서는 우분투 환경에서 "Hello World" 출력을 실행한다.
+
+```yaml
+jobs:
+  build: # 작업 ID
+    runs-on: ubuntu-latest # 실행 환경# 또는
+    # runs-on: windows-latest
+    # runs-on: macos-latest
+    # runs-on: self-hosted
+
+    steps: # 실행할 단계들
+      - name: Step 1
+        run: echo "Hello World" # 예시
+---
+# needs 활용 예시
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm test
+
+  deploy:
+    needs: [test] # test job이 성공해야 실행
+    runs-on: ubuntu-latest
+    steps:
+      - run: deploy-test
+
+---
+# 조건부 실행
+jobs:
+  build:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm build
+```
+
+### Step
+
+작업 내에서 순차적으로 실행되는 개별 테스크 작업이다. `npm install` 과 같은 명령어 또는 액션을 포함한다.
+
+```yaml
+steps:
+  - name: Install dependencies
+    run: npm install # npm install command 실행
+
+  - name: Run tests
+    run: npm test
+```
+
+## CI/CD 수동 실행
+
+기존의 이미지 빌드 방식은 `azure cli`를 통해 매번 Azure Container Registry에 이미지명과 태그명을 입력하여 넣어주었다. 이 방식을 Git Repository의 Actions Tab에서 버튼 한 번으로 해결하려고 한다. 동작도 편할 뿐더러 빌드한 히스토리와 에러 동작까지 지원해주니 참고하자.
+
+먼저 `workflow_dispatch`로 수동 실행시키고 필요한 필드들을 [공식 문서](https://docs.github.com/ko/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows)를 참고하여 `yaml`을 구성하였다.
+
+![Github Actions Doc](1.png)
+
+git push할 때마다의 동작을 통해 테스트해주고, Job에 원하는 동작을 `echo`부터 시작해서 테스트해보자. 그 다음, Docker Auth나 필요한 Secret Key들은 Repository의 Setting으로 들어가보자. `New repository secret`을 통해 원하는 값을 넣어주면 끝이다. (여기서, 내가 업로드한 값은 다른 Admin 권한의 사용자라도 보지못한다는 점을 기억하자.)
+
+![Setting](2.png)
+
+### Final Yaml
+
+최종 yaml이다. 동작은 아주 기본적인 빌드 과정과 필요한 시크릿 값들만 참조되도록 넣었다.
+
+```yaml
+name: Manually Build and Push Docker Image
+on:
+  workflow_dispatch:
+    inputs:
+      TARGET_NAME:
+        type: choice
+        description: "Container Registry Target Repo Name (e.g. front-stag, front-prod)"
+        required: true
+        options:
+          - front-stag
+          - front-prod
+
+      CUSTOM_TAG:
+        type: string
+        description: "Optional: Custom image tag (overrides secrets.VERSION if provided)"
+        required: true
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY_PATH: ${{ secrets.REGISTRY_PATH }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      # 현재 Repository 코드를 워크플로우의 실행 환경으로 체크아웃(다운로드)
+      # 아래와 같은 액션들은 Github 제공 공식 액션들
+      - name: Checkout
+        uses: actions/checkout@v4 # v4는 액션의 버전 지정
+        # with:
+        # 예시 파라미터
+        #   token: ${{ secrets.GITHUB_TOKEN }} # 인증 토큰
+        #   ref: feature/new-feature # 체크아웃할 브랜치/태그
+        #   fetch-depth: 2 # 히스토리 깊이
+        #   path: my-project # 저장소 경로
+        #   submodules: recursive # 서브모듈 설정
+
+      # 지정된 버전의 Node.js 설치 및 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with: # 액션에 전달할 파라미터 정의(각 액션마다 필요 필드 다름, 문서 확인)
+          node-version:
+            "20.18" # Node.js 버전 지정하는 파라미터
+            # '20.19' # 정확한 버전
+            # '20.x'   # 메이저 버전의 최신
+            # '>=20.0.0'  # 버전 범위
+            # '20'     # 메이저 버전
+        # 예시 파라미터
+        #   node-version: [14.x, 16.x, 18.x, 20.x]
+        #   check-latest: true # Node.js 체크
+        #   architecture: 'x64' # 아키텍처 지정
+
+        #   cache: 'npm' # 패키지 매니저 캐시
+        #   cache-dependency-path: subdir/package-lock.json
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build project
+        run: |
+          pnpm build all
+          pnpm web:build
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Determine final tag
+        id: parse-tag
+        run: |
+          echo "final_tag=${{ inputs.CUSTOM_TAG }}" >> $GITHUB_OUTPUT
+
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 해당 베이스 폴더로 이동 -> Dockerfile로 이미지 빌드 -> 빌드 이미지를 레지스트리에 푸시
+      - name: Build and Push Docker Image
+        run: |
+          docker buildx build --push --platform=linux/amd64 -f Dockerfile -t ${{ env.REGISTRY_PATH }}/${{ github.event.inputs.TARGET_NAME }}:${{ steps.parse-tag.outputs.final_tag }} .
+
+      # GITHUB_STEP_SUMMARY : Github Actions의 특별한 환경 파일 (워크플로우 실행 결과의 요약을 생성하는 역할)
+      # 즉, 워크플로우 실행 후 Github UI에서 확인 가능 요약 정보 생성
+      - name: Generate Docker Build Summary
+        if: always()
+        run: |
+          echo "### Docker Build Summary" >> $GITHUB_STEP_SUMMARY
+          echo "- **Target Name:** ${{ github.event.inputs.TARGET_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Image Tag:** ${{ steps.parse-tag.outputs.final_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Full Image Name:** ${{ env.REGISTRY_PATH }}/${{ github.event.inputs.TARGET_NAME }}:${{ steps.parse-tag.outputs.final_tag }}" >> $GITHUB_STEP_SUMMARY
+```
+
+![CI/CD Done.](3.png)
+
+값을 넣고 `Run workflow` 돌리면 끝 ! 이 전에 빌드한 히스토리와 얼마나 걸렸는지를 포함한 상세도 모두 조회 가능하다. (마음 편-안-) 물론, 빌드하다 실패할 경우도 실시간 모니터링 가능하다.
+
+![CI/CD History](4.png)
+
+그치만, 놀라운 사실은 우리는 여태 CI만 한거지 CD는 하지 않았다. CI/CD가 붙어있지만 사실 이미지 빌드만 했다고 해서 끝나는 일은 아니다. 다음 게시글에서는 편하게 빌드된 이미지를 현재 EKS에 배포까지 자동화해보는 것을 `yaml`에 반영해본다.
+
+끝 !

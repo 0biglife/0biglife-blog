@@ -62,13 +62,13 @@ const LogContainer = (props: LogContainerProps) => {
                 color: "white",
                 bg: "rgba(255, 255, 255, 0.1)",
               },
-              fontWeight: "semibold",
+              // fontWeight: "semibold",
             }}
             cursor="pointer"
             transition="all 0.2s ease-in-out"
           >
             <Text fontSize="12px">{log.date}</Text>
-            <Text fontSize="12px" noOfLines={3}>
+            <Text fontSize="12px" noOfLines={2}>
               {log.title}
             </Text>
           </Box>

@@ -17,6 +17,14 @@ import { CATEGORY_TITLE } from "@/lib/constant";
 import { GoDotFill } from "react-icons/go";
 import { motion } from "framer-motion";
 
+const CATEGORY_ORDER = {
+  Frontend: 1,
+  Backend: 2,
+  Kubernetes: 3,
+  Productivity: 4,
+  // ...
+};
+
 export default function FilteredPostList({ posts }: { posts: Post[] }) {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -153,9 +161,16 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
         >
           {CATEGORY_TITLE}
         </Heading>
-        <VStack align="start" spacing={3} ml={1}>
-          {Object.entries(categories).map(
-            ([category, { subcategories, count, isOpen }]) => {
+        <VStack align="start" spacing={4} ml={1}>
+          {Object.entries(categories)
+            .sort(([a], [b]) => {
+              const aOrder =
+                CATEGORY_ORDER[a as keyof typeof CATEGORY_ORDER] ?? 999;
+              const bOrder =
+                CATEGORY_ORDER[b as keyof typeof CATEGORY_ORDER] ?? 999;
+              return aOrder - bOrder;
+            })
+            .map(([category, { subcategories, count, isOpen }]) => {
               const isCategorySelected =
                 !selectedSubcategory && selectedCategory === category;
 
@@ -257,8 +272,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                   </motion.div>
                 </Box>
               );
-            }
-          )}
+            })}
         </VStack>
       </Box>
     </Box>

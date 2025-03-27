@@ -1,0 +1,200 @@
+---
+title: "Github Actions로 사내 프로젝트 CI/CD 구축하기(2)"
+date: "2025-02-28"
+description: "지난 번에는 Github Actions로 사내 프로젝트 CI/CD 중에서 빌드 자동화를 구현해보았다. 이번에는 빌드 자동화로 만들어진 이미지를 배포하는 과정까지 완성해본다."
+thumbnail: "thumbnail.png"
+category: "Productivity"
+subcategory: "CI/CD"
+tags: []
+---
+
+## 들어가며
+
+[지난 게시글](https://www.0biglife.com/posts/github-actions-ci)에서는 Github Actions를 통하여 빌드 자동화하는 방법을 정리하였다. 현재 연구소에서는 설치형 솔루션을 Azure 클라우드 환경에서 Kubernetes로 관리하고 있으며 배포 자동화에 대해 정해진 프로세스가 없는 상황이다. 따라서, 이미지가 빌드되었다면, 클러스터 워크로드에 직접 접근하여 이미지 태그명을 업데이트하고 `kubectl`로 `edit` 또는 `apply -f`로 배포하고 있다. 이 과정을 자동화시켜보자.
+
+## 배포하기 위한 고려 사항
+
+배포하기 앞서 무엇이 필요한지 생각해보자. **Github Action**은 워크플로우로서 개발자가 원하는 특정 작업을 수행하도록 `yaml`에 명시해주고 `git push`로 업로드해주면 되었다. 필요한 프로퍼티들은 문서를 따라 살펴볼 수 있었고 그 과정에서 필요한 **환경 변수** 또는 **시크릿 값**들은 웹 상에서 추가해주고 변수로 받아서 워크플로우 잡에서 직접 선언하여 쓸 수 있었다.
+
+배포를 위한 구현은 크게 어려워보이진 않는다. 먼저, 사용자가 입력할 값들을 지정해주자. 필요한 정보들을 잡이 받아서 쓸 수 있도록 해주고, 웹 상에서 Credential을 넣어주면 끝날 것만 같다. 구체적으로 어떤게 필요할까?
+
+1. Azure Login을 위한 Credentials
+2. Cluster, Resource Group Name
+3. Target Namespace, Deployment Name
+
+### Custom Inputs
+
+먼저, 클러스터 이름과 리소스 그룹, 네임스페이스 등은 시크릿으로 관리될 필요가 없으니, 사용자가 직접 드롭 다운에서 선택 또는 입력하도록 세팅해보자.
+
+```yaml
+name: CI/CD Pipeline # 이제 CD가 추가되었으니 'Manually Build and Push Docker Image'에서 바꿔주자
+on:
+  workflow_dispatch:
+    inputs:
+      TARGET_NAME:
+        type: choice
+        description: "Container Registry Target Repo Name (e.g. front-dev, front-stg)"
+        required: true
+        options:
+          - front-dev
+          - front-stag
+          - front-prod
+
+      CUSTOM_TAG:
+        type: string
+        description: "Optional: Custom image tag (overrides secrets.VERSION if provided)"
+        required: true
+
+      RESOURCE_GROUP:
+        type: choice
+        description: "Select AKS Resource Group"
+        required: true
+        options:
+          - dev-aks
+          - stg-aks
+          - prod-aks
+
+      AKS_CLUSTER:
+        type: choice
+        description: "Select AKS cluster for deployment"
+        required: true
+        options:
+          - dev-cluster
+          - stg-cluster
+          - prod-cluster
+
+      NAMESPACE:
+        type: choice
+        description: "Select Kubernetes namespace"
+        required: true
+        options:
+          - default
+          - custom-system
+```
+
+추가해주고 `git push`해주면 다음과 같이 기본 세팅이 완료된다. 깔끔하지 않은가?
+
+![Setting for CD](1.png)
+
+## Azure Login
+
+Azure Credential 시크릿을 추가해주고 로그인을 해준다.
+
+```yaml
+jobs:
+  build-and-push:
+    # ... 기존 CI 작업 유지...
+
+  deploy-to-aks:
+    needs: build-and-push # CI 작업이 완료된 후 실행
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v3
+        with:
+          # input으로 받은 리소스 그룹명, 클러스터 이름 준비
+          resource-group: ${{ inputs.RESOURCE_GROUP }}
+          cluster-name: ${{ inputs.AKS_CLUSTER }}
+```
+
+### Resource Yaml Setting
+
+배포에 필요한 리소스(디플로이먼트, 서비스) yaml들은 프로젝트 내부 `/manifest` 경로에서 관리해줄 것이다. 이 매니페스트 파일들은 일종의 템플릿처럼 쓸 수 있으며, Github Actions 실행시 실제 값들로 치환된다.
+
+```yaml
+# k8s/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${TARGET_NAME}-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ${TARGET_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${TARGET_NAME}
+    spec:
+      containers:
+        - name: ${TARGET_NAME}
+          image: ${SKUBER_PLUS_REGISTRY}/${TARGET_NAME}:${TAG}
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: '100m'
+              memory: '128Mi'
+            limits:
+              cpu: '200m'
+              memory: '256Mi'
+
+# k8s/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${TARGET_NAME}-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: ${TARGET_NAME}
+```
+
+## 최종 배포
+
+마지막으로 실제 AKS에 배포하는 단계로, 먼저 `sed` 명령어를 사용하여 매니페스트 파일의 변수들을 실제 값으로 치환시키자. 이후 `azure/k8s-deploy@v4` 액션은 실제 K8s 클러스터 배포시킨다.
+
+```yaml
+# deployment.yaml과 service.yaml의 변수들을 실제 값으로 치환
+- name: Update Kubernetes manifests
+  run: |
+    # deployment.yaml의 변수들을 실제 값으로 치환
+    sed -i 's/${TARGET_NAME}/${{ inputs.TARGET_NAME }}/g' k8s/deployment.yaml k8s/service.yaml
+    sed -i 's/${SKUBER_PLUS_REGISTRY}/${{ env.SKUBER_PLUS_REGISTRY }}/g' k8s/deployment.yaml
+    sed -i 's/${TAG}/${{ inputs.CUSTOM_TAG }}/g' k8s/deployment.yaml
+
+- name: Deploy to AKS
+  uses: azure/k8s-deploy@v4
+  with:
+    namespace: ${{ inputs.NAMESPACE }}
+    manifests: |
+      k8s/deployment.yaml
+      k8s/service.yaml
+    images: |
+      ${{ env.SKUBER_PLUS_REGISTRY }}/${{ inputs.TARGET_NAME }}:${{ inputs.CUSTOM_TAG }}
+
+- name: Generate Deployment Summary
+  if: always()
+  run: |
+    echo "### Deployment Summary" >> $GITHUB_STEP_SUMMARY
+    echo "- **Cluster:** ${{ inputs.AKS_CLUSTER }}" >> $GITHUB_STEP_SUMMARY
+    echo "- **Namespace:** ${{ inputs.NAMESPACE }}" >> $GITHUB_STEP_SUMMARY
+    echo "- **Application:** ${{ inputs.TARGET_NAME }}" >> $GITHUB_STEP_SUMMARY
+    echo "- **Version:** ${{ inputs.CUSTOM_TAG }}" >> $GITHUB_STEP_SUMMARY
+```
+
+배포가 완료되면 `Generate Deployment Summary` 스텝에서 배포 결과를 요약하여 보여주도록 했다. 이 요약은 GitHub Actions의 실행 결과 페이지에서 확인할 수 있는 특별한 섹션(`GITHUB_STEP_SUMMARY`)에 기록되며, 이를 통해 어떤 클러스터의 어떤 네임스페이스에 어떤 버전이 배포되었는지 히스토리처럼 남도록 하였다.
+
+---
+
+## 개선점
+
+사실 이미 편리한건 사실이다. 이미지 빌드 자동화부터 배포 자동화까지.. 그리고 분명 더 꼼꼼하게 검증하고자 하는 것들을 더 넣으면 보안과 관리 측면에서도 기능이 향상될테다. 개선사항으론 아래 항목들을 생각해보고 적용해보려고 한다.
+
+1. 리소스 그룹명과 클러스터 이름에 대한 **Validation Step**으로 예외케이스 핸들링
+
+2. Kubernetes 매니페스트 파일들을 **프로젝트 디렉토리 내부에서 관리**하는 것이 뭔가 신경쓰인다. 당장은 2~3가지 이상의 리소스 관리가 없기에 니즈가 없어보이지만, 금방이라도 피부로 와닿을 개선점 같기만 하다. 더 나은 방법이 있다면 이 쪽에 기입해둘 예정이다. -> GitOps 전용 리포지토리 리서치해볼 것.

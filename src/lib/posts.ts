@@ -16,14 +16,6 @@ import { compileMDX } from "next-mdx-remote/rsc";
 import { MarkdownRenderer } from "@/components";
 import { errorLog, slugify } from "./utils";
 
-const categoryObj = {
-  // 서버에서 정렬(SSR) + 클라이언트측 불필요한 카테고리 연산 제거 + 순서 정의
-  Frontend: 1,
-  Backend: 2,
-  // DevOps: 3,
-  // AI: 4,
-};
-
 const contentPostDir = path.join(process.cwd(), "content/posts");
 const contentLogDir = path.join(process.cwd(), "content/dev-logs");
 const publicDir = path.join(process.cwd(), "public/assets/posts");
@@ -93,15 +85,7 @@ export const getAllPosts = (): Post[] => {
     .filter((post): post is Post => post !== null);
 
   posts.sort((a, b) => {
-    const categoryOrderA =
-      categoryObj[a.category as keyof typeof categoryObj] || 999;
-    const categoryOrderB =
-      categoryObj[b.category as keyof typeof categoryObj] || 999;
-
-    return (
-      categoryOrderA - categoryOrderB ||
-      new Date(b.date).getTime() - new Date(a.date).getTime()
-    );
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
 
   return posts;

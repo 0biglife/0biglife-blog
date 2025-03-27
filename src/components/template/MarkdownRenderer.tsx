@@ -7,7 +7,7 @@ import { slugify } from "@/lib/utils";
 
 export const MarkdownRenderer = {
   img: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
-    const alt = props.alt || "image";
+    const alt = props.alt || "";
     const src = props.src || "";
 
     return (
@@ -27,7 +27,7 @@ export const MarkdownRenderer = {
             maxWidth: "100%",
             height: "auto",
             borderRadius: "6px",
-            border: "1px solid #e2e8f0",
+            border: "1px solid rgba(128, 128, 128, 0.2)",
             objectFit: "cover",
           }}
         />
@@ -98,6 +98,8 @@ export const MarkdownRenderer = {
           fontSize: "1rem",
           fontWeight: 700,
           margin: "1rem 0 0.75rem",
+          marginTop: "2rem",
+          marginBottom: "0",
         }}
         {...props}
       />
@@ -134,20 +136,6 @@ export const MarkdownRenderer = {
     <span style={{ color: "#e53e3e" }} {...props} />
   ),
 
-  inlineCode: ({ children }: { children?: React.ReactNode }) => (
-    <code
-      style={{
-        background: "#e2e8f0",
-        padding: "2px 6px",
-        borderRadius: "4px",
-        fontSize: "0.875rem",
-        fontFamily: "monospace",
-      }}
-    >
-      {children}
-    </code>
-  ),
-
   code: ({
     className,
     children,
@@ -156,8 +144,9 @@ export const MarkdownRenderer = {
     children?: React.ReactNode;
   }) => {
     const match = /language-(\w+)/.exec(className || "");
+
     if (!match) {
-      return <code>{children}</code>;
+      return <code className="inline-code">{children}</code>;
     }
 
     return (
@@ -170,7 +159,7 @@ export const MarkdownRenderer = {
             padding: "1rem",
             fontSize: "14px",
             borderRadius: "6px",
-            backgroundColor: "#1e1e1e",
+            backgroundColor: "#0d1117",
             overflowX: "auto",
           }}
           wrapLongLines
@@ -193,20 +182,6 @@ export const MarkdownRenderer = {
   li: (props: React.HTMLAttributes<HTMLLIElement>) => (
     <li style={{ fontSize: "1rem", marginBottom: "0.5rem" }} {...props} />
   ),
-
-  // blockquote: (props: React.HTMLAttributes<HTMLQuoteElement>) => (
-  //   <blockquote
-  //     style={{
-  //       borderLeft: "4px solid #cbd5e0",
-  //       paddingLeft: "1rem",
-  //       margin: "1rem 0",
-  //       fontStyle: "italic",
-  //       background: "#f7fafc",
-  //       color: "#4a5568",
-  //     }}
-  //     {...props}
-  //   />
-  // ),
 
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a
