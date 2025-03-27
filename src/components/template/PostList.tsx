@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Post } from "@/lib/types";
 import {
   Box,
@@ -24,12 +24,17 @@ const PostList = ({
   viewMode: "list" | "grid";
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const postsPerPage = viewMode === "list" ? 6 : 9;
+  const postsPerPage = viewMode === "list" ? 5 : 9;
 
   const totalPages = Math.ceil(posts.length / postsPerPage);
   const startIndex = (currentPage - 1) * postsPerPage;
   const endIndex = startIndex + postsPerPage;
   const currentPosts = posts.slice(startIndex, endIndex);
+
+  //* viewMode 바뀔 때 페이지 일관성
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [viewMode]);
 
   const goToPage = (page: number) => {
     if (page >= 1 && page <= totalPages) setCurrentPage(page);
