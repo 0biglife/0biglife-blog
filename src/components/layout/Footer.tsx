@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Text, HStack, Link, Icon, Tooltip } from "@chakra-ui/react";
-import { FaLinkedin, FaGoogle } from "react-icons/fa";
+import { FaLinkedin, FaGoogle, FaGithub } from "react-icons/fa";
 import { SiTistory } from "react-icons/si";
 
 export default function Footer() {
@@ -47,6 +47,22 @@ export default function Footer() {
             _hover={{ color: "red.500" }}
           >
             <Icon as={FaGoogle} boxSize={5} />
+          </Link>
+        </Tooltip>
+
+        <Tooltip
+          label="Github"
+          hasArrow
+          borderRadius={4}
+          arrowSize={8}
+          fontSize={12}
+        >
+          <Link
+            aria-label="github"
+            href="https://github.com/0biglife"
+            _hover={{ color: "purple.500" }}
+          >
+            <Icon as={FaGithub} boxSize={5} />
           </Link>
         </Tooltip>
 
