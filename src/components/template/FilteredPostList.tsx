@@ -65,14 +65,37 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
     }));
 
   const handleCategoryClick = (category: string) => {
-    setSelectedCategory((prev) => (prev === category ? null : category));
-    setSelectedSubcategory(null);
+    setSelectedCategory((prev) => {
+      if (prev === category) {
+        if (selectedSubcategory) {
+          setSelectedSubcategory(null);
+          return prev;
+        }
+        return null;
+      } else {
+        setSelectedSubcategory(null);
+        return category;
+      }
+    });
   };
 
-  const handleSubcategoryClick = (subcategory: string) =>
-    setSelectedSubcategory((prev) =>
-      prev === subcategory ? null : subcategory
-    );
+  const handleSubcategoryClick = (subcategory: string) => {
+    setSelectedSubcategory((prev) => {
+      const newSub = prev === subcategory ? null : subcategory;
+
+      if (newSub) {
+        const matchingCategory = Object.entries(categories).find(
+          ([, { subcategories }]) => subcategories.hasOwnProperty(newSub)
+        )?.[0];
+
+        if (matchingCategory && selectedCategory !== matchingCategory) {
+          setSelectedCategory(matchingCategory);
+        }
+      }
+
+      return newSub;
+    });
+  };
 
   const filteredPosts = useMemo(() => {
     const filtered = posts.filter(
