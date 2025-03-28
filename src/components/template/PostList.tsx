@@ -83,7 +83,7 @@ const PostList = ({
     return <Text fontSize="md">{EMPTY_POST}</Text>;
 
   return (
-    <Box ml={1}>
+    <Box>
       {viewMode === "list" ? (
         <Stack spacing={4}>
           {currentPosts.map((post: Post) => (
@@ -99,7 +99,6 @@ const PostList = ({
               _hover={{ textDecoration: "none" }}
               alignItems="center"
               gap={6}
-              ml={1}
             >
               <Box flex="1">
                 <Heading

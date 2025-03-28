@@ -55,10 +55,12 @@ export default function PostContent({
         flexDirection={{ base: "column", sm: "row" }}
         justifyContent="space-between"
         width="100%"
+        gap={6}
       >
         <Box
           display="flex"
           width={{ base: "100%", sm: "75%" }}
+          minWidth={{ base: "100%", sm: "360px" }}
           flexDirection="column"
           flexGrow={1}
           minHeight="300px"
@@ -73,8 +75,6 @@ export default function PostContent({
           marginTop="52px"
           bg="linear-gradient(to bottom, rgba(150, 150, 150, 0.2), transparent, rgba(150, 150, 150, 0.2))"
           opacity={0.9}
-          ml="20px"
-          mr="20px"
         />
         <Box
           display={{ base: "none", sm: "flex" }}

@@ -114,11 +114,17 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
       display="flex"
       flexDirection={{ base: "column", sm: "row" }}
       justifyContent="space-between"
+      width="100%"
       mt={10}
       gap={6}
-      width="100%"
     >
-      <Box width={{ base: "100%", sm: "75%" }}>
+      <Box
+        display="flex"
+        width={{ base: "100%", sm: "75%" }}
+        minWidth={{ base: "100%", sm: "360px" }}
+        flexDirection="column"
+        flexGrow={1}
+      >
         <HStack justifyContent="space-between" mb={2}>
           <HStack>
             <Text
@@ -172,6 +178,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
         width={{ base: "100%", sm: "25%" }}
         order={{ base: -1, sm: 1 }}
         flexDirection="column"
+        flexGrow={1}
         mb={4}
       >
         <Heading

@@ -21,8 +21,8 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
       display="flex"
       flexDirection="column"
       width="100%"
+      minWidth={{ base: "100%", sm: "360px" }}
       flexGrow={1}
-      maxWidth="800px"
       cursor="pointer"
       as={Link}
       aria-label={`read more about ${posts[currentIndex].title}`}
@@ -46,13 +46,9 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
         <Image
           src={posts[currentIndex].thumbnail}
           alt={posts[currentIndex].title}
-          // width={800}
-          // height={600}
           fill
           sizes="(max-width: 800px) 100vw, 800px"
           style={{
-            // width: "100%",
-            // height: "auto",
             objectFit: "cover",
             borderRadius: "10px",
           }}

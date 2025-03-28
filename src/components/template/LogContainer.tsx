@@ -76,22 +76,21 @@ const LogContainer = (props: LogContainerProps) => {
       </Box>
       <Box
         width="100%"
+        minWidth="100px"
         display="flex"
-        justifyContent="flex-end"
         flexDirection="column"
-        height="40px"
         gap="4x"
         mt="18px"
         mb="4px"
         alignItems="flex-end"
       >
-        <Text fontSize="12px">
+        <Text fontSize="12px" noOfLines={1}>
           {TODAY_COUNT} ({TESTING}){" "}
           <Text as="span" fontWeight="semibold" ml="8px">
             {todayViews}
           </Text>
         </Text>
-        <Text fontSize="12px">
+        <Text fontSize="12px" noOfLines={1}>
           {TOTAL_COUNT} ({TESTING}){" "}
           <Text as="span" fontWeight="semibold" ml="6px">
             {totalViews}
