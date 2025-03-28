@@ -5,7 +5,7 @@ let lastFetched = 0;
 
 const GOOGLE_API_URL = "https://www.googleapis.com/auth/analytics.readonly";
 const METRIC_VIEW_NAME = "screenPageViews";
-const BLOG_START_DATE = "2025-03-20";
+const BLOG_START_DATE = "2025-03-29";
 
 export async function getBlogAnalytics() {
   const now = Date.now();
