@@ -46,16 +46,16 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
         <Image
           src={posts[currentIndex].thumbnail}
           alt={posts[currentIndex].title}
-          width={800}
-          height={600} // 4:3 비율
+          // width={800}
+          // height={600}
+          fill
           sizes="(max-width: 800px) 100vw, 800px"
           style={{
-            width: "100%",
-            height: "auto",
+            // width: "100%",
+            // height: "auto",
             objectFit: "cover",
             borderRadius: "10px",
           }}
-          // priority
         />
 
         <Box

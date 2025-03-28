@@ -19,8 +19,6 @@ export async function getBlogAnalytics() {
   const privateKey = process.env.GA_PRIVATE_KEY?.split(String.raw`\n`).join(
     "\n"
   );
-  // const privateKey = process.env.GA_PRIVATE_KEY?.replace(/\\n/g, "\n");
-  // private_key: process.env.PRIVATE_KEY.split(String.raw`\n`).join("\n");
 
   const clientEmail = process.env.GA_CLIENT_EMAIL;
 
