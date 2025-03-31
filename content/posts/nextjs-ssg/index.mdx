@@ -184,11 +184,11 @@ export default async function PostDetailPage({ params }: { params: Params }) {
 
 ## 부딪힌 이슈와 주의할 점
 
-#### `next-mdx-remote` vs `@next/mdx` 고민
+#### 1. `next-mdx-remote` vs `@next/mdx` 고민
 
 `next-mdx-remote`와 `@next/mdx`는 둘 다 MDX를 HTML로 변환해주는 라이브러리이다. `next-mdx-remote`는 App Router 환경에서 서버/클라이언트 컴포넌트 구분이 까다롭다는 단점이 있으나 동적 컨텐츠 로딩, 전처리 커스터마이징 등 더 많은 기능을 제공하고, `@next/mdx`는 빌드 타임에 MDX를 직접 컴파일하여 빠르고 간편하지만 동적 MDX 컨텐츠 로딩 제한과 커스텀 컨텐츠 전처리가 안된다는 단점이 있어 결국 `next-mdx-remote`를 선택하였다. 현재는 `next-mdx-remote/src`를 사용해 서버 컴포넌트에서 처리하도록 했다.
 
-#### `params` 객체의 비동기 처리 오류
+#### 2. `params` 객체의 비동기 처리 오류
 
 Next.js 15를 기준으로 바뀐 부분이 꽤나 있었다. 특히 `params` 객체의 비동기 처리가 이전과 다르게 바뀌었다. Next.js 15에서는 `params` 객체가 **비동기 로드**된다. 아래와 같은 코드처럼 직접 `params.slug`를 쓰면 오류가 발생한다.
 
@@ -202,7 +202,7 @@ const { slug } = params; // 오류 발생
 const { slug } = await params; // 정상
 ```
 
-#### 클라이언트 컴포넌트에서 MDX content 사용시 `useState` 오류
+#### 3. 클라이언트 컴포넌트에서 MDX content 사용시 `useState` 오류
 
 ```bash
 TypeError: Cannot use 'useState' within a server component...
@@ -257,7 +257,7 @@ export default function PostContent({
 }
 ```
 
-#### `dynamic` 함수 사용시 `ssr: false` 사용 불가능
+#### 4. `dynamic` 함수 사용시 `ssr: false` 사용 불가능
 
 Next.js 15부터는 `dynamic()`함수에서 `ssr: false` 옵션이 제거되었다. 13부터 도입된 App Router의 서버/클라이언트 컴포넌트 구분을 명확하게 하고자 제거되었다고 한다. 따라서, `dynamic()` 함수 사용시 옵션란은 비워두고서 컴포넌트 동적 로딩을 추가하자.
 
@@ -290,6 +290,8 @@ export async function getAllPosts() {
   ...
 }
 ```
+
+추가로, [MDX 공식 문서](https://mdxjs.com/docs/troubleshooting-mdx/)를 참고해서 MDX 사용시 겪은 문법, 파싱 오류, 라이브러리 충돌 문제 등을 조회해보자. 주로 `acorn` 파서 문제, 잘못된 JSX/HTML 문법, `unexpected charater`, AST 트랜스포머 문제 등에 유용하다.
 
 ## 빌드/배포 설정 옵션
 
