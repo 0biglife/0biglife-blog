@@ -1,7 +1,5 @@
 ## Update Logs
 
-#### 2024-03-12
-
 - 디렉토리 정리
 - Chakra-ui 도입 및 테마 추가
 - Components : Header, Footer 추가
@@ -18,13 +16,15 @@ npm run dev
 ```bash
 /0biglife-blog
  ├── /public  → 정적 파일 (이미지, favicon 등)
- │    ├── /posts
- │    │    ├── thumnail.png
+ │    ├── /assets
+ │    │    ├── /posts
+ │    │    │    ├── thumnail.png
+ │    │    ├── default-thumbnail.png
  │    ├── favicon.ico
  ├── /content  → 정적 블로그 게시글 저장 (MDX + 이미지 포함)
- │    ├── /sample-post
- │    │    ├── index.mdx
- │    │    ├── thumnail.png
+ │    ├── /posts
+ │    │    └── /sample-post
+ │    │         └── index.mdx
  ├── /src
  │    ├── /app  → Next.js App Router 페이지 관리
  │    │    ├── /posts
@@ -41,8 +41,6 @@ npm run dev
  │    │    ├── /...
  │    ├── /lib  → 데이터 및 유틸리티 함수
  │    │    ├── posts.ts  → MDX 파일을 읽고 HTML 변환하는 로직
- │    ├── /styles
- │    │    ├── globals.css
  ├── /next.config.js  → Next.js 설정 파일 (MDX 지원)
  ├── /package.json
 ```

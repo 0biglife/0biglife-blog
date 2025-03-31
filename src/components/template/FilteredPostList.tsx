@@ -16,6 +16,10 @@ import { TbGridDots, TbList, TbTriangleInvertedFilled } from "react-icons/tb";
 import { CATEGORY_TITLE } from "@/lib/constant";
 import { GoDotFill } from "react-icons/go";
 import { motion } from "framer-motion";
+// import { IoMdBrowsers } from "react-icons/io";
+// import { SiKubernetes } from "react-icons/si";
+// import { AiFillProduct } from "react-icons/ai";
+// import { FaPersonDigging, FaServer } from "react-icons/fa6";
 
 const CATEGORY_ORDER = {
   Frontend: 1,
@@ -24,6 +28,14 @@ const CATEGORY_ORDER = {
   Productivity: 4,
   // ...
 };
+
+// const CATEGORY_ICON: Record<string, React.ReactNode> = {
+//   Frontend: <IoMdBrowsers />,
+//   Backend: <FaServer />,
+//   Kubernetes: <SiKubernetes />,
+//   Productivity: <AiFillProduct />,
+//   "Self-Motification": <FaPersonDigging />,
+// };
 
 export default function FilteredPostList({ posts }: { posts: Post[] }) {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -227,6 +239,27 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
                     >
                       <TbTriangleInvertedFilled size={8} />
                     </motion.div>
+                    {/* <Box
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        toggleCategory(category);
+                      }}
+                      style={{
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: "20px",
+                        height: "20px",
+                        marginRight: "-2px",
+                      }}
+                    >
+                      {CATEGORY_ICON[category] && (
+                        <Box as="span" display="flex" alignItems="center">
+                          {CATEGORY_ICON[category]}
+                        </Box>
+                      )}
+                    </Box> */}
 
                     <Text
                       fontSize="16px"
