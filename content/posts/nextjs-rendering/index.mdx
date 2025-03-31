@@ -1,0 +1,202 @@
+---
+title: "렌더링 방식이야, 신중하게 선택해"
+date: "2025-02-07"
+description: "이번에는 렌더링 방식에 대해 정리한다. 웹 구조와 렌더링 방식, 그리고 Next.js가 제공해주는 SSR, CSR, SSG, ISR부터 코드 분할 기법을 활용한 CSR 보완 방식까지 알아본다. 렌더링 방식에 대해 따지기 앞서, 애플리케이션의 구조가 어떻게 바뀌어왔기에 그에 맞는 렌더링 방식이 필요해왔는지가 중요하다."
+thumbnail: "thumbnail.png"
+category: "Frontend"
+subcategory: "Next.js"
+tags: []
+---
+
+## 웹 구조의 발전과 렌더링 방식
+
+초기 웹 애플리케이션은 모든 웹 페이지가 각각의 ULR을 가지고 있어, 페이지 이동 시마다 서버에서 새로운 HTML 파일을 받아와야했다. 이러한 전통적인 웹 구조인 **MPA(Multi Page Application)** 는 서버 부하가 크며, 사용가 경험이 느리고 부드럽지 못했다. 2000년대 후반이 되어서야 인터넷 속도 향상과 Javascript의 발전을 통하여 새로운 형태가 나온게 된다. **SPA(Single Page Application)** 는 한 번의 요청으로 전체 애플리케이션을 로드하고, 페이지 간 이동은 Javascript로 처리하여 서버 부하를 줄이고 동적으로 UI를 렌더링함으로써 사용자 경험이 굉장히 부드러워졌다.
+
+!['single page application' vs 'multi page application'](1.png)
+
+## SSR for MPA
+
+이러한 두 애플리케이션 형태는 각각 알맞은 방식으로 렌더링되어야한다. MPA 구조는 각 페이지가 독립적인 HTML 파일로 구성되기 때문에, 매번 페이지 요청 시마다 서버에서 새로운 HTML을 생성해서 클라이언트로 전달해야한다. 이를 위한 방식을 **SSR(Server-Side Rendering)** 이라고 하며, 전통적인 웹 렌더링 방식이라고 볼 수 있다.
+
+이러한 방식으로 SSR 렌더링의 장단점이 나온다. SSR은 페이지 마운트시마다 최신 콘텐츠를 제공할 수 있기 때문에 서버에서 HTML을 생성하여 검색 엔진 크롤러를 통한 SEO(검색 엔진 최적화)에 유리하다. 다만, 매번 요청하기 때문에 서버 부하가 커지고 요청 응답 시간이 길어질 수 있다는 단점이 있다.
+
+![ssr sample code](2.jpeg)
+
+#### SSR 장점
+
+1. **빠른 첫 페이지 로딩**: 페이지 요청 시 서버에서 이미 완성된 HTML을 제공하므로 클라이언트는 빠르게 콘텐츠를 표시할 수 있다.
+2. **SEO 최적화**: 검색 엔진 크롤러가 HTML 페이지를 읽을 수 있어 SEO에 유리하다.
+
+#### SSR 단점
+
+4. **서버 부하 증가**: 각 요청마다 서버에서 새로운 HTML을 생성해야 하므로, 서버 리소스 소비가 커지게 되며, 트래픽이 많은 애플리케이션에서는 서버 부하가 크게 증가한다.
+5. **느린 상호작용**: 첫 페이지 로딩은 빠를 수 있지만, 자바스크립트 번들이 로드되기 전까지 클라이언트측 상호작용이 제한될 수 있다.
+
+## CSR for SPA
+
+SPA 구조에 적합한 **CSR(Client-Side Rendering)** 방식은 첫 페이지와 필요한 데이터를 서버에서 받아온 뒤, 필요한 부분만 클라이언트 측에서 동적으로 렌더링한다. 그렇기 때문에 서버 부하를 줄이고 동적 렌더링과 뛰어난 UX로 사용자 경험은 매끄럽게 한다. 반면, 초기 로딩 속도가 느리다는 단점이 있고 SEO를 통한 이점을 보고 싶은 개발자에게는 다소 아쉬운 방식이다.
+
+![csr sample code](3.jpeg)
+
+#### CSR 장점
+
+1. **부드러운 사용자 경험**: 페이지 이동 시 서버로 추가 요청 없이 빠르게 화면을 변경할 수 있어 부드럽고 직관적인 사용자 경험을 제공한다.
+2. **서버 부하 감소**: 클라이언트 측 렌더링 방식이기 때문에 서버는 데이터 전송 역할만 해주면 된다.
+
+#### CSR 단점
+
+4. **느린 초기 로딩 속도**: Javascript Bundle과 관련된 리소스를 클라이언트에서 모두 로드할 때까지 기다려야하기 때문에 초기 화면이 렌더링되는 속도가 느리다.
+5. **SEO에 불리**: 검색 엔진 크롤러가 콘텐츠를 인식하기 위한 추가적인 공수가 발생한다.
+
+---
+
+## 둘 다 동시에 할 순 없나
+
+다행히도 있다. SSR과 CSR 모두 장단점이 존재하기에 현대 웹 애플리케이션에서 두 가지 렌더링 방식을 조합한 **Hybrid Rendering**을 도입하여 개발이 가능하며, 이를 가능하도록 특화된 것이 바로 **Next.js**이다.
+
+하이브리드 렌더링을 위해 Next.js는 개발자 입맛대로 다양한 요구사항을 충족시킬 수 있는 여러 렌더링 방식을 제공한다. 이를 통해 개발자를 성능과 SEO 최적화 모두를 고려할 수 있게 되는 것이다. Next.js가 제공하는 렌더링 방식은 총 네 가지가 된다. (참고로 현재 Next.js 14 App Router 방식을 기준으로 한다.)
+
+### Mixed Rendering(SSR + CSR)
+
+Next.js 14 버전 이상의 App Router에서는 **서버 컴포넌트(Server Component)** 와 **클라이언트 컴포넌트(Client Component)** 개념이 도입되었다. 각 컴포넌트가 어디에서 실행되고 렌더링되는지 명확하게 구분지어줌에 따라 렌더링 방식을 분리하여 관리한다.
+
+#### 서버 컴포넌트(Server Component)
+
+서버에서 렌더링되고 클라이언트로 HTML로 전달되는 컴포넌트다. 클라이언트 측에서는 Javascript Bundle을 로드하지 않고, 서버 자원을 활용해 빠르게 렌더링된다. 그렇기 때문에 서버에서 **동적으로 데이터를 가져오거나, 보안이 중요한 작업(ex. API 호출, DB Query)을 처리**하는 데 적합하다.
+
+사용 방식은 간단하다. `'use client'`를 파일 최상단에 선언하지 않는 것이다. 그냥 아무것도 하지 않고 비즈니스 로직을 작성하면 되는 것이다.
+
+```go
+//서버 컴포넌트
+export default async function Postage({
+  params,
+}: {
+  params: { slug: string },
+}) {
+  const post = await getPostBySlug(params.slug);
+  return;
+}
+```
+
+#### 클라이언트 컴포넌트(Client Component)
+
+클라이언트 측에서 실행되고, 사용자 상호작용을 처리하는 컴포넌트다. 사용자와 직접적인 상호작용, 상태 관리, 이벤트 핸들링 등을 처리해야할 때 작성하도록 하며, `useState`, `useEffect` 등 **React Hook**은 모두 클라이언트 컴포넌트에서만 작성되어야한다.
+
+사용 방법은 파일 최상단에 'use client'를 선언하면 된다.
+
+```go
+// 클라이언트 컴포넌트
+'use client';
+import { useState, useEffect } from 'react';
+
+export default function ProfilePage() {
+  const [profile, setProfile] = useState(null);
+
+  useEffect(() => {
+    fetch('/api/profile')
+      .then((res) => res.json())
+      .then((data) => setProfile(data));
+  }, []);
+
+  if (!profile) return <p>Loading...</p>;
+
+  return <div>{profile.name}</div>;
+}
+```
+
+#### CSR 개선을 위한 Code Splitting 기법
+
+추가적으로, 성능 최적화를 위한 코드 분항 기법이 있다. SPA 구조에서 javascript를 한꺼번에 가져올 때 그 크기가 큰 경우로 인하여 초기 로딩 시간이 길어지는데, 이런 구조적인 문제에서 오는 단점을 극복해주는 CSR 방식이다. 첫 화면에 필요한 js만 로드해서 페이팅함으로써 결과적으로는 사용자 경험이 좋아진다.
+
+#### Dynamic Import
+
+Next.js는 `dynamic import` 구문을 활용하여 코드를 동적으로 로드시킨다. `dynamic()` 함수 인자로 코드 분할을 적용할 모듈을 전달하고, 이는 `Promise`를 반환하기 때문에 겨로를 동적으로 지정할 수 있게 된다. `dynamic()` 함수는 로드된 모듈을 렌더링하는 React 컴포넌트를 반환하기 때문에 동적 렌더링을 가능케한다. 더 자세한 이야기는 개별 게시글로 작성할 예정이다.
+
+```go
+'use client';
+import dynamic from 'next/dynamic';
+
+const HeavyComponent = dynamic(
+  () => import('../../components/HeavyComponent'),
+  {
+    ssr: false, // 클라이언트에서만 렌더링
+  }
+);
+
+export default function HomePage() {
+  return (
+    <div>
+      <h1>Welcome</h1>
+      <HeavyComponent />
+    </div>
+  );
+}
+```
+
+## SSG(Static Site Generation)
+
+SSR과 CSR을 조합하여 쓰는 방법과 실제 예제를 살펴보았다. SSG는 사용자에게 빠른 응답을 주기 위해, 페이지를 **빌드 시 미리 만들어두고 정적 파일로 제공하는 위하여 사용되는 렌더링 방식**이다. CSR의 단점인 초기 로딩 속도 문제와 SEO 최적화까지 모두 해결해주는 방식이다.
+
+> 주로 정적인 콘텐츠(블로그 글, 문서 등)에서 많이 사용되는 방식이며, 현재 기술 블로그가 렌더링 되는 방식이기도 하다.
+
+#### 사용 방법
+
+정적 경로를 미리 생성해주는 `generateStaticParams` 함수를 사용하며, 서버 컴포넌트 내에서 데이터 패칭이 되도록 한다. 이 함수는 동적 라우팅에서는 무조건 필수라고 보면 된다.
+
+```go
+import { getPostBySlug, getAllPosts } from '@/lib/api';
+
+export async function generateStaticParams() {
+  const posts = await getAllPosts(); // 모든 게시물을 가져옴
+  return posts.map((post) => ({ slug: post.slug }));
+}
+
+export default async function PostPage({
+  params,
+}: {
+  params: { slug: string },
+}) {
+  const post = await getPostBySlug(params.slug);
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <p>{post.content}</p>
+    </article>
+  );
+}
+```
+
+## ISR(Incremental Static Generation)
+
+ISR은 SSG의 성능 이점을 유지하면서 시간이 지나면서 컨텐츠가 업데이트되는 경우에도 최신 데이터를 반영될 수 있게 해주는 방식이다. 페이지를 일정 간격으로 재생성하여, 사용자에게 정적 사이트면서 동시에 동적 렌더링되로독 돕는 방식이다.
+
+```go
+import { getPostBySlug, getAllPosts } from '@/lib/api';
+
+export async function generateStaticParams() {
+  const posts = await getAllPosts();
+  return posts.map((post) => ({ slug: post.slug }));
+}
+
+export default async function PostPage({ params }: { params: { slug: string } }) {
+  const post = await getPostBySlug(params.slug);
+  return (
+    <article>
+      <h1>{post.title}</h1>
+      <p>{post.content}</p>
+    </article>
+  );
+}
+
+export const revalidate = 60;  // 60초마다 페이지 재생성
+```
+
+#### 사용 방법
+
+페이지가 백그라운드에서 다시 생성되는 주기를 설정하기 위해서 Next.js는 `revalidate` 키워드를 제공하여 초 단위 설정을 할 수 있게 한다. 또한, SSG와 동일하게 데이터를 서버 컴포넌트에서 패칭하도록 해야한다.
+
+---
+
+## 마치며
+
+여태까지 프론트엔드 개발자로서 부여받은 가장 주된 업무인 '렌더링'이 어떤 구조로 인하여 CSR, SSR 같은 방식으로 구현해야하는지, 그리고 Next.js에서는 각각의 단점을 보완하기 위해 하이브리드 렌더링 방식과 SSG, ISR 방식까지 알아보았다. 각각 렌더링 방식의 장단점을 비교하고, 여러 예제를 생성해나가면서 성능 최적화와 사용자 경험을 개선하기 위해 다양한 것들을 다룰 수 있는, 그리고 **왜 이게 저거보다 나은지**에 대해 명확하게 설명할 줄 아는 개발자가 되어보자.

@@ -1,0 +1,239 @@
+---
+title: "리렌더링 방지는 브라우저 동작을 이해하는 것에서 시작된다"
+date: "2025-01-18"
+description: "이번에는 조금 막막하지만 굉장히 중요하다고 생각하는, 프론트엔드 개발자라면 반드시 알고 있어야하는 고려사항에 대해 말해보려고 한다. 바로 리렌더링을 방지하는 것에 대한 이야기다. 리렌더링을 방지하기 위해서는 어떤 케이스에 발생하는지를 알아야하고, 당연하게도 이벤트가 벌어지는 브라우저가 어떻게 돌아가는지 이해하고 있어야한다. 내용은 크게 두 가지로 나눠 설명한다."
+thumbnail: "thumbnail.png"
+category: "Frontend"
+subcategory: "Browser"
+tags: []
+---
+
+## 브라우저
+
+처음에 브라우저는 필자에게 '그거 그냥 Chrome, Safari 뭐 그런거 아니야?' 정도의 개념이었다. 맞다. 정확하게는 인터넷에서 웹 페이지를 열어볼 수 있는 소프트웨어 정도로 정의되는데, Window 객체를 페이지로 표시해주는 녀석이다. 여기서 **Window는 Javascript 최상위 객체**이자 모든 객체가 소속된 전역 객체를 의미한다. 그렇기 때문에 괜히 'Window는 브라우저를 대변한다!'는 말이 나오는 것이 아니다.
+
+## 브라우저 구조
+
+브라우저는 **Window 객체**를 최상위(global) 객체로 사용하고, 그 안에 **BOM(Browser Object Model)**, **DOM(Document Object Model)** 그리고 **Javascript**가 결합되어 페이지 동작을 제어하도록 구성된다. 위 사진이 가장 근접해보이는 사진이라 가져왔다. 하나씩 살펴보자.
+
+![브라우저 구성요소](1.png)
+
+#### 1. Window 객체
+
+최상위 객체이며 여러 메서드를 포함하고 있다. 그렇기 때문에 브라우저 콘솔에 `this`를 입력하면 아래 사진과 같은 매우 다양한 메서들을 볼 수 있다. 예를 들어, `window.alert()`는 브라우저 `alert()` 메서드를 실행하는 것과 같고, `window.document`는 현재 문서를 가리키는 용도로 쓰일 수 있는 것이다.
+
+![this 호출시 굉장히 많은 메서드를 관찰할 수 있다](2.png)
+
+#### 2. DOM(Document Object Model)
+
+DOM은 객체 지향 모델로 구조화된 문서를 표현하는 방식이다. 이게 무슨 말인지 싶을 수 있다. 돌려말하면, **HTML tag를 브라우저가 이해할 수 있는 객체 형태**라고 표현함이 더 쉽겠다. 브라우저는 HTML 문서를 먼저 읽고, 이를 트리 구조로 변환하여 DOM을 만들어낸다. 이 때 이 DOM Tree의 각 구성요소는 JS Node 객체로 표현되어, Javascript가 이 객체로 접근하여 조작이 가능한 것이다.
+
+- **DOM API**란? : DOM을 조작하기 위한 프로그래밍 인터페이스다. 이 API들을 사용하여 우리는 HTML 요소에 접근하고 이를 수정/삭제 또는 추가를 하여 조작할 수 있다.
+
+DOM API 예를 들어보자. 아마 프론트 작업을 해봤다면 전부 익숙한 API들일 것이다.
+
+```js
+1. document.getElementById() : HTML 문서에서 특정 ID를 가진 요소를 선택하는 메서드
+
+const element = document.getElementById('blogElement');
+element.style.color = 'blue'; // 선택한 요소의 텍스트 색상 변경
+
+---
+
+2. element.addEventListner() : 리스너를 추가하여 이벤트 발생 시 특정 동작 수행
+
+const button = document.querySelector('.btn');
+button.addEventListener('click', () => {
+  alert('Button just clicked!');
+}); // 버튼이 클릭될 때 알림 창 표시
+```
+
+추가적으로, 우리가 **타입스크립트**를 쓸 때 이 JS Node 객체의 타입을 가져다쓰고 있다는 것을 알고 있었나? 이 부분을 처음 알게 되었을 때의 충격(충격이랄 것까진 없나 싶지만)을 잊을 수 없다. 무튼 우리가 input 태그의 onChange 시 리턴되는 타입이 **HTMLInputElement**인 것도 해당 DOM 객체가 명확한 타입을 제공하기 때문이다.
+
+![DOM Image](3.png)
+
+#### 3. BOM(Browser Object Model)
+
+BOM은 JS가 브라우저와 소통하기 위해 만들어진 모델이며 브라우저 창과 관련된 정보를 제공하고 제어하는 데 필요한 객체들이 포함되어 있다. 주요 구성 요소는 다음과 같다.
+
+1. **navigator**: 브라우저와 관련된 정보와 버전 정보를 속성으로 가진다.
+2. **location**: 현재 url 정보를 다룬다.
+3. **document**: 현재 문서 정보를 다룬다.
+4. **screen**: 화면 해상도, 색상 정보 등 브라우저 외부 환경 정보를 다룬다.
+5. **history**: 사용자의 브라우저 탐색 히스토리를 다룬다.
+
+예를 들어 우리가 현재 페이지 url을 가져오기 위해 `location.href`를 쓰거나 스크린 사이즈를 위해 `screen.width`, `screen.height`를 호출하는 용도로 쓰인다.
+
+#### 4. Javascript
+
+JS는 브라우저 정보를 접근하고 BOM, DOM 요소를 제어하기 때문에 화면을 동적으로 그리는 역할을 수행한다. 여기선 간단히 이렇게 설명하고 넘어가고 JS 언어 대한 내용은 다른 게시글에서 심층적으로 다뤄본다.
+
+이렇게 브라우저 기본 요소에 대해 살펴보았다. 여태 설명된 바로는 동작 방식은 **브라우저는 HTML을 전달받아서 알아볼 수 있는 형태인 DOM Tree 형태로 변환하여 Javascript로 BOM과 DOM을 조작하여 화면을 동적으로 그린다.** 정도로 파악된다. 그러나 동작 방식은 그렇게 단순하진 않다. 단계별로 살펴보자!
+
+---
+
+## 브라우저 동작 방식
+
+브라우저 동작 방식을 단계별로 살펴본다. 먼저 단계별 어떤 역할을 하는지 간단히 살펴보고, 리렌더링이 발생하는 케이스를 정리해서 어느 단계에 어떤 일이 벌어지는지를 살펴보자. 만약 이에 대해 인지가 된 상태로 코드를 짠다면 리팩토링이나 n차 코드 수정으로 인하여 성능을 보완할 수고를 덜지도 모른다.
+
+동작 방식은 크게 다섯 단계로 이루어진다.
+
+**1. 파싱 단계**
+**2. 스타일 단계**
+**3. 레이아웃 단게**
+**4. 페인트 단계**
+**5. 컴포지트 단계**
+
+#### 1. 파싱(Parsing) 단계
+
+HTML은 문자열로 이루어진 순수 텍스트이기 때문에 HTML 파일을 해석하기 위한 파싱이 가장 먼저 필요하다. 파싱 단계를 통해서 **DOM Tree 구성**이 진행된다. 파싱하는 과정에서 HTML에 CSS가 포함되어 있다면 **CSSOM(CSS Object Model) Tree 구성** 작업도 함께 진행한다.
+
+> 이 과정에서 설명할 것들이 정말 많다. 브라우저 종류마다 다른 이름으로 불리어지는 **JS Engine**이라는 녀석이 파싱을 담당하는데, JS 코드를 추상 구문 트리(AST)로 변환 후 바이트코드까지 토크나이징, 파싱하는 과정에서 **호이스팅** 과정이 발생한다. 이로 인하여 스코프에 따른 let, var, const의 차이점까지 연계되는 내용이다. 새 게시글로 작성될 내용이지만 파싱 과정에서 이러한 일들이 벌어진다 정도로 염두해두면 JS 동작 방식에도 도움이 될 것이다.
+
+#### 2. 스타일(Style) 단계
+
+스타일 단계는 **DOM Tree와 CSSOM Tree를 결합**하는 단계다. 렌더링을 위한 Render Tree(Attachment)를 구성하며 이 때 브라우저 화면에서 보여지지 않은 것들은 포함시키지 않고 구성이 된다.
+
+![](4.png)
+
+#### 3. 레이아웃(Layout) 단계
+
+레이아웃 또는 Reflow라고 부르는 이 단계에서는 Render Tree를 화면에 배치하기 위하여 **정확한 위치와 크기**, 즉 레이아웃을 계산한다. Root부터 Node를 순회하면서 노드의 위치와 크기를 계산하고 이를 스타일 단계에서 구성된 Render Tree에 반영시킨다.
+
+#### 4. 페인트(Paint) 단계
+
+레이아웃 단계에서 계산된 값을 이용하여 각 노드들을 실제 화면 상의 픽셀로 변환하고 시각적 속성을 그려낸다. 픽셀로 변환된 결과는 하나의 레이어가 아니라 여러 개의 레이어로 관리된다. 즉, 이 단계는 **픽셀을 실제 렌더링**하는 과정이다.
+
+#### 5. 컴포지트(Composite) 단계
+
+페인트 단계에서 생성된 레이어를 합쳐서 실제 화면에 표시할 **이미지를 생성**하는 최종 단계다.
+
+---
+
+브라우저 동작 방식은 다섯 단계로 충분히 설명된다. 그러면 도대체 어느 단계에서 리렌더링이 발생하게 되는 걸까? 브라우저는 **특정 조건에 따라 반복적으로 실행**된다. 즉, 우리는 이 '조건'에 대해 언제 발생하는지를 알게 된다면 **불필요한 렌더링**을 막을 수 있다.
+
+1. **JS로 인한 노드 추가/삭제**
+2. **브라우저 창의 리사이징**
+3. **HTML 요소의 레이아웃 변경을 발생시키는 스타일 수정**
+
+![](5.png)
+
+#### Reflow
+
+**Reflow**는 DOM 요소의 위치나 크기가 변경되어 해당 노드의 하위, 상위 노드를 포함하여 Render Tree를 다시 그려내는 과정이다. 이는 레이아웃 단계를 재수행하는 것을 의미한다. Reflow가 발생하면 레이아웃 단계를 재수행하고, 이 레이아웃에 의존하여 시각적 속성을 그려내는 페인트 단계와 컴포지트 단계까지 재수행된다. 따라서, Reflow가 발생하면 **Repaint도 발생**하기 때문에 보통 브라우저에 성능이 저하되었다면 가장 먼저 의심해봐야할 부분이 Reflow가 되겠다. 정리하면 다음과 같은 경우에 Reflow가 발생한다.
+
+- 노드 추가/제거
+- `display` 속성 변경
+- 요소 크기 및 위치, `margin`, `padding`, `height`, `width` `font` 등 스타일 변경
+- 윈도우 리사이징
+
+#### Repaint
+
+**Repaint**는 Render Tree를 다시 그려야하기 때문에 페인트 단계를 재수행하는 과정이다. Reflow가 발생하면 레이아웃 변경에 따른 Repaint도 발생하며 레이아웃에 변경을 주지 않는 스타일 속성이 변경되는 경우(레이아웃에 영향을 미치지 않고 변경된 요소를 화면에 그려야할 때)에도 발생한다. Reflow보다는 상대적으로 가벼운 작업이다. 주로 Repaint만 발생하는 경우는 `visibility`, `color`, `background-color`, `opacity`와 같은 시각적 속성이 변경될 때에 해당된다.
+
+#### Reflow / Repaint Monitoring
+
+이번엔 직접 Reflow와 Repaint를 발생시켜보자. 재현해볼 조건은 위 세 가지 중에서 **HTML 요소 변경**과 **브라우저 리사이징**이다. 테스트 방법은 페이지 컴포넌트에서 스타일을 변경시키는 함수를 만들어서 `Chrome Dev Tool`의 `Performance` 기능을 활용한다.
+
+```js
+const PostContent = ({ post }: PostContentProps) => {
+  const [reflowTrigger, setReflowTrigger] = useState(false);
+  const [repaintTrigger, setRepaintTrigger] = useState(false);
+
+  // Reflow 발생
+  const triggerReflow = () => setReflowTrigger(!reflowTrigger);
+  // Repaint 발생
+  const triggerRepaint = () => setRepaintTrigger(!repaintTrigger);
+  ...
+
+  return(
+    ..
+    <Image
+      ..
+      style={{
+        width: reflowTrigger ? '100%' : '50%', // Reflow 발생: 크기 변경
+        height: reflowTrigger ? 'auto' : '400px', // Reflow 발생: 높이 변경
+      }}
+    />
+    ..
+  )
+}
+```
+
+![사진1. style 변경 시 Reflow 방생](6.png)
+
+![사진2. style 변경 시 Repaint 발생](7.png)
+
+클릭 시마다 스타일을 변경하는 버튼 두 개를 만들어서 테스트하였다. HTML 요소 변경 조건을 만족시키도록 재현한 결과, [사진1]과 [사진2]는 Reflow 버튼 2회, Repaint 버튼 4회를 입력하고 그에 따른 레이아웃, 페인트 단계를 재수행하는 것을 확인했다.
+
+![사진3. Browser Resizing](8.png)
+
+브라우저 리사이징 조건을 재현한 결과, 두 버튼을 한 번씩 누르고 그 사이 시간 동안 리사이징을 진행하였고 모니터링 결과 리사이징되는 시간 동안 레이아웃 단계와 페인드 단계가 굉장히 많은 횟수로 재수행되었다. 이러한 Reflow와 Repaint는 `Chrome Dev Tool`을 쓰지 않고서는 사용자가 관측하기 어렵기에 개발 단계에서 최적화가 최대한 이루어진 상태로 접근되어야한다. 최적화는 Reflow와 Repaint의 **빈도수를 줄이는 것만으로도 해결될까?** 경우에 맞춰서 어떤 해결 방식이 있는지 살펴보자.
+
+---
+
+## 브라우저 렌더링 최적화
+
+이제 브라우저 동작 과정에서 리렌더링되는 케이스를 알아냈고, 어떤 케이스에 Reflow와 Repaint가 발생하는지도 알게 되었다. 우리는 **Reflow와 Repaint를 최소화시키는 코드**를 설계함으로써 브라우저 렌더링을 최적화할 수 있다.
+
+### CSS 스타일 변경 최소화
+
+여러 스타일 속성을 개별적으로 변경하지 말고, 미리 정의된 클래스를 추가 또는 제거하여 단일 시점에 스타일에 개입되도록 한다. **인라인 스타일 대신 CSS 클래스**를 필수로 사용하자. 인라인 스타일은 HTML이 파싱 될 때 레이아웃에 영향을 주어 추가적인 Reflow를 발생시킨다. 인라인 스타일보다 CSS 클래스 사용이 실제로 성능이 더 좋기도 하고 가독성 측면에서도 인라인 스타일은 지양하는 것이 좋다.
+
+```js
+/* 지양 : 여러 속성을 개별적으로 설정 */
+element.style.width = "100px";
+element.style.height = "100px";
+
+/* 지향 : 미리 정의한 클래스를 사용 */
+element.classList.add("new-style");
+```
+
+### DOM 조작 최소화
+
+DOM 조작 시마다 브라우저는 레이아웃을 재계산하여 Reflow가 발생한다. DOM 업데이트 역시 단일 시점에 되도록 설계한다. 예를 들어, `documentFragment`를 사용하여 DOM 변경을 한 번에 적용하거나 `display`: `none`을 활용하여 Reflow 빈도를 줄인다.
+
+```js
+// 지향 : 한 번에 DOM에 추가
+const fragment = document.createDocumentFragment();
+const newElement = document.createElement("div");
+fragment.appendChild(newElement);
+document.body.appendChild(fragment);
+
+// 지향 : DOM 조작 전 display 속성 none 설정
+const container = document.getElementById("container");
+container.style.display = "none"; // 화면에서 숨김
+// DOM 조작 과정 .. (생략)
+container.style.display = "block"; // 다시 표시
+```
+
+### 배치 계산 접근 최소화
+
+조금 사소할 수 있는 부분이지만, DOM 요소의 배치 속성에 여러 번 접근하는 대신 한 번 읽은 후 변수에 저장하여 최소 1회만 실행될 수 있게 한다.
+
+```js
+// 지양해야할 예시 - 매번 배치 계산이 일어남
+const height = element.clientHeight;
+element.style.height = height + "px";
+element.style.width = element.clientWidth + "px";
+
+// 지향해야할 예시 - 한 번만 배치 계산이 일어남
+const elementHeight = element.clientHeight;
+const elementWidth = element.clientWidth;
+element.style.height = elementHeight + "px";
+element.style.width = elementWidth + "px";
+```
+
+### 불필요한 요소 숨기기
+
+페이지에 불필요한 요소가 많아지면 성능 저하가 발생한다. 보이지 않는 요소를 브라우저가 렌더링하지 않도록 `visibility: hidden` 또는 `display: none`을 적절하게 활용하여 렌더링 부하를 줄인다.(Reflow 빈도를 줄이는 방식)
+
+### 애니메이션 최적화
+
+애니메이션은 많은 Reflow 연산을 발생시키는 예시다. 애니메이션이 발생하는 노드의 부모 엘리먼트의 `position`을 `fixed`나 `absolute`로 분리하여 해당 노드만 Reflow가 발생하게 하자.(Reflow 빈도를 줄이는 방식)
+
+> **requestAnimationFrame()** 메서드 활용하기 : JS로 화면 변화를 처리할 떄 `setTimeout`이나 `setInterval` 대신 `requestAnimationFrame`을 사용해야한다. **브라우저 렌더링 주기와 동기화**되어 Reflow와 Repaint를 효율적으로 처리할 수 있다. `setTimeout`으로 처리한다면 JS는 이를 <u>WebAPI를 비동기로 인식하여 대기열에 빼두고 콜스택이 비워질 때까지 대기하였다가 실행하기 때문에 딜레이가 발생</u>한다. 한 프레임은 16ms(60fps) 안에 완료되어야 애니메이션이 끊김이 없는데 이 16ms 안에 실행되지 못한다면 해당 프레임은 유실된다. 이러한 현상을 방지하고자 `requestAnimationFrame()`는 브라우저가 화면을 다시 그리기 직전에 실행 함수를 예약함으로써 <u>브라우저 주기를 동기화시켜 프레임 속도를 맞춰주는 애니메이션 동작을 가능케 한다.</u>
+
+---
+
+이럴게 브라우저 기본 요소부터 동작 방식과 리렌더링되어 부하가 발생하는 경우까지 살펴보았다. 브라우저에 대한 내용과 리렌더링, 최적화 등 여러 군데 흩어져있는 내용들을 읽는이가 위에서부터 아래로 쭉 읽어내려가면서 매끄럽게 이해가 되도록 써보려고 했으나 쉽지만은 않은 것 같다. 여러 번의 수정을 거치면서 내 공부도 정리가 되고 읽는 이에게도 도움이 되는 블로그가 되면 좋겠다는 생각이다.

@@ -1,0 +1,246 @@
+---
+title: "Certbot으로 SSL 갱신하기(Feat. K8s)"
+date: "2025-03-07"
+description: "이번 게시글은 Certbot으로 SSL 인증서를 발급하고 Kubernetes를 활용하여 클라우드에 배포하는 과정을 정리한다. 회사에서 SSL 인증서가 3개월마다 만료될 때 갱신에 대한 요청이 오곤 한다. 이 과정을 Cron과 Shell script로 자동화하는 방법에 대해 다루고자 하는데, 그 전에 간단히 Certbot으로 인증서 갱신하는 방법을 정리해보려한다."
+thumbnail: "thumbnail.png"
+category: "Frontend"
+subcategory: "Browser"
+tags: []
+---
+
+## 들어가며
+
+이번 게시글은 Certbot으로 SSL 인증서를 발급하고 Kubernetes를 활용하여 클라우드에 배포하는 과정을 정리한다. 회사에서 SSL 인증서가 3개월마다 만료될 때, "0biglife님, SSL 갱신해주세요."라고 요청이 오곤 한다. 이 과정을 Cron과 Shell script로 자동화하는 방법에 대해 다루고자 하는데, 그 전에 간단히 Certbot으로 인증서 갱신하는 방법을 정리해보려한다.
+
+## Certbot
+
+Certbot은 무료로 Let's Encrypt SSL 인증서를 발급하고 갱신할 수 있는 가장 보편적인 도구다. 현재 MacOS 환경에서 진행중이며 `Homebrew` 커맨드를 이용해 설치했다.
+
+```bash
+# 설치
+brew install certbot
+
+# 설치 확인
+certbot --version
+# --> 결과 : certbot 2.11.0
+```
+
+## 인증서 발급
+
+Certbot 커맨드로 인증서를 발급받는다. 다음은 수동으로 인증서 발급을 진행하는 커맨드다.
+
+```bash
+sudo certbot certonly --manual
+```
+
+입력하면 `sudo`로 로컬 PC 비밀번호를 입력하고 나면, 다음과 같은 결과가 나온다.
+
+```bash
+Password:
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+Enter email address (used for urgent renewal and security notices)
+ (Enter 'c' to cancel): 0biglife@gmail.com # <---- 이메일 입력
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Please read the Terms of Service at
+https://letsencrypt.org/documents/LE-SA-v1.<Date>.pdf. You must
+agree in order to register with the ACME server. Do you agree?
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+(Y)es/(N)o: Y  # <---- Y 입력
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Would you be willing, once your first certificate is successfully issued, to
+share your email address with the Electronic Frontier Foundation, a founding
+partner of the Let's Encrypt project and the non-profit organization that
+develops Certbot? We'd like to send you email about our work encrypting the web,
+EFF news, campaigns, and ways to support digital freedom.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+(Y)es/(N)o: Y  # <---- Y 입력
+Account registered.
+Please enter the domain name(s) you would like on your certificate (comma and/or
+space separated) (Enter 'c' to cancel):*.0biglife.com
+Requesting a certificate for *.0biglife.com
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Please deploy a DNS TXT record under the name:
+
+_acme-challenge.0biglife.com
+
+with the following value:
+
+RTm34Pgqa4OF1dmDsnl3DMpl3klKoeQqkw980Nmm  #  보안을 위한 예시 Key 값
+
+Before continuing, verify the TXT record has been deployed. Depending on the DNS
+provider, this may take some time, from a few seconds to multiple minutes. You can
+check if it has finished deploying with aid of online tools, such as the Google
+Admin Toolbox: https://toolbox.googleapps.com/apps/dig/#TXT/_acme-challenge.0biglife.com.
+Look for one or more bolded line(s) below the line ';ANSWER'. It should show the
+value(s) you've just added.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Press Enter to Continue
+```
+
+### 여기서 주의할 점
+
+`Enter`를 바로 입력하면 다음과 같은 문구를 보게 된다.
+
+```bash
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Press Enter to Continue
+
+Certbot failed to authenticate some domains (authenticator: manual). The Certificate Authority reported these problems:
+  Domain: 0biglife.com
+  Type:   dns
+  Detail: DNS problem: NXDOMAIN looking up TXT for _acme-challenge.0biglife.com - check that a DNS record exists for this domain
+
+Hint: The Certificate Authority failed to verify the manually created DNS TXT records. Ensure that you created these in the correct location, or try waiting longer for DNS propagation on the next attempt.
+
+Some challenges have failed.
+Ask for help or search for solutions at https://community.letsencrypt.org. See the logfile /var/log/letsencrypt/letsencrypt.log or re-run Certbot with -v for more details.
+0ds@0biglife-3:~%
+```
+
+`Enter` 입력시 Let's Encrypt가 인증 과정을 수행하면서 특정 프로토콜(정확히는 ACME 프로토콜)을 통해서 도메인 소유권을 확인한다. DNS-01 인증은 도메인 소유권을 증명하기 위해 `_acme-challenge.<도메인>` 형태를 TXT 레코드에 반드시 등록되도록 요구한다. 이 과정에서 Let's Encrypt는 ACME 서버를 통해 전 세계 DNS 시스템에 **지정된 도메인의 네임서버를 조회**하고 **TXT 레코드 조회**를 수행하여, 조회 결과를 ACME 서버에서 인증 여부를 결정한다. 그렇기 때문에 위와 같이 TXT 레코드가 아직 존재하지 않을시 Let's Encrypt는 **인증 실패 처리**를 반환한다.
+
+이해가 안간다면, 그냥 **Let's Encrypt가 우리가 생성한 도메인에 레코드가 생성되었는지를 조회해본다**는 정도로 이해하고 넘어가자.
+
+## DNS 레코드 업데이트
+
+위에서 `Enter`를 입력하기 전에 도메인 레코드를 먼저 업데이트하자. 필자는 현재 호스팅 서비스로 `가비아(Gabia)`를 사용하고 있다. 현재 개인 블로그는 AWS Amplify에서 편리하게 도메인 연결 기능을 제공해주기 때문에 가비아에서는 실제로 도메인 구매만 된 상태이다. 따라서, 이 예제에서는 회사 도메인을 갱신하기 위해 TXT, A 레코드를 추가한다.
+
+TXT 레코드와 A 레코드는 가장 주요하게 쓰이는 레코드 유형이다. **TXT 레코드는 도메인 소유권 확인**을 위해 사용되고 **A 레코드는 도메인을 IPv4 주소와 연결**하기 위해 사용된다. A 레코드는 도메인 이름을 IPv4 주소로 변환하여 사용자가 입력한 도메인 이름을 실제 서버의 IP 주소와 맵핑시킨다. 회사에서는 AKS와 Istio로 인프라가 구축된 상황이다. A 레코드는 `Istio Ingress Gateway`가 생성한 외부 External IP(ex.20.100.9.200)로 연결이 되어 클러스터 내부 서비스로 트래픽이 전달되도록 구성되어있다.
+
+정리하면, Certbot이 발급해준 DNS 레코드 인증 키 값은 TXT 레코드에 입력해주고, 클러스터에서 로드 밸런싱해주는 서비스의 External IP를 A 레코드에 입력해주자.
+
+![Gabia DNS Console](https://0biglife-world.s3.us-east-2.amazonaws.com/post16_01.png)
+
+## 마무리
+
+DNS 레코드 업데이트까지 진행헀다면 이제 `Enter`를 입력하자. 그러면 다음과 같이 진행된다.
+
+```bash
+Successfully received certificate.
+Certificate is saved at: /etc/letsencrypt/live/0biglife.com/fullchain.pem
+Key is saved at:         /etc/letsencrypt/live/0biglife.com/privkey.pem
+This certificate expires on 2024-11-30.
+These files will be updated when the certificate renews.
+
+NEXT STEPS:
+- This certificate will not be renewed automatically. Autorenewal of --manual certificates requires the use of an authentication hook script (--manual-auth-hook) but one was not provided. To renew this certificate, repeat this same certbot command before the certificate's expiry date.
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+If you like Certbot, please consider supporting our work by:
+ * Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+ * Donating to EFF:                    https://eff.org/donate-le
+```
+
+위 문구는 발급받은 인증서가 위치한 경로(ex.`/etc/letsencrypt/live/0biglife.com/fullchain.pem`)를 알려준다. 이 경로에서 인증서를 Kubernetes Secret 형태로 배포해주고 Istio Gateway와 연결해주면 인증서 발급/갱신이 마무리된다.
+
+## Kubernetes에 인증서 적용
+
+발급받은 인증서는 아래 직접 시크릿으로 만들어줄거다. 커맨드에서 위에 결과물에서 알려준 경로의 인증서를 끌어다가 배포해주고 Gateway와 VirtualService에서 이 Secret을 참조하도록 하면 인증서가 적용된다. 이 때, 주의할 점은 Istio Ingress Gateway와 동일한 네임스페이스로 배포해야한다는 점이다.
+
+```bash
+# tls는 인증서와 개인 키를 저장하고 HTTPS 처리를 위한 Secret의 타입이다.
+sudo kubectl create -n istio-system secret tls httpbin-credential --cert /etc/letsencrypt/live/0biglife.com/fullchain.pem --key /etc/letsencrypt/live/0biglife.com/privkey.pem
+
+# 배포되었다면 아래 커맨드로 조회
+kubectl get secret -A
+```
+
+![Secret 배포 현황](https://0biglife-world.s3.us-east-2.amazonaws.com/post16_03.png)
+
+### 인증서 적용 확인
+
+인증서가 정상적으로 적용되었는지를 검토하기 위해 Kubernetes 각 리소스 별로 시크릿을 참조하기 위한 절차가 완수되었는지 살펴보자.
+
+실제 동작하기 위한 `Service`가 `VirtualService`의 `host`로 잡혀있는지 검토한다. 여기서 `Service`는 웹 이미지가 빌드된 `Deployment`와 연결되어있는지를 확인한다면, Kubernetes 상에서 발급받은 인증서가 실제 웹에 적용되었는지를 정상적으로 확인하는 프로세스가 완료된다. 리소스들이 다양하여 다소 헷갈릴 수 있으나 핵심만 짚어서 간단히 이해해보자.
+
+### Gateway & VirtualService
+
+`Gateway`는 `tls`속성값으로 `Secret`을 참조하고 `hosts`를 등록해준다. `VirtualService`는 `Gateway` 이름을 참조하고 `destination`을 설정해주어 `Service`와 연결시켜준다.
+
+```yaml
+# Gateway
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+name: <gateway-name>
+namespace: istio-system
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: <secret-name> # Secret 이름
+    hosts:
+    - "\*.0biglife.com"
+
+# VirtualService
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: <virtualservice-name>
+  namespace: default
+spec:
+  hosts:
+    - '0biglife.com'
+  gateways:
+    - <gateway-name>
+  http:
+    - route:
+        - destination:
+            host: <service-name>
+            port:
+              number: 80
+```
+
+### Deployment & Service
+
+`VirtualService`와 연결된 `Service`는 사실상 `Deployment`와 동일한 `selector` 속성값을 공유하는지만 따지면 된다. 이 외에 신경쓸건 없다.(물론 웹이 동작하기 위한 컨테이너, 포트, 이미지 등 설정이 있으나 여기선 다루지 않는다.)
+
+```yaml
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: <deployment-name>
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: <selector-name>
+  template:
+    metadata:
+      labels:
+        app: <selector-name>
+    spec:
+      containers:
+        - name: <container-name>
+          image: <image-name>:<image-tag>
+          ports:
+            - containerPort: 80 # 컨테이너가 노출할 포트
+
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: <service-name>
+  namespace: default
+spec:
+  selector:
+    app: <selector-name>
+  ports:
+    - protocol: TCP
+      port: 80 # 서비스 포트
+      targetPort: 80 # Pod의 컨테이너 포트
+  type: ClusterIP
+```
+
+이상으로 Certbot을 통한 인증서 발급과 DNS 추가, 그리고 클라우드 환경에서 Kubernetes를 활용한 인증서 적용까지 살펴보았다. 처음엔 다소 익숙하지 않았고 각 절차마다 익숙하지 않은 지식들을 습득하느라 시간이 다소 걸렸으나 3,4번 반복해보면 금방 익숙해진다. 그리고 그 과정에서 `이건 왜?` 따지면서 차근차근 공부해보면 금방 이해될 것이다.

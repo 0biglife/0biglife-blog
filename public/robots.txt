@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Host: https://0biglife.com
+Sitemap: https://0biglife.com/sitemap.xml

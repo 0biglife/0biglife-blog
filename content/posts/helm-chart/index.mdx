@@ -1,0 +1,399 @@
+---
+title: "Helm으로 통합 배포 솔루션 구현하기 (with Golang, Harbor)"
+date: "2025-03-23"
+description: "이번 게시글은 Helm에 대해 다룬다. 총 6일간 사내 솔루션 설치 방식에 elm Chart와 Helm Repository를 적용하였으며, csp별 K8s 리소스 통합 과정과 테스트 코드를 포함한 기술 세션 공유를 진행하였다. 솔루션의 첫인상과도 같은 설치 서비스가 정돈되고, 불편한 외부 레지스트리를 걷어내는 유의미한 시간이었다."
+thumbnail: "thumbnail.png"
+category: "Productivity"
+subcategory: "Deployment"
+tags: []
+---
+
+## 들어가며
+
+이번 게시글은 Helm에 대해 다룬다. 총 6일간 사내 솔루션 설치 방식에 Helm Chart와 Helm Repository를 적용하였으며, csp별 K8s 리소스 통합 과정과 테스트 코드를 포함한 기술 세션 공유를 진행하였다. 솔루션의 첫인상과도 같은 설치 서비스가 정돈되고, 불편한 외부 레지스트리를 걷어내는 유의미한 시간이었다.
+
+![배의 운전대, 키를 의미하는 Helm](1.png)
+
+## Helm
+
+Helm은 **Kubernetes 패키지 매니저**로 애플리케이션 배포를 쉽고 효율적으로 관리하도록 도와주는 도구다. Node.js로 치면 Npm이라고 생각하면 이해가 쉽다. 장점은 다음과 같다.
+
+1. **패키징 및 배포**: 여러 YAML 파일(Deployment, Service, ConfigMap 등)을 하나의 패키지(Helm Chart)로 관리하여, 복잡한 애플리케이션을 한 번에 배포 가능하게 해준다.
+
+2. **버전 관리**: 애플리케이션의 버전을 관리하고, 롤백(rollback) 기능을 지원하여 안정적인 배포를 보장한다.
+
+3. **템플릿화**: Helm Chart 템플릿을 사용하여 다양한 환경(개발, 테스트, 운영)에 맞게 구성값을 동적으로 주입하여 관리한다.
+
+## Helm Chart란
+
+Helm을 사용해 애플리케이션을 배포하기 위한 **패키지 파입 집합** 개념이다. 이는 Kubernetes 리소스를 정의하는 템플릿 파일과 Chart 자체에 대한 메타데이터를 포함한다.
+
+### 구성요소
+
+- **Chart.yaml**: Chart의 이름, 버전, 설명 등의 메타데이터를 담고 있다.
+
+- **values.yaml**: 템플릿에서 사용될 기본 설정값들을 정의한다.
+
+- **templates/**: 실제 Kubernetes 리소스(Deployment, Service 등)를 정의하는 YAML 템플릿 파일들을 관리한다.
+
+필자는 CSP별 다른 속성값들을 관리하기 위해 `values-*` 파일을 통해 관리하려고 한다. 예를 들어, `values-aks.yaml`, `values-eks.yaml`, `values-nks.yaml` 등 추가 설정 파일을 추가하여 각 CSP별 인자들, 이를테면 StorageClass의 `provisioner`, `parameters` 속성들을 제어할 수 있다. 따라서, Helm Chart를 통해 우리는 복잡한 Kubernetes 배포 구성을 단순화하고, 동일한 애플리케이션을 다양한 환경에서 단일 차트를 통해 배포 관리하려는 것이다.
+
+## 개발 요구사항
+
+다음 요건을 충족시키자는 목표로 시작했다.
+
+1. csp별 서로 다른 yaml 파일 관리를 `Helm`을 통해 통합한다.
+
+2. 설치 과정에서 Helm을 설치하지 않고, `go-client-helm` SDK를 사용함으로써 사용자 PC의 Helm 버전 의존성을 완벽하게 분리하여 설치를 진행한다. (당연히 인스턴스 메모리는 실행 종료시 자동 해제된다.)
+
+3. 만들어진 `Helm` 인스턴스를 재사용하여 로직을 간소화, 유지보수 한다. 예를 들어, Cilium과 Istio를 설치하는 함수는 `root/helm/installer.go`로 분리하여 필요할 때 가져다쓴다.
+
+4. `Helm Chart`로 통합될 yaml 관리를 통해 외부 레지스트리(wasabi)를 완전히 걷어낸다.
+
+5. 이 과정에서 발생되는 모든 함수는 단일 원칙을 따르고, 테스트 코드를 작성하여 관리한다.
+
+이 과정을 진행하기 위해 가장 먼저 `go-client-helm` 인스턴스를 만드는 것부터 시작했다.
+
+#### Go Client Helm
+
+다시 말해 필자는 현재 Golang으로 설치 프로그램을 개발 중이며 설치하려는 로컬 PC에 Helm 설치 여부와는 독립적으로 개발하기 위하여 `go-helm-client`를 사용 중이다.(이는 Helm v2,v3가 보안문제로 인하여 RBAC 관리 방식이 바뀌는 것에 영향을 주지 않기 위함이며, 동시에 설치 과정에서 발생하는 의존성은 설치 종료와 동시에 제거되어야함을 보장하기 위함이다.) 사용법은 간략히 다음과 같다.
+
+```go
+helmClient, err := helmclient.New(opt)
+if err != nil {
+  return fmt.Errorf("helm client creation failed: %w", err)
+}
+
+customValuesYaml := `
+global:
+  csp: nks
+  namespace: test-system
+
+  mongodb:
+    registrySecretName: ncr-secret
+
+base:
+  enabled: false  # base 컴포넌트 활성화
+main:
+  enabled: true   # main 컴포넌트 활성화
+`
+
+ChartSpec := &helmclient.ChartSpec{
+  ChartName:       "oci://{harbor-url}/{project-name}/{chart-name}",  // OCI 레지스트리 차트 위치
+  Version:         "1.0.0",                                           // 차트 버전
+  ReleaseName:     {release-name},                                    // 릴리스 이름
+  Namespace:       {namespace},                                       // 설치될 네임스페이스
+  Wait:            true,                                              // 리소스 Ready 상태 대기
+  Timeout:         time.Minute * 10,                                  // 설치 타임아웃
+  CreateNamespace: true,                                              // 네임스페이스 자동 생성 비활성화
+  ValuesYaml:      customValuesYaml,                                  // 차트 values 설정
+}
+
+fmt.Println("🚀 Starting Custom Chart Installation...")
+if _, err := helmClient.InstallOrUpgradeChart(context.Background(), ChartSpec, nil); err != nil {
+  return err
+}
+```
+
+위와 같이 `helmclient`라는 인스턴스를 생성하여 재사용한다. `customValuesYaml`에서는 `global` 속성을 통해 `csp`와 각 csp별 다르게 관리하고 싶은 속성값들을 명시해주고 인스턴스의 차트 스펙의 `ValuesYaml`에 넣어준다. 차트 이름과 `Wait`은 아래서 설명할 예정이며, `Timeout`은 현재 차트 설치하는 타임아웃 시간을 지정하는 값이다. `CreateNamespace`는 설치하려는 리소스의 네임스페이스가 존재하지 않는다면 해당 네임스페이스 생성을 먼저 진행한다는 것을 의미한다.
+
+Helm의 용도와 구성은 알겠고 이젠 내가 원하는 의도에 맞게 동작하게 해야한다. 이를 위한 고민해야할 큰 맥락은 다음 두 가지로 정리했다.
+
+#### 1. csp별 필요한 속성값 관리는 어떻게 이루어지는가?
+
+`Helm` 고유의 yaml 관리 문법(필자는 문법이라고 표현하겠다)이 처음엔 익숙하지 않았으나, 쓸수록 편리했다. 예를 들어, 인자로 `custom.*`를 넘겨주고 해당 값을 특정 yaml에서 가져다 쓸 때는 `{{ .Values.custom.frontendImage }}` 방식으로 가져다 쓴다.
+
+```yaml
+# Deployment/yaml
+containers:
+  - name: frontend
+    image: { { .Values.custom.frontendImage } }
+    ports:
+      - containerPort: 4173
+        protocol: TCP
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1000Mi
+      requests:
+        cpu: 250m
+        memory: 1000Mi
+```
+
+또는 yaml 내부에서 조건문도 사용 가능하다. `global`로 선언한 `csp` 속성값이 `nks`일 때에는 이 yaml을 배포하지 않겠다는 조건을 다음과 같이 걸어줄 수 있다. 심지어, 우리가 에러 로깅을 찍어보듯이 yaml 내부에서 값을 디버깅할 수도 있다.
+
+```yaml
+# StorageClass.yaml
+{{- if ne .Values.global.csp "nks" }}
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: test-storageclass
+  namespace: test-system
+  annotations:
+    "helm.sh/hook-weight": "-16"
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+parameters:
+{{- if .Values.storageClass.parameters }}
+  {{- range $key, $value := .Values.storageClass.parameters }}
+  {{ $key }}: {{ $value }}
+  {{- end }}
+{{- end }}
+provisioner: {{ .Values.storageClass.provisioner }}
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+{{- end }}
+```
+
+#### 2. 설치 순서를 어떻게 적용하는가?
+
+Helm은 Annotation에 `hook-weight`를 지정해줌으로써 **순차적인 배포를 보장**한다. 이 숫자는 작는 숫자일수록 최우선으로 배포한다. 예를 들어, A 리소스는 B리소스보다 먼저 배포된다. 또한, `helm.sh/resource-policy: keep`과 같은 리소스 재배포시 영향을 받을지 여부에 대한 기능도 포함한다. 이 밖에 기능들은 문서에서 확인하자.
+
+```yaml
+# A Resource
+  ...
+  annotations:
+    "helm.sh/hook-weight": "-6"
+    "helm.sh/resource-policy": keep
+  ...
+
+# B Resource
+  ...
+  annotations:
+    "helm.sh/hook-weight": "-2"
+    "helm.sh/resource-policy": keep
+  ...
+```
+
+**3. 설치 도중에 발생하는 DB Replia Set을 PRIMARY로 적용이나 Pod Status 검증은 어떤 식으로 동작해야하는가? 설치를 중단해야할까 아니면 wait을 걸어주는 기능이 지원되는가?**
+
+먼저, Pod Status 검증에 대해서는 Helm에서 자동으로 검증해준다. `go-client-helm`의 `helmclient`에는 `Wait` 기능을 `true` 또는 `false`로 지원해준다. `true`로 설정할지 현재 설치한 워크로드의 파드 상태가 `Ready`가 될 때까지 기다려준다는 뜻이다.
+
+```bash
+...
+2025/01/24 09:25:50 Service does not have load balancer ingress IP address: test-system/test
+2025/01/24 09:25:52 Deployment is not ready: test-system/test. 0 out of 1 expected pods are ready
+2025/01/24 09:25:54 Deployment is not ready: test-system/test. 0 out of 1 expected pods are ready
+2025/01/24 09:25:56 Deployment is not ready: test-system/test. 0 out of 1 expected pods are ready
+...
+# 위와 같이 디폴트 2초에 한 번씩 모니터링하고 상태가 '1 out of 1'이 되면 다음 설치 과정으로 넘어간다.
+```
+
+정말 편리하지 않나. 고마워 Helm.. 그 다음은 DB StatefulSet이 배포가 되었고, 솔루션 워크로드 파드가 설치되기 전에 백엔드 파드가 실행되면서 DB의 PRIMARY POD를 요청해야한다. 즉, 설치 순서 사이에 DB Replica Set 설정을 위해 작업이 중단되어야하는 것을 의미하는데, 이를 위해 서브차트로 분리하였다. 물론 `option`을 통해 제어할 수 있다고 하지만, 개발 레벨에서의 복잡성과 차트 아키텍처의 복잡성에 대한 밸런스를 고민한 결과 `option`은 쓰지 않고 Chart를 하나 더 만드는 대신 코드를 깔끔하게 가져가기로 했다. 이는 차트 구성도가 최대 2개까지 가져가는 것이 되려 base subChart, main subChart로 나뉘어지는 데서 더 명시적일 것이라 판단한 결과였다.
+
+따라서, 필자가 구성한 **Helm Chart 아키텍처**는 다음과 같다.
+
+```bash
+# base Chart: jaeger, kube-state-metrics, monitoring, mongodb 등 공통 컴포넌트를 정의
+# main Chart: 실제 서비스 배포를 위한 설정을 포함된다.
+# 여러 values 파일을 통해 AKS, EKS, NKS 등 다양한 환경에 맞는 설정을 분리하여 관리한다.
+# 전체 설치 프로세스는 다음과 같이 단계별로 진행된다.
+
+{name}-chart/
+├── Chart.yaml
+├── values.yaml
+├── values-aks.yaml
+├── values-eks.yaml
+├── values-nks.yaml
+└── charts/
+    ├── base/
+    │   ├── Chart.yaml
+    │   ├── values.yaml
+    │   └── templates/
+    │       ├── _helpers.tpl
+    │       ├── config/
+    │       │   └── config.yaml
+    │       ├── jaeger/
+    │       │   ├── deployment.yaml
+    │       │   └── services.yaml
+    │       ├── kube-state-metrics/
+    │       │   ├── deployment.yaml
+    │       │   ├── ...
+    │       │   └── rbac.yaml
+    │       ├── monitoring/
+    │       │   ├── namespace.yaml
+    │       │   ├── ...
+    │       │   └── rbac.yaml
+    │       ├── storage/
+    │       │   ├── storageclass.yaml
+    │       │   ├── pv.yaml
+    │       │   └── pvc.yaml
+    │       ├── mongodb/
+    │       │   ├── statefulset.yaml
+    │       │   ├── ...
+    │       │   └── rbac.yaml
+    │       └── log/
+    │           └── ...
+    └── {main-chart-name}/
+        ├── Chart.yaml
+        ├── values.yaml
+        └── templates/
+            ├── deployment.yaml
+            └── service.yaml
+```
+
+[Helm Doc](https://helm.sh/docs/chart_template_guide/subcharts_and_globals/)을 통해 SubChart를 사용했고, 위 구성도를 통해 우리는 `base Chart` 설치를 마친 뒤, 특정 동작을 완수하고 해당 동작이 마친 다음에서야 `main Chart` 설치를 진행할 것이다.
+
+## Helm Repository
+
+이건 뭘까? 말그대로 **Helm Chart를 저장하고 배포할 수 있는 저장소**다. Helm을 적용하기 전 우리 팀에서는 솔루션 설치를 위해서 가져와야하는 리소스 yaml들은 전부 <u>wasabi 라는 클라우드 스토리지</u>에 올라가있었다. 근래 솔루션 이미지 레지스트리를 Harbor로 구축하면서 이때다 싶어 wasabi를 걷어내고 Harbor로 통합하고자 했다.
+
+![Harbor Dashboard Page](2.png)
+
+**Harbor**는 **오픈소스 컨테이너 레지스트리**로, 클라우드 네이티브 환경에서 컨테이너 이미지와 Helm Chart와 같은 패키지를 안전하게 관리할 수 있는 레지스트리다. 솔루션별, CSP별 이미지가 모두 Harbor의 퍼블릭 프로젝트에 올라가 있으며, 설치에 관여하는 Helm Chart도 모두 Harbor의 새로운 프로젝트로 업로드하여 관리하려고 한다. 이렇게 되면 인스톨 프로세스의 10군데 넘게 들어간 wasabi url들은 모두 제거될 수 있었고 이 참에 지저분하고 통합되지 못한 함수들을 전부 통합시키고 리팩토링하였다.
+
+![Helm Repository Diagram](3.png)
+
+정리해보자면, Helm을 통해 Helm Chart를 프로젝트 목적에 맞게 구축을 한 뒤, 패키지를 생성하고 Repository에 올린다. 그리고 설치할 때마다 우리는 Helm을 사용해 Harbor에서 Chart를 가져올 것이고, 미리 만들어준 Helm Chart를 통해 알아서 yaml들이 배포되도록 의도한다. 위 그림을 참고하자.
+
+## 최종 코드
+
+최종 코드는 다음과 같다. `go-client-helm` 인스턴스를 만들고, Istio를 설치한 이후, 첫 번째 서브차트인 `base-chart`를 설치한다. 설치가 완료된 후에 `Helm`에서 DB Pod Status 상태 검증을 마쳤기 때문에 곧바로 DB Replica Set 초기화를 진행한다. 초기화를 마치면 초기화가 잘 진행되었는지 3분의 타임아웃과 5초마다 `rs.status()`를 검증하며 함수를 마친다. 그 다음에서야 이제 두 번째 서브차트인 `main-chart`를 설치한다. 여기까지가 Helm이 관여하는 모든 프로세스다.
+
+```go
+package nks
+
+var NewCmd = &cobra.Command{
+Run: func(cmd *cobra.Command, args []string) {
+
+  // ... 생략 ...
+
+  //* Helm 핸들러 초기화
+  helmInstaller, err := installer.NewInstaller("./charts")
+  if err != nil {
+    fmt.Println(aurora.Red(fmt.Sprintf("❌ Helm installer instance creation failed : %v", err)).Bold())
+      os.Exit(1)
+  }
+  defer helmInstaller.Cleanup()
+
+  //* Istio 설치
+  if err := helmInstaller.InstallIstio("1.22.2"); err != nil {
+    fmt.Println(aurora.Red(fmt.Sprintf("❌ Istio Installation failed : %v", err)).Bold())
+    os.Exit(1)
+  }
+
+  //* Install base chart
+  if err := installBaseChart(); err != nil {
+    fmt.Println(aurora.Red(fmt.Sprintf("❌ Base Chart Installation failed : %v", err)).Bold())
+    os.Exit(1)
+  }
+
+  //* Initialize replica set
+  if err := initializeReplicaSet(); err != nil {
+    fmt.Println(aurora.Red(fmt.Sprintf("❌ Initialize Replica Set failed : %v", err)).Bold())
+    os.Exit(1)
+  }
+
+  //* Initialize nks credential
+  if err := initializeDBEnvironment(); err != nil {
+    fmt.Println(aurora.Red(fmt.Sprintf("❌ Initialize Nks Credential Setting failed : %v", err)).Bold())
+    os.Exit(1)
+  }
+
+  //* Install main chart
+  if err := installMainChart(); err != nil {
+    fmt.Println(aurora.Red(fmt.Sprintf("❌ Main Chart Installation failed : %v", err)).Bold())
+    os.Exit(1)
+  }
+
+  //* Initialize Service Url
+  if err := initializeServiceUrl(); err != nil {
+    fmt.Println(aurora.Red(fmt.Sprintf("❌ Main Url Initialization failed : %v", err)).Bold())
+    os.Exit(1)
+  }
+
+  //* Send Installation Confirmation Email
+  if err := sendInstallationConfirmationEmail(); err != nil {
+    fmt.Println(aurora.Red(fmt.Sprintf("❌ Send Service Confirmation Email failed : %v", err)).Bold())
+    os.Exit(1)
+  }
+
+  fmt.Println("✅ NKS installation completed successfully!")
+  os.Exit(1)
+},
+}
+```
+
+원래 코드를 정리하면서 책상 정리되듯한 희열을 느낀다. 엉망이었던 코드들이 블록형태로 맞춰지는 쾌감이란.. 이제 저 모듈들을 csp별 원하는 과정마다 끼워넣기만 하면 된다. 물론 100% 완벽하지 않다. 추가 고려사항은 다음과 같다.
+
+1. 로깅 개선
+
+2. 에러 모듈화
+
+3. execMongoDBCommand(namespace, podName, dbCommand string) error 같은 함수로 캡슐화
+
+#### 이후 프로세스
+
+#### Helm Package 생성
+
+Helm Chart를 만들기 위해 다음 커맨드를 실행한다.
+
+```bash
+helm package {package-name}
+
+# 커맨드 결과
+Successfully packaged chart and saved it to: /Users/0ds/Documents/GitHub/install-software/{package-name}-1.0.0.tgz
+```
+
+그럼 root 경로에 `{package-name}-1.0.0.tgz` 파일이 생성된다.
+
+#### Harbor Repository에 Chart 파일 push
+
+생성된 파일을 Helm Repository로 쓰려는 Harbor 경로로 푸시해주자.
+
+```bash
+helm push {package-name}-1.0.0.tgz oci://{public-harbor-path}/{project-name}
+
+# 커맨드 결과
+Pushed: {harbor-url}/{project-name}/{package-name}:1.0.0
+Digest: sha256:1582fb49c2ad1cecf19037697cc6206014f0b771412f414d86609dc5000c5aa2 # 실제값 아님
+```
+
+그럼 다음과 같이 성공적으로 업로드된 것을 확인할 수 있다. (현재는 버전 1.0.0로 구축된 상태이다.)
+
+![](4.png)
+
+#### Go 설치 파일 생성
+
+```bash
+# For M1/M2 Mac
+GOOS=darwin GOARCH=arm64 go build
+```
+
+#### Go 설치 파일 실행
+
+```bash
+# 파일 권한 수정
+chmod +x {install-file-name}
+
+# 파일 실행 : nks 인자 전달을 통해 naver cloud 환경에 솔루션을 설치하도록 실행한다
+./{install-file-name} nks
+```
+
+#### 설치과정 모니터링
+
+좌측 상단은 DB 포트 포워딩하는 용도, 좌측 하단과 중앙은 각각 설치 모니터링과 파드 상태 모니터링, 그리고 우측은 차례대로 pv, pvc, configmap이 배포가 잘 되고 있는지 모니터링하는 터미널 화면이다.
+
+![](5.png)
+
+```bash
+# port-forward : 배포된 StatefulSet Pod DB 를 Mongo Compass 연결하는 용도
+kubectl port-forward {db-pod-name} -n {namespace} 28015:27017
+
+# pod monitoring : watch 옵션 사용
+kubectl get po -A -w
+
+# pv/pvc monitoring : pv는 네임스페이스가 없으나 습관처럼 -A 달아버리기,,!
+kubectl get pv -A -w
+kubectl get pvc -A -w
+
+# configmap monitoring
+kubectl get configmap -A -w
+```
+
+## 마치며
+
+`Helm`을 통해 사내 설치 과정을 효율적으로 배포 및 관리하는 방식에 대해 다뤘다. 그 과정에서 여태 빠져있던 테스트 코드 작성과 코드 정리까지 진행하였다. 답답함이 해소되었으나 늘 그렇듯 하면 할수록 욕심이 생기는 작업이다. 기존에 작업해오면서 문서화한 내용을 기반으로 글을 정리했는데 좀 더 다듬어야할 부분이 보여 다음주에 퇴고해볼 예정이다.
