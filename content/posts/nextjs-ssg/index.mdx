@@ -1,0 +1,356 @@
+---
+title: "[Next.js] 정적 사이트로 기술 블로그 만들기"
+date: "2025-03-28"
+description: "이번에는 Next.js로 정적 사이트 개발하는 것에 대해 이야기해볼까 한다. 시장 내 Next.js 기술에 대한 수요가 늘고 있는만큼, 기술 블로그를 만들어보는 기회를 통해 Next.js와 조금 친해질 수 있었다. 그렇다면 왜 Next.js였으며, 왜 App Router 방식과 왜 SSG 방식으로 개발을 하였고, 또 어떤 문제들을 마주하여 해결해냈는가?"
+thumbnail: "thumbnail.png"
+category: "Frontend"
+subcategory: "Next.js"
+tags: []
+---
+
+## 들어가며
+
+이번에는 Next.js로 정적 사이트 개발하는 것에 대해 이야기해볼까 한다. 시장 내 Next.js 기술에 대한 수요가 늘고 있는만큼, 기술 블로그를 만들어보는 기회를 통해 Next.js와 조금 친해질 수 있었다. 그렇다면 왜 Next.js였으며, 왜 App Router 방식과 왜 SSG 방식으로 개발을 하였고, 또 어떤 문제들을 마주하여 해결해냈는가?
+
+## 개발 고려사항
+
+기술 블로그를 만들기 위해 가장 크게 고려한 것은 다름아닌 **빠른 속도**와 **검색엔진 최적화**였다. 이 사이트 내에서는 읽히는 것이 주된 행위고, SEO는 찾아오기 위한 길을 뚫어주는 것이니 당연한 얘기다. 이 두 마리 토끼 모두 잘 잡아줄 무기로 Next.js를 결정하는 것은 비교적 쉬운 선택이었다.
+
+### Next.js
+
+![](1.jpg)
+
+Next.js는 React 기반 프레임워크 중 가장 강력한 SSR(Server-Side Rendering)과 SSG(Static Site Generation)을 지원하는 Node.js 위에서 빌드된 오픈 소스 웹 개발 프레임워크다. 그 중에서도 기술 블로그에 적합한 프레임워크라고 판단한 이유는 다음과 같다.
+
+#### 정적 컨텐츠 미리 렌더링 가능(SSG)
+
+모든 페이지를 빌드시 미리 HTML로 렌더링하여 올려두는 방식이다. 그렇기 때문에 방문할 때마다 서버가 페이지를 생성하지 않아도 되므로 속도 측면에서 유리할 수밖에 없다. 블로그 특성상 "작성 후 잘 바뀌지 않는 컨텐츠"에 유리한 셈이다. 게다가 서버가 필요없고 정적 자산만 있어 AWS Amplify, Vercel과 같은 서버리스 플랫폼과 궁합도 잘맞는다. 추가적으로, 정적 파일은 CDN을 통해 서빙되기 때문에 동시 접속자가 몰려도 병목 없이 처리할 수 있다.
+
+#### SEO 친화적 HTML 구조 생성
+
+검색 엔진 최적화는 기술 블로그에 절대 빼놓을 수 없다. Next.js를 선택한 이유는 단순히 SSG가 가능해서가 아니라, SEO를 위한 기능적 이점이 풍부하기 때문이라해도 과언이 아니다. 정리하면,
+
+- `<head>` 메타태그 조작이 metadata 또는 next/head로 쉽게 가능하다.
+- Open Graph, SNS Card 등 소셜 메타태그 선언이 간편하다.
+- 구조화된 HTML과 빠른 로딩 속도가 SEO 점수에 직접 영향을 준다.
+
+이러한 내용을 바탕으로, Google의 Lighthouse 기준 SEO 점수를 100으로 안정적으로 운영 중에 있다.
+
+#### React 생태계와의 통합
+
+마지막으로, 기존 React가 익숙한 나에게는 빠르게 적용하고, React 기반 라이브러리도 그대로 활용 가능하다.
+
+### App Router
+
+Next.js는 전통적으로 pages/ 디렉토리를 기반으로 라우팅을 해왔는데, 이젠(Next.js 13+) app/ 디렉토리 기반의 App Router 방식이 새로운 표준이 되었다. 이 방식이 기술 블로그와 어떻게 맞물릴지 고민한 사항을 정리해보면,
+
+#### 서버 컴포넌트 기반의 성능 최적화
+
+App Router에서는 컴포넌트를 Server Component, Client Component로 구분짓는다. 그 덕에 Markdown Rendering, Code Highlight 같은 리소스가 무거운 작업은 서버에서 처리하도록 분리할 수 있고, 클라이언트에서는 필요한 JS만 내려보냄으로써 번들 사이즈 최적화까지 도모할 수 있다!
+
+#### Slug 경로 관리
+
+App Router는 동적 세그먼트를 활용해 블로그 게시글과 같은 동적인 경로 관리에 유용하다. 예를 들어, `app/posts/[slug]/page.ts`와 같은 `slug` 경로를 통해 경로를 동적으로 구성한다.
+
+추가적으로, 이러한 Aoo Router가 안정화된 버전이 15.x 버전으로 알려져있어 현재 Next.js 15.2 버전으로 개발 중이다.
+
+## 프로젝트 구조
+
+프로젝트 구조는 App Router에 맞게 구성하되, 정정 서빙될 컨텐츠는 `public`, `content`으로 나뉘어 작업되었다. 컨텐츠 운영과 유지보수를 고려하였으며, 구조는 아래처럼 꽤 간단하다. `src` 디렉토리 내부에는 `app`, `components`, `lib`으로 나뉘어져 있으며, 각각 페이지, 컴포넌트, 유틸리티 함수를 관리하고 있다. 하루 정도 잡고 `public`과 `content`를 통합하는 작업을 진행하는 것 외에는 현재 구조대로 운영될 예정이다.
+
+```bash
+/0biglife-blog
+ ├── /public  → 정적 파일 (이미지, favicon 등)
+ │    ├── /assets
+ │    │    ├── /posts
+ │    │    │    ├── thumnail.png
+ │    ├── favicon.ico
+ ├── /content  → 정적 블로그 게시글 저장 (MDX + 이미지 포함)
+ │    ├── /assets
+ │    │    ├── default-thumbnail.png
+ │    ├── /posts
+ │    │    └── /sample-post
+ │    │         ├── thumnail.png
+ │    │         └── index.mdx
+ ├── /src
+ │    ├── /app  → Next.js App Router 페이지 관리
+ │    │    ├── /posts
+ │    │    │    ├── /[slug]
+ │    │    │    │    ├── page.tsx
+ │    │    │    ├── page.tsx  → 블로그 목록 페이지
+ │    │    ├── /layout.tsx  → 사이트 전체 레이아웃 (헤더, 테마 전환 버튼 포함)
+ │    │    ├── /page.tsx  → 메인 페이지
+ │    ├── /components  → UI 및 공용 컴포넌트
+ │    │    ├── /ui
+ │    │    │    ├── ThemeToggle.tsx  → 다크모드 전환 버튼
+ │    │    │    ├── PostItem.tsx  → 블로그 목록의 개별 포스트 컴포넌트
+ │    │    │    ├── PostContent.tsx  → 블로그 상세 페이지 컴포넌트
+ │    │    ├── /...
+ │    ├── /lib  → 데이터 및 유틸리티 함수
+ │    │    ├── posts.ts  → MDX 파일을 읽고 HTML 변환하는 로직
+ ├── /next.config.js  → Next.js 설정 파일 (MDX 지원)
+ ├── /package.json
+```
+
+## MDX 기반 컨텐츠 구성
+
+블로그의 핵심은 "읽을거리"이며, 이 컨텐츠를 관리하기 위해 MDX를 사용하였다. MDX는 Markdown과 JSX를 결합한 문법으로, React 컴포넌트를 삽입할 수 있어 기술 블로그에 최적하다고 판단했다.
+
+```mdx
+---
+title: "[Next.js] 정적 사이트로 기술 블로그 만들기"
+date: "2025-03-28"
+description: "이번에는 Next.js로 정적 사이트 개발하는 것에 대해 이야기해볼까 한다. 시장 내 Next.js 기술에 대한 수요가 늘고 있는만큼, 기술 블로그를 만들어보는 기회를 통해 Next.js와 조금 친해질 수 있었다. 그렇다면 왜 Next.js였으며, 왜 App Router 방식과 왜 SSG 방식으로 개발을 하였고, 또 어떤 문제들을 마주하여 해결해냈는가?"
+thumbnail: "thumbnail.png"
+---
+
+## 들어가며
+
+...본론...
+```
+
+위와 같이 `.mdx` 파일 하나로 게시글의 모든 정보가 관리되며, 최상단에는 랜딩 페이지에 노출되기 위한 필드를 잡아주고 그 하단에는 마크다운으로 문서화하듯이 작성하였다.
+
+## 정적 페이지 생성
+
+### MDX 컨텐츠 변환 처리
+
+`.mdx`파일로 작성된 컨텐츠는 `getPostBySlug()` 라는 함수로 다음과 같이 처리한다.
+
+1. `gray-matter`를 사용하여 `.mdx` 파일에서 컨텐츠 데이터를 가져온다.
+2. 마크다운 내부 이미지 경로를 정적 경로로 변경한다.(`transformImagePaths(content, slug)` 함수로 `![]({image-name}.{format})`을 `assets/posts/...`로 변경)
+3. `next-mdx-remote`의 `compileMDX()`함수를 통해 서버에서 MDX -> HTML로 변환한다.
+4. 변환된 HTML은 서버 컴포넌트에서 `post.content` 형태로 클라이언트로 전달한다.
+
+위 과정을 통해서 `.mdx` 파일은 빌드 타임에 정적으로 HTML로 변환되고, 그 결과가 `post.content`에 담겨 최종 페이지에서 렌더링되는 것이다.!
+
+### 이미지 경로 자동 변환 처리를
+
+`.mdx` 내부 마크다운 이미지 구문는 `lib/post.ts` 경로에 `transformImagePaths()` 함수를 만들어 처리하도록 했다. 이 함수는 이미지 경로를 정적 경로로 바꾸고, 이미지를 `public/assets/posts`에 복사하는 역할을 한다.
+
+```javascript
+const transformImagePaths = (content: string, slug: string): string => {
+  return content.replace(
+    /!\[(.*?)\]\((?!https?:\/\/)(.*?)\.(jpg|jpeg|png)\)/g,
+    (match, alt, srcBase) => {
+      return `![${alt}](/assets/posts/${slug}/${srcBase}.webp)`;
+    }
+  );
+};
+```
+
+### 정적 경로 생성
+
+![](2.jpg)
+
+Next.js App Router에서는 동적 경로 생성을 위해 `generateStaticParams()`를 사용한다. 필요한 정보는 [공식 문서](https://nextjs.org/docs/app/api-reference/functions/generate-static-params)를 참고하자. 사용 중인 버전과 라우팅 방식에 맞는 내용이 있어 편리했다. 그리고 게시글이 보여지는 컴포넌트에서는 slub에 따라 동적으로 `.mdx` 파일을 불러와서 렌더링하는 방식으로 구현하였다.
+
+```javascript
+// src/app/posts/[slug]/page.tsx/**
+export async function generateStaticParams() {
+  const posts = await getAllPosts();
+  if (!posts || posts.length === 0) {
+    console.error("⚠️ No posts found! Check your content directory.");
+    return [];
+  }
+  return posts.map((post) => ({ slug: post.slug }));
+}
+
+// SEO 최적화를 위한 메타 데이터 설정
+export async function generateMetadata({ params }: { params: Params }) {
+  //
+}
+
+export default async function PostDetailPage({ params }: { params: Params }) {
+  const resolvedParams = await params;
+  const { slug } = resolvedParams;
+
+  if (!slug) return notFound();
+
+  // slug === undefined일 경우 런타임 오류 발생 가능 -> "" 추가
+  const decodedSlug = decodeURIComponent(slug ?? "");
+  const post = await getPostBySlug(decodedSlug);
+  if (!post) return notFound();
+
+  return (
+    <Box minW="300px">
+      ...
+      <Box className="prose lg:prose-lg" flex="1">
+        {post.content}
+      </Box>
+      ...
+    </Box>
+  );
+}
+```
+
+## 부딪힌 이슈와 주의할 점
+
+#### `next-mdx-remote` vs `@next/mdx` 고민
+
+`next-mdx-remote`와 `@next/mdx`는 둘 다 MDX를 HTML로 변환해주는 라이브러리이다. `next-mdx-remote`는 App Router 환경에서 서버/클라이언트 컴포넌트 구분이 까다롭다는 단점이 있으나 동적 컨텐츠 로딩, 전처리 커스터마이징 등 더 많은 기능을 제공하고, `@next/mdx`는 빌드 타임에 MDX를 직접 컴파일하여 빠르고 간편하지만 동적 MDX 컨텐츠 로딩 제한과 커스텀 컨텐츠 전처리가 안된다는 단점이 있어 결국 `next-mdx-remote`를 선택하였다. 현재는 `next-mdx-remote/src`를 사용해 서버 컴포넌트에서 처리하도록 했다.
+
+#### `params` 객체의 비동기 처리 오류
+
+Next.js 15를 기준으로 바뀐 부분이 꽤나 있었다. 특히 `params` 객체의 비동기 처리가 이전과 다르게 바뀌었다. Next.js 15에서는 `params` 객체가 **비동기 로드**된다. 아래와 같은 코드처럼 직접 `params.slug`를 쓰면 오류가 발생한다.
+
+```javascript
+const { slug } = params; // 오류 발생
+```
+
+따라서, 반드시 `await`으로 비동기적으로 처리해야한다. [공식 문서 참고](https://nextjs.org/docs/app/building-your-application/upgrading/version-15#params--searchparams)
+
+```javascript
+const { slug } = await params; // 정상
+```
+
+#### 클라이언트 컴포넌트에서 MDX content 사용시 `useState` 오류
+
+```bash
+TypeError: Cannot use 'useState' within a server component...
+```
+
+다음과 같은 에러가 반복적으로 떴는데, 이는 서버 컴포넌트에서 `useState`를 사용하면 발생하는 오류로, 클라이언트 컴포넌트에서만 사용하도록 주의해야한다. 이를 해결하기 위해서는 서버 컴포넌트에서 필요한 데이터를 미리 불러와서 클라이언트 컴포넌트로 넘겨주는 방식으로 해결하였다. 즉, `app/page.tsx`는 서버 컴포넌트로 만들고, `app/postContent.tsx`는 클라이언트 컴포넌트로 만들어서 데이터를 주고받는 방식으로 해결했다.
+
+```javascript
+// src/app/page.tsx
+export default async function MainPage() {
+  const posts = await getAllPosts();
+  const devLogs = await getAllDevLogs();
+
+  return (
+    <PostContent
+      posts={posts}
+      featuredPosts={featuredPosts}
+      devLogs={devLogs}
+    />
+  );
+}
+
+// src/app/postContent.tsx
+"use client";
+
+import dynamic from "next/dynamic";
+import {
+  BLOG_LEFT_TOP_CATEGORY,
+  BLOG_RIGHT_TOP_CATEGORY,
+} from "@/lib/constant";
+import { Post } from "@/lib/types";
+import { useEffect, useState } from "react";
+
+interface PostContentProps {
+  posts: Post[];
+  featuredPosts: Post[];
+  devLogs: DevLog[];
+}
+
+export default function PostContent({
+  posts,
+  featuredPosts,
+  devLogs,
+}: PostContentProps) {
+  const [views, setViews] = useState({ today: "0", total: "0" });
+
+  useEffect(() => {
+    fetchViews();
+  }, []);
+
+ ...
+}
+```
+
+#### `dynamic` 함수 사용시 `ssr: false` 사용 불가능
+
+Next.js 15부터는 `dynamic()`함수에서 `ssr: false` 옵션이 제거되었다. 13부터 도입된 App Router의 서버/클라이언트 컴포넌트 구분을 명확하게 하고자 제거되었다고 한다. 따라서, `dynamic()` 함수 사용시 옵션란은 비워두고서 컴포넌트 동적 로딩을 추가하자.
+
+```javascript
+"use client";
+
+import dynamic from "next/dynamic";
+
+// Next.js 15 부터는 `ssr: false` 사용 불가능으로 클라이언트 컴포넌트 따로 분리
+const SliderContainer = dynamic(() =>
+  import("@/components/template/SliderContainer")
+);
+const LogContainer = dynamic(() =>
+  import("@/components/template/LogContainer")
+);
+const FilteredPostList = dynamic(() =>
+  import("@/components/template/FilteredPostList")
+);
+```
+
+번외로, 클라이언트 컴포넌트에는 최상단에 `use client`를 붙이고, 서버 컴포넌트은 Next.js에서는 기본이 서버 컴포넌트이기 때문에 특별히 뭘 붙이지 않아도 된다. 단, App Router 전용 기능으로는, `import "server-only"`를 통해 서버 전용 모듈임을 명시하여 클라이언트에서 잘못 import하지 못하도록 막을 수 있다. 서버/클라이언트 컴포넌트가 구분 없이 동작할 수 있기 때문에, 실수로 클라이언트에서 `fs`, `path`, `process.env`와 같은 Node 전용 모듈을 import하면 런타임 에러가 나기 때문에 이를 방지하기 위함이다.
+
+```javascript
+// src/lib/posts.ts
+import "server-only";
+
+export async function getAllPosts() {
+  // 서버에서만 파일 시스템 접근
+  const fs = require("fs");
+  ...
+}
+```
+
+## 빌드/배포 설정 옵션
+
+자, 이제 로직 코드는 마쳤으니 실제 정적 페이지가 생기는지 확인해보자. Next.js에서 어떻게 앱을 빌드하고 배포할지 결정하는 빌드 설정 옵션은 `next.config.ts`에서 설정할 수 있다(`next.config.ts`는 기본적으로 루트에 위치하며, 빌드, 배포, 환경 변수 등을 설정할 수 있다). `output: "export"`와 `output: "standalone"`이 있다. 하나씩 살펴보자.
+
+### ouput: "export"
+
+`output: "export"`는 정적 HTML만 생성하는 순수 SSG 전용 설정이다. `npm run export`를 실행하면 `/out` 디렉토리에 HTML, CSS, JS 등만 담긴 완전한 정적 사이트가 생성된다. 특징을 정리해보자면,
+
+- `getStaticProps`, `generateStaticParams` 같은 SSG 관련 함수만 지원한다.
+- API Routes 작동하지 않는다.
+- 서버 기능이 전혀 없는 환경에 적합하다.
+
+### ouput: "standalone"
+
+`output: "standalone"`은 정적/동적 페이지를 모두 포함하고, Next.js 서버 전체를 독립 실행 가능한 형태로 번들링하는 설정이다.
+
+- API Routes를 포함한 모든 서버 기능이 동작한다.
+- `fetch("api/{route-name}")` 같은 클라이언트 요청도 정상 작동한다.
+- SSR(`getServerSideProps`), 동적 렌더링, 미들웨어 등 지원한다.
+- AWS Amplify, Docker, Vercel 등 Node 런타임 기반 플랫폼에 적합하다.
+
+이미 바로 윗문장을 보면 알곘지만, `output: "standalone"`을 선택했다. 이유는 추후 붙이게 될 조회수 API(Google Analytics 4)과 같은 서버 측 데이터 핸들링이 필요하였고 이를 위해 Next.js 15의 API Routes를 사용하고 싶어 `output: "standalone"`을 선택하였다. 그리고 AWS Amplify 의 환경 변수도 필요했기에 빌드 이후에 `.env` 값을 읽어올 수 있는 Node 서버가 없는 `output: "export"` 방식은 사용할 수 없었다.
+
+## 생성된 정적 페이지 검증
+
+이제 코드 작성과 설정까지 마쳤다면, 빌드 후에 정적 페이지가 잘 생성되었는지를 살펴보면서 마무리하자. 현재 `package.json`은 아래처럼 되어있다.
+
+```json
+{
+  "name": "0biglife-blog",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "next dev",
+    "start": "next start",
+    "lint": "next lint",
+    "serve": "npx serve out",
+    "optimize:images": "ts-node scripts/optimize-images.js",
+    "build": "npm run optimize:images && next build && npm run sitemap",
+    "sitemap": "npx next-sitemap"
+  },
+  ...
+}
+```
+
+`npm run optimize:images` 부분은 빌드와 동시에 모든 이미지들을 webp 포맷으로 변환해주는 용도고 `npm run sitemap`은 사이트맵을 생성해주는 용도이므로, 현재 게시글에서는 무시하자. `next build`를 실행하면 `output: "standalone"`을 감지하고 `.next` 경로에 Node.js 서버로 실행 가능한 번들을 만들고, 동시에 `.next/static/` 내부에 정적 HTML과 JS 파일도 생성한다.
+
+```bash
+# 실제 배포는 .next/standalone/server.js 등으로 수행
+npm run build
+npm start  # next start → standalone 모드로 서버 실행
+```
+
+---
+
+## 마치며
+
+이렇게 Next.js로 SSG 방식으로 기술 블로그를 어떻게 만들었는지 과정을 정리해보았다. Next.js의 강력한 SSG 기능과 App Router 방식을 활용하면, 빠르고 SEO 친화적인 사이트를 만들 수 있고, Next.js 15에서는 App Router가 안정화되어 서버/클라이언트 컴포넌트를 명확하게 구분할 수 있게 되었으며, 이를 통해 성능 최적화와 코드 유지보수가 더 쉬워졌다(이렇게 정리된 글과 패키지처럼 각자 기술 블로그를 쉽게 배포할 수 있는 기본 퍼블릭 리포지토리만 마련된다면 누구나 쉽게 개인 페이지를 만들 수 있지 않나 싶기도 하다). 이미지 로드가 굉장히 느려서 Next.js로 전체 마이그레이션하는 과정에서 발생한 것들을 글 하나로 정리하면서 뭔가 마음이 후련하다.
+
+내가 만든 것에 대한 피드백이나 문의 사항에 대한 소통이 가능하려면 트래픽과 댓글 기능이 필요해보인다. 빠른 시일 내로 GA4도 붙이고 github 댓글 기능도 붙여보고자 한다.
+
+이번 글이 도움이 되었기를 바라며, 다음 글에서 또 만나도록 하자.

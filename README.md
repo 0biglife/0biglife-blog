@@ -15,6 +15,11 @@ npm run dev
 
 ```bash
 /0biglife-blog
+ ├── /public  → 정적 파일 (이미지, favicon 등)
+ │    ├── /assets
+ │    │    ├── /posts
+ │    │    │    ├── thumnail.png
+ │    ├── favicon.ico
  ├── /content  → 정적 블로그 게시글 저장 (MDX + 이미지 포함)
  │    ├── /assets
  │    │    ├── default-thumbnail.png
