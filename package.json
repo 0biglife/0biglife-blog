@@ -6,15 +6,16 @@
     "dev": "next dev",
     "start": "next start",
     "lint": "next lint",
-    "serve": "npx serve out",
+    "serve": "yarn serve out",
     "optimize:images": "ts-node scripts/optimize-images.js",
-    "build": "npm run optimize:images && next build && npm run sitemap",
-    "sitemap": "npx next-sitemap"
+    "build": "yarn optimize:images && next build && yarn sitemap",
+    "sitemap": "yarn next-sitemap"
   },
   "dependencies": {
     "@chakra-ui/color-mode": "^2.2.0",
     "@chakra-ui/icons": "^2.2.4",
     "@chakra-ui/react": "^2.3.7",
+    "@chakra-ui/styled-system": "2.12.0",
     "@chakra-ui/theme": "^3.4.6",
     "@chakra-ui/theme-tools": "^2.2.6",
     "@emotion/react": "^11.14.0",
@@ -29,7 +30,7 @@
     "framer-motion": "^12.4.11",
     "googleapis": "^148.0.0",
     "gray-matter": "^4.0.3",
-    "next": "15.2.3",
+    "next": "^15.2.4",
     "next-mdx-remote": "^5.0.0",
     "next-seo": "^6.6.0",
     "next-sitemap": "^4.2.3",
@@ -47,13 +48,14 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
-    "@types/react": "^19",
+    "@types/node": "^22.13.16",
+    "@types/react": "^19.0.12",
     "@types/react-dom": "^19",
     "@types/react-syntax-highlighter": "^15.5.13",
     "eslint": "^9",
     "eslint-config-next": "15.2.1",
     "ts-node": "^10.9.2",
     "typescript": "^5"
-  }
+  },
+  "packageManager": "yarn@4.8.1"
 }
