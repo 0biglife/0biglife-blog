@@ -137,6 +137,8 @@ const PostList = ({
                 overflow="hidden"
                 borderRadius="md"
                 aspectRatio="4 / 3"
+                boxShadow="lg"
+                transition="box-shadow 0.2s ease-in-out"
               >
                 <Image
                   src={post.thumbnail || "/assets/default-thumbnail.png"}
@@ -162,19 +164,27 @@ const PostList = ({
               borderRadius="lg"
               _hover={{ textDecoration: "none" }}
             >
-              <Image
-                src={post.thumbnail || "/assets/default-thumbnail.png"}
-                alt={post.title}
-                width={200}
-                height={100}
-                layout="intrinsic"
-                sizes="(max-width: 800px) 100vw, 800px"
-                style={{
-                  objectFit: "cover",
-                  aspectRatio: "4/3",
-                  borderRadius: "6px",
+              <Box
+                boxShadow="lg"
+                transition="box-shadow 0.2s ease-in-out"
+                _hover={{
+                  boxShadow: "xl",
                 }}
-              />
+              >
+                <Image
+                  src={post.thumbnail || "/assets/default-thumbnail.png"}
+                  alt={post.title}
+                  width={200}
+                  height={100}
+                  layout="intrinsic"
+                  sizes="(max-width: 800px) 100vw, 800px"
+                  style={{
+                    objectFit: "cover",
+                    aspectRatio: "4/3",
+                    borderRadius: "6px",
+                  }}
+                />
+              </Box>
               <Heading
                 as="h1"
                 size="20px"

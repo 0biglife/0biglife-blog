@@ -30,7 +30,7 @@ const nextConfig = withBundleAnalyzer({
     // removeConsole: true, // 콘솔 로그 제거(번들 크기 감소용)
   },
   output: "standalone", // 정적 사이트(SSG) 최적화 -> standalone으로 변경(GA)
-  // npm run build -> out/posts/{html} 검토
+  // yarn build -> out/posts/{html} 검토
   // + Next.js 15부터는 next export 없이 outpput: "export" 로 전부 대체
 
   // 기존 검색 엔진에 남아있는 이전 블로그 게시글은 모두 deleted Page로 리다이렉트

@@ -68,36 +68,36 @@ export async function generateMetadata({ params }: { params: Params }) {
       description: post.description,
       images: [post.thumbnail],
     },
-    structuredData: {
-      "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      headline: post.title,
-      datePublished: post.date,
-      author: {
-        "@type": "Person",
-        name: "0biglife",
-        url: "https://0biglife.com",
-      },
-      publisher: {
-        "@type": "Organization",
-        name: "0biglife",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://0biglife.com/favicon.png",
-        },
-      },
-      image: {
-        "@type": "ImageObject",
-        url: post.thumbnail,
-        width: 1200,
-        height: 630,
-      },
-      mainEntityOfPage: {
-        "@type": "WebPage",
-        "@id": `https://0biglife.com/posts/${post.slug}`,
-      },
-      url: `https://0biglife.com/posts/${post.slug}`,
-    },
+    // structuredData: {
+    //   "@context": "https://schema.org",
+    //   "@type": "BlogPosting",
+    //   headline: post.title,
+    //   datePublished: post.date,
+    //   author: {
+    //     "@type": "Person",
+    //     name: "0biglife",
+    //     url: "https://0biglife.com",
+    //   },
+    //   publisher: {
+    //     "@type": "Organization",
+    //     name: "0biglife",
+    //     logo: {
+    //       "@type": "ImageObject",
+    //       url: "https://0biglife.com/favicon.png",
+    //     },
+    //   },
+    //   image: {
+    //     "@type": "ImageObject",
+    //     url: post.thumbnail,
+    //     width: 1200,
+    //     height: 630,
+    //   },
+    //   mainEntityOfPage: {
+    //     "@type": "WebPage",
+    //     "@id": `https://0biglife.com/posts/${post.slug}`,
+    //   },
+    //   url: `https://0biglife.com/posts/${post.slug}`,
+    // },
   };
 }
 

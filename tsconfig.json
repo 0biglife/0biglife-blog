@@ -3,6 +3,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "node",
+    "types": ["node", "next"],
     "skipLibCheck": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,

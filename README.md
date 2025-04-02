@@ -7,8 +7,8 @@
 ## Commands
 
 ```bash
-npm run build
-npm run dev
+yarn build
+yarn dev
 ```
 
 ## Architecture
