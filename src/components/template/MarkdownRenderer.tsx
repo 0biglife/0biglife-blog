@@ -171,7 +171,14 @@ export const MarkdownRenderer = {
     );
   },
 
-  hr: () => <hr style={{ margin: "2rem 0", borderColor: "#e2e8f0" }} />,
+  hr: () => (
+    <hr
+      style={{
+        margin: "2rem 0",
+        borderColor: "#e2e8f0",
+      }}
+    />
+  ),
 
   ul: (props: React.HTMLAttributes<HTMLUListElement>) => (
     <ul style={{ marginLeft: "1.5rem", marginBottom: "1rem" }} {...props} />
