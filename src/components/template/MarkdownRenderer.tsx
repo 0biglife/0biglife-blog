@@ -108,13 +108,17 @@ export const MarkdownRenderer = {
 
   // ✅ 핵심 수정: p 내부 block 요소 감지 시 div로 변경
   p: (props: React.HTMLAttributes<HTMLParagraphElement>) => {
-    const children = React.Children.toArray(props.children);
+    // const children = React.Children.toArray(props.children);
+    const children = React.Children.toArray(props.children).map((child) => {
+      if (typeof child === "string") {
+        return child.replace(/->/g, "→");
+      }
+      return child;
+    });
 
     const hasBlockLevel = children.some((child) => {
       if (!React.isValidElement(child)) return false;
-
       const tag = typeof child.type === "string" ? child.type : "";
-
       // Image 컴포넌트도 block처럼 처리
       return ["div", "pre", "figure", "Image"].includes(tag);
     });
@@ -125,7 +129,13 @@ export const MarkdownRenderer = {
       <Tag
         style={{ fontSize: "1rem", lineHeight: "1.7", margin: "1rem 0" }}
         {...props}
-      />
+      >
+        {children}
+      </Tag>
+      // <Tag
+      //   style={{ fontSize: "1rem", lineHeight: "1.7", margin: "1rem 0" }}
+      //   {...props}
+      // />
     );
   },
 
