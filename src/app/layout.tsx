@@ -43,6 +43,12 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          href="/rss.xml"
+          title="0biglife RSS Feed"
+        />
         <style>
           {`
             html, body {
