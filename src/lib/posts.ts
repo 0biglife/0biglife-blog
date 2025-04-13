@@ -15,6 +15,7 @@ import { DevLog, Post, TOCItem } from "./types";
 import { compileMDX } from "next-mdx-remote/rsc";
 import { MarkdownRenderer } from "@/components";
 import { errorLog, slugify } from "./utils";
+import remarkGfm from "remark-gfm";
 
 const contentPostDir = path.join(process.cwd(), "content/posts");
 const contentLogDir = path.join(process.cwd(), "content/dev-logs");
@@ -117,6 +118,11 @@ export const getPostBySlug = async (slug: string): Promise<Post | null> => {
   const mdxSource = await compileMDX({
     source: transformedContent,
     components: MarkdownRenderer,
+    options: {
+      mdxOptions: {
+        remarkPlugins: [remarkGfm],
+      },
+    },
   });
 
   const toc = extractTOC(content);
@@ -168,6 +174,11 @@ export const getDevLogBySlug = async (slug: string): Promise<DevLog | null> => {
   const mdxSource = await compileMDX({
     source: content,
     components: MarkdownRenderer,
+    options: {
+      mdxOptions: {
+        remarkPlugins: [remarkGfm],
+      },
+    },
   });
 
   return {

@@ -25,7 +25,7 @@ export default async function DevLogDetailPage({ params }: { params: Params }) {
           <Heading as="h1" fontSize="3xl">
             {devLog.title}
           </Heading>
-          <Text mt={2} mb={2} fontSize="smaller" color="gray.500">
+          <Text mt={2} mb={2} fontSize="smaller">
             {devLog.date}
           </Text>
           <Box className="prose lg:prose-lg" flex="1">

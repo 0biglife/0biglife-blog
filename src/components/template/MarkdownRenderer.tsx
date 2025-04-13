@@ -146,6 +146,10 @@ export const MarkdownRenderer = {
     <span style={{ color: "#e53e3e" }} {...props} />
   ),
 
+  del: (props: React.HTMLAttributes<HTMLElement>) => (
+    <del style={{ textDecoration: "line-through", opacity: 0.65 }} {...props} />
+  ),
+
   code: ({
     className,
     children,
