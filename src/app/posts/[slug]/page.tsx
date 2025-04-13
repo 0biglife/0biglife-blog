@@ -22,6 +22,7 @@ import { Box, Heading, HStack, Text } from "@chakra-ui/react";
 import { getAllPosts, getPostBySlug } from "@/lib/posts";
 import Image from "next/image";
 import { TableOfContents } from "@/components";
+import { Giscus } from "@/components/template";
 
 type Params = Promise<{ slug: string }>;
 
@@ -43,7 +44,7 @@ export async function generateMetadata({ params }: { params: Params }) {
   const decodedSlug = decodeURIComponent(slug ?? "");
   const post = await getPostBySlug(decodedSlug);
   if (!post) {
-    console.error(`🔴 [generateMetadata] Post not found for slug: ${slug}`);
+    console.error(`[generateMetadata] Post not found for slug: ${slug}`);
     return notFound();
   }
 
@@ -166,6 +167,7 @@ export default async function PostDetailPage({ params }: { params: Params }) {
         </Box>
         <TableOfContents toc={post.toc ?? []} />
       </Box>
+      <Giscus />
     </Box>
   );
 }
