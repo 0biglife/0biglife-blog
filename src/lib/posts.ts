@@ -181,11 +181,14 @@ export const getDevLogBySlug = async (slug: string): Promise<DevLog | null> => {
     },
   });
 
+  const toc = extractTOC(content);
+
   return {
     slug,
     title: data.title,
     date: data.date,
     content: mdxSource.content,
+    toc,
   };
 };
 

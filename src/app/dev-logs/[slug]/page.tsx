@@ -2,6 +2,7 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { Box, Heading, Text } from "@chakra-ui/react";
 import { getAllDevLogs, getDevLogBySlug } from "@/lib/posts";
+// import { TableOfContents } from "@/components";
 
 type Params = Promise<{ slug: string }>;
 
@@ -32,6 +33,7 @@ export default async function DevLogDetailPage({ params }: { params: Params }) {
             {devLog.content}
           </Box>
         </Box>
+        {/* <TableOfContents toc={devLog.toc ?? []} /> */}
       </Box>
     </Box>
   );

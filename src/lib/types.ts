@@ -18,6 +18,7 @@ export type DevLog = {
   title: string;
   date: string;
   content: ReactNode;
+  toc?: TOCItem[];
 };
 
 export type TOCItem = {

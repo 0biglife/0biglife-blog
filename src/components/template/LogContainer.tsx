@@ -50,10 +50,10 @@ const LogContainer = (props: LogContainerProps) => {
             mb="8px"
             borderRadius="md"
             boxShadow="sm"
-            color="gray.600"
-            _dark={{
-              color: "gray.300",
-            }}
+            // color="gray.600"
+            // _dark={{
+            //   color: "gray.300",
+            // }}
             _hover={{
               boxShadow: "md",
               textDecoration: "underline",

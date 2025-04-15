@@ -213,4 +213,69 @@ export const MarkdownRenderer = {
       {...props}
     />
   ),
+
+  // 테이블
+  // MarkdownRenderer 내부
+  table: (props: React.HTMLAttributes<HTMLTableElement>) => (
+    <div style={{ overflowX: "auto" }}>
+      <table
+        style={{
+          width: "100%",
+          minWidth: "600px", // 모바일 대응
+          borderCollapse: "collapse",
+          margin: "1.5rem 0",
+          fontSize: "0.95rem",
+          color: "var(--chakra-colors-chakra-body-text)",
+        }}
+        {...props}
+      />
+    </div>
+  ),
+
+  thead: (props: React.HTMLAttributes<HTMLTableSectionElement>) => (
+    <thead
+      style={{
+        // backgroundColor: "var(--chakra-colors-gray-100)",
+        borderBottom: "2px solid var(--chakra-colors-gray-300)",
+      }}
+      {...props}
+    />
+  ),
+
+  tbody: (props: React.HTMLAttributes<HTMLTableSectionElement>) => (
+    <tbody {...props} />
+  ),
+
+  tr: (props: React.HTMLAttributes<HTMLTableRowElement>) => (
+    <tr
+      style={{
+        borderBottom: "1px solid var(--chakra-colors-gray-200)",
+      }}
+      {...props}
+    />
+  ),
+
+  th: (props: React.ThHTMLAttributes<HTMLTableCellElement>) => (
+    <th
+      style={{
+        textAlign: "left",
+        padding: "0.75rem 1rem",
+        fontWeight: "bold",
+        whiteSpace: "nowrap",
+        color: "var(--chakra-colors-chakra-body-text)",
+      }}
+      {...props}
+    />
+  ),
+
+  td: (props: React.TdHTMLAttributes<HTMLTableCellElement>) => (
+    <td
+      style={{
+        padding: "0.75rem 1rem",
+        verticalAlign: "top",
+        color: "var(--chakra-colors-chakra-body-text)",
+      }}
+      {...props}
+    />
+  ),
 };
