@@ -20,9 +20,9 @@ export const MarkdownRenderer = {
       >
         <Image
           alt={alt}
-          src={src}
+          src={typeof src === "string" ? src : ""}
           width={800}
-          height={0}
+          height={500}
           style={{
             maxWidth: "100%",
             height: "auto",
