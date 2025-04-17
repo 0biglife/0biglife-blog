@@ -28,7 +28,7 @@ export default function Giscus() {
     const container = document.getElementById("giscus-container");
     while (container?.firstChild) container.removeChild(container.firstChild);
     container?.appendChild(script);
-  }, []);
+  }, [colorMode]);
 
   useEffect(() => {
     const iframe = document.querySelector<HTMLIFrameElement>(
