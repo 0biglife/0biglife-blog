@@ -114,60 +114,62 @@ export default async function PostDetailPage({ params }: { params: Params }) {
   if (!post) return notFound();
 
   return (
-    <Box minW="300px">
-      <Box
-        display="flex"
-        width="full"
-        py={10}
-        px={1}
-        flexDirection="row"
-        justifyContent="center"
-      >
+    <Box>
+      <Box pos="relative" minW="300px">
         <Box
-          flex={{ base: "1", lg: "3" }}
-          minW="200px"
-          maxW="760px"
-          flexDirection="column"
+          display="flex"
+          width="full"
+          py={10}
+          px={1}
+          flexDirection="row"
+          justifyContent="center"
         >
-          <Heading as="h1" fontSize="3xl">
-            {post.title}
-          </Heading>
-          <HStack mb={1} mt={4}>
-            <Text fontSize="smaller">
-              {post.category}/{post.subcategory}
-            </Text>
-            <Text fontSize="smaller" opacity={0.8}>
-              · {post.date}
-            </Text>
-          </HStack>
           <Box
-            display="flex"
-            position="relative"
-            width="100%"
-            flexGrow={1}
-            minHeight="200px"
-            maxHeight="400px"
-            aspectRatio="4/3"
-            borderRadius="10px"
-            overflow="hidden"
-            boxShadow="lg"
-            mt={6}
-            mb={12}
+            flex={{ base: "1", lg: "3" }}
+            minW="200px"
+            maxW="760px"
+            flexDirection="column"
           >
-            <Image
-              src={post.thumbnail}
-              alt={post.title}
-              fill
-              style={{ objectFit: "cover" }}
-            />
+            <Heading as="h1" fontSize="3xl">
+              {post.title}
+            </Heading>
+            <HStack mb={1} mt={4}>
+              <Text fontSize="smaller">
+                {post.category}/{post.subcategory}
+              </Text>
+              <Text fontSize="smaller" opacity={0.8}>
+                · {post.date}
+              </Text>
+            </HStack>
+            <Box
+              display="flex"
+              position="relative"
+              width="100%"
+              flexGrow={1}
+              minHeight="200px"
+              maxHeight="400px"
+              aspectRatio="4/3"
+              borderRadius="10px"
+              overflow="hidden"
+              boxShadow="lg"
+              mt={6}
+              mb={12}
+            >
+              <Image
+                src={post.thumbnail}
+                alt={post.title}
+                fill
+                style={{ objectFit: "cover" }}
+              />
+            </Box>
+            <Box className="prose lg:prose-lg" flex="1">
+              {post.content}
+            </Box>
+            <Giscus />
           </Box>
-          <Box className="prose lg:prose-lg" flex="1">
-            {post.content}
-          </Box>
+          <TableOfContents toc={post.toc ?? []} />
         </Box>
-        <TableOfContents toc={post.toc ?? []} />
       </Box>
-      <Giscus />
     </Box>
   );
 }
