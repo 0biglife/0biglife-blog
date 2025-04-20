@@ -1,0 +1,389 @@
+---
+title: "[React] 메모이제이션으로 최적화하기(with DevTools)"
+date: "2025-04-20"
+description: "근래 무척 가고 싶던 회사에 지원서를 넣으면서 렌더링 최적화에 대해 완벽에 가까운 게시글을 하나 써봐야겠단 생각이 문득 들었다. 이번 게시글에서는 브라우저에 부하가 걸리는 케이스 중에서 메모이제이션 관련 케이스를 다루고, 어떤 경우에 어떤 수치로 개선되는지 실제 테스트 시나리오를 통해 직접 비교하며 예제를 살펴본다."
+thumbnail: "thumbnail.png"
+category: "Frontend"
+subcategory: "Browser"
+tags: []
+---
+
+## 들어가며
+
+근래 무척 가고 싶던 회사에 지원서를 넣으면서 렌더링 최적화에 대해 완벽에 가까운 게시글을 하나 써봐야겠단 생각이 문득 들었다. 이번 게시글에서는 브라우저에 부하가 걸리는 케이스 중에서 **메모이제이션** 관련 케이스를 다루고, 어떤 경우에 어떤 수치로 개선되는지 **실제 테스트 시나리오**를 통해 직접 비교하며 예제를 살펴본다.
+
+## 메모이제이션
+
+간단히 말하면, 동일한 입력에 대해 컴포넌트나 함수의 연산 결과를 기억해두고 재사용함으로써 불필요한 렌더링이나 계산을 피할 수 있게 해주는 것을 의미하며, 다음 세 가지 방식의 메모이제이션을 테스트해본다.
+
+- React.memo(Component)
+
+- useMemo(() => computeValue, [deps])
+
+- useCallback(() => handler, [deps])
+
+각각 어떤 경우에 쓰이고, 성능이 나아진 것을 어떤 테스트 방법과 수치를 통해 증명해낼 수 있는지 하나씩 살펴보자.
+
+### 잠깐! 테스트 도구는?
+
+![Chrome DevTools](1.png)
+
+성능 최적화가 “정말 효과가 있었는지”를 확인하려면, 주관적인 느낌이 아니라 **수치와 데이터로 증명**해야 한다.
+React에서 메모이제이션 기법의 효과를 검증할 때는 다음 도구들을 활용할 수 있다.
+
+`React DevTools` : 주로 컴포넌트 단위 렌더링 시간/횟수를 확인하는 용도로 사용되며, 설치 시 `Profiler` 탭 또는 `Components` 탭이 생겨 활용 가능하다.
+
+`Chrome DevTools` : Console Log 모니터링이나 Lighthouse 등으로 이미 친숙한 도구일텐데 JS 실행, 렌더링, Paint 시간 분석이나 Flame Chart 시각화가 잘되어있어 여러모로 쓸모가 많다. 주로 프레임 지연이나 CPU 사용량을 확인하는 용도로 쓸 에정이다.
+
+`console.log` : 간단한 렌더 및 계산 시간 측정하기 위해 로그 찍는 용도로 사용해본다. 빠르게 렌더 횟수나 시간 측정할 때 용이하기 때문.
+
+---
+
+## React.memo
+
+`React.memo`는 컴포넌트를 메모이제이션한다. 같은 `props`로 호출되면 이전 결과를 재사용하여 불필요한 리렌더링을 방지한다. 특히, 부모 컴포넌트가 자주 리렌더되는 상황에서 자식 컴포넌트의 리렌더링을 막는 데 유용하다.
+
+다음과 같은 경우에 주로 사용될 수 있다.
+
+- 부모 컴포넌트가 (`state`나 `context` 변화로) 자주 리렌더링되는 구조에서
+
+- 자식 컴포넌트가 비용이 큰 연산 또는 복잡한 렌더링을 담당하고
+
+- 자식이 받는 props가 매번 동일한 값을 유지할 때
+
+이러한 조건이 충족된다면 `React.memo`는 불필요한 작업을 완전히 생략해,
+CPU 사용량 감소와 프레임 드랍 방지에 실질적인 성능 개선을 가져온다.
+
+#### 테스트 시나리오
+
+다음과 같이 흔하고 쉬운 경우로 테스트해보자.
+
+1. 부모 컴포넌트는 버튼 클릭 시마다 상태 변화로 리렌더링된다.
+
+2. `HeavyChild` 컴포넌트는 많은 리스트 데이터를 렌더링하며 연산 비용이 높은 컴포넌트다.
+
+3. 부모에서 전달하는 `items`는 매번 동일한 값이다.
+
+→ 이 상황에서 React.memo가 적용된 HeavyChild는 리렌더링되지 않아야 한다.
+
+다음 예제로 실제 테스트는 진행한다.
+
+```ts
+"use client";
+import React, { useState } from "react";
+
+function Child({ label }: { label: string }) {
+  console.log("✅ Child rendered:", label);
+  return <div>{label}</div>;
+}
+
+export default function TestMemoization() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <div>
+      <h2>Count: {count}</h2>
+      <button onClick={() => setCount((c) => c + 1)}>+1</button>
+      <Child label="고정된 라벨" />
+    </div>
+  );
+}
+```
+
+#### 콘솔 비교
+
+최적화 전 코드는 위와 같이 간단 구성했고, 버튼을 누를 때마다 자식 컴포넌트에서 콘솔이 찍히는 것을 확인할 수 있다.
+
+![React.memo 추가 전](2.gif)
+
+```js
+// React.memo 적용된 자식 컴포넌트
+
+const Child = React.memo(function Child({ label }: { label: string }) {
+  console.log("✅ [memo] Child rendered:", label);
+  return <div>{label}</div>;
+});
+```
+
+`React.memo` 적용 결과 하위 컴포넌트의 `props`는 변경되지 않았기 때문에 렌더링이 재차 발생하지 않는다.
+
+![React.memo 추가 후](3.gif)
+
+#### Flame Chart 비교
+
+Chrome DevTools의 Performance 탭에서 Flame Chart를 통해 `React.memo`의 최적화 효과를 시각적으로 확인 가능하다. 테스트에서는 자식 컴포넌트 내부에 약 1억 루프를 도는 `heavyComputation()`함수를 넣어 렌더링마다 CPU 연산 부하를 강제 유도시켰다. 그런 다음, 버튼을 20-30회 가량 눌러서 테스트를 진행했다.
+
+아래 비교 캡쳐본을 보자.
+
+![Flame Chart 최적화 전/후](4.png)
+
+- `heavyComputation()` 함수는 최적화 전에는 버튼 클릭 시마다 매번 실행되는 것을 확인할 수 있으며, 이는 `Child`가 `props`가 변하지 않아도 매번 리렌더링되기 때문이다.
+
+- `React.memo` 적용 후 초기 렌더링 시에만 Flame Chart에 등장하고, 그 이후에는 호출되지 않는다.
+
+- Flame Chart의 `Function Call` 영역에서 막대의 길이는 해당 함수의 **실행 시간**(duration)을 의미하며, 최적화 전/후에 빨간 영역을 통해 확인 가능하다(사진에 표시해두었다).
+
+즉, `React.memo`는 불필요한 연산 비용을 제거하여 브라우저 Main Thread를 가볍게 해준다.
+
+#### Scripting Time 비교
+
+Flame Chart와 함께 성능 개선에 대한 지표로 **Scripting Time**이 있다. Scripting Time은 브라우저가 **Javascript 코드를 실행하는 데 소요된 시간**을 의미한다.
+
+![Scripting Time 최적화 전/후](5.png)
+
+- 최적화 전에는 `heavyComputation()`이 실행되어 Scripting Time이 매번 증가하며, `React.memo` 적용 후에는 일정한 Scripting Time을 가진다.
+
+- 최적화 전-후에 따라 `3078ms → 44ms`로 줄어든 것을 확인할 수 있다. 이 수치는 사용자가 체감하는 렉, 입력 지연, UI 반응 속도에 직접적인 영향을 미치기 때문에 중요한 지표가 된다.
+
+---
+
+## useMemo
+
+이제 `useMemo`와 `useCallback`에 대해 살펴볼 차례. `useMemo`와 `useCallback`의 큼지막한 차이점은 메모이제이션하는 대상이 값이나 함수냐에 있다. `useMemo`는 연산의 결과 값을 메모이제이션하는 데 사용된다.
+
+`useEffect`를 사용할 때처럼 **의존성** 변수를 넣어 관리한다. `useEffect`는 의존성 변수가 변화하는 시점에 무언가 동작을 시키는 것처럼 `useMemo`도 의존성 변수가 변할 때에만 값을 업데이트시킨다. 즉, 의존성이 변하지 않는 한, 동일한 계산을 반복하지 않고 캐싱된 결과를 재사용하는 것!이다.
+
+다음과 같은 경우에 활용될 수 있겠다.
+
+- 정렬, 필터링, 맵핑 등 복잡한 연산이 매 렌더링마다 재실행되는 경우
+
+- 부모 컴포넌트가 자주 리렌더링되지만, 연산의 `input`은 변하지 않는 경우
+
+- 계산 비용이 크고 결과값 재사용이 필요한 경우
+
+#### 테스트 시나리오
+
+다음 케이스를 대상으로 테스트해본다.
+
+1. 상태 변경 시 부모 컴포넌트가 리렌더링된다.
+
+2. 자식 컴포넌트에서 `items` 배열을 `sort()`하거나 특정 계산을 매번 수행한다.
+
+3. 이 때, `items`는 바뀌지 않는다.
+
+→ 이 상황에서 `useMemo`를 통해 연산 결과를 메모이제이션하고, 매 렌더링마다 계산을 반복하지 않아야 한다.
+
+다음 코드로 테스트를 시작해보자.
+
+```ts
+"use client";
+
+import React, { useState, useEffect, useMemo } from "react";
+
+export default function TestMemoization() {
+  const [count, setCount] = useState(0);
+  const [items, setItems] = useState<number[]>([]);
+
+  const sorted = items
+    .sort((a, b) => b - a)
+    .filter((n) => n % 3 === 0)
+    .map((n) => ({ value: n, label: `항목: ${n}` }));
+
+  return (
+    <div>
+      <h2>Count: {count}</h2>
+      <button onClick={() => setCount((c) => c + 1)}>+1</button>
+      <ul>
+        {sorted.slice(0, 10).map((item, i) => (
+          <li key={i}>{item.label}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+```
+
+그리고 `useMemo` 함수와 의존성 변수에는 `items`를 넣어서 최적화 후 변화를 살펴보자.
+
+```ts
+const sorted = useMemo(() => {
+  const result = items
+    .sort((a, b) => b - a)
+    .filter((n) => n % 3 === 0)
+    .map((n) => ({ value: n, label: `항목: ${n}` }));
+  return result;
+}, [items]);
+```
+
+#### Flame Chart 비교
+
+코드를 실행시킨 뒤, 20-30회 가량 버튼을 누를 때마다 `sort → filter → map` 연산이 전부 다시 동작하도록 했다. 그 결과, `React.memo` 테스트와 비슷하게 아래와 같이 관측되었다. 참고로 자료에서 위/아래 사진은 각각 최적화 전/후 자료로 보면 된다.
+
+![Flame Chart 최적화 전/후](6.png)
+
+- `useMemo`가 적용되지 않은 상태에서는 노란색 블록이 굵고 길게 나왔고 클릭 이벤트마다 Main Thread에 무거운 연산 블록이 계속 쌓였다. 화면 렌더 프레임도 **703ms**, **431ms** 등 고부하 상태에서 유지되어 사용자 입력이나 추가 이벤트가 발생한다면 이벤트 지연 체감이 발생할지도 모른다.
+
+- 반면에 `useMemo`가 적용된 화면에서는 노란 블록이 거의 보이지 않거나 매우 얇다. 클릭 이벤트가 20번 가량 호출되었음에도 굵은 노란 블록이 전혀 등장하고 있지 않고 다음 자료에서 나오겠지만 CPU, HEAP 모두 평탄하게 유지되고 있다. 이는 Main Thread가 **idle 상태**에 가깝다는 것을 의미한다. idle 상태라는 것은 브라우저가 "**할 게 없어서 쉬고 있는 유휴 상태**"를 의미한다. 렌더 프레임도 **183ms**, **199ms**, **216ms** 등 훨씬 가볍고 고르게 분포되어있다.
+
+즉, `useMemo` 덕분에 무거운 연산 블록이 이미 메모이제이션된 결과를 그대로 사용하기 때문에 브라우저가 Main Thread에 부하 없이 빠르게 작업을 마치게 된다. 즉, 부드럽고 UI 반응성이 뛰어난 화면이 되도록 돕는다.
+
+#### JS Heap 비교
+
+이번엔 Flame Chart 바로 아래 위치한 그래프를 주목하자.
+
+![JS heap graph](7.png)
+
+#### 💡 잠깐, JS Heap 그래프 보기 전에 이것부터 이해하고 가자!
+
+이미 알곘지만 JS Heap은 브라우저가 Javascript 데이터를 저장해두는 메모리 공간이다. 즉, React 앱에서 배열, 객체, 함수, DOM 참조 등 모든 JS 값들이 이 곳에 들어간다. 즉, `{ id: 1, title: "post" }`, `[1,2,3]`, `.map()의 결과`부터 `useState`, `useEffect` 안에서 참조하는 모든 값이 들어가는 것이다.
+
+그렇다면 위 자료에서 파란색 선의 움직임은 JS heap 사용량이 변화하는 것을 의미한다. 따라서, 다음 사항들을 숙지한 상태에서 본다면 JS heap 그래프가 쉽게 보일 것이다.
+
+- **파란색 높이가 증가한다** -> 객체 등이 계속 생성되어 JS 메모리가 늘고 있다.
+
+- **파란색 높이가 뚝 떨어진다** -> GC(가비지 컬렉터)가 메모리를 자동으로 해제했다.
+
+- **파란색이 평탄한 선으로 유지된다** -> 객체 재사용이 잘 되고 있다.
+
+이제 그래프를 볼 줄 알았으니 비교 분석을 해보자!
+
+![JS Heap 최적화 전/후](8.png)
+
+- `useMemo` 적용 전 JS heap(파란선)이 **반복적으로 계단식**으로 올라간다. 매 렌더링마다 연산으로 인한 새로운 객체 배열이 생성되고 GC 타이밍 전까지 메모리가 누적되었다가 제거되는 것을 반복한다 -> 이는 브라우저 성능을 저하시킨다.
+
+- 반면, `useMemo` 적용 후에는 계단식 증가가 없고, GC 없이도 **메모리가 안정적으로 유지**된다. 최초 1회만 연산이 실행되고 추가 객체 생성이 거의 없어 GC 개입도 없어 그래프가 뚝 떨어지지 않는다.
+
+- JS Heap 증가폭이 **71.5MB**에서 **352MB**로 높은 데에 반해, 최적화 후에는 **104MB**에서 **106MB**로 늘어난만큼 증가폭이 매우 미미하다.
+
+즉, `useMemo`를 적용하자 JS Heap 증가폭이 대폭 줄었고 객체 재생성이 1회만 발생하며(그러기 때문에 GC 개입도 거의 없다), 그래프가 평탄하여 렌더링 시 부하가 매우 낮다. 종합적으로 빠르고 일정한 응답에 유리한 페이지가 되었다!로 해석할 수 있다.
+
+#### Scripting Time 비교
+
+![Scripting Time](9.png)
+
+`useMemo` 적용 전에 **1194ms** 였던 Scriptig Time이 **36ms**로 97%나 감소하였다. 기존에 전체 작업 중 약 30% 이상을 차지했던 JS 코드 실행 과정이 전체 과정의 1% 미만 수준으로 대폭 감소하였다.
+
+---
+
+## useCallback
+
+`useCallback`은 "함수"를 메모이제이션하기 위해 사용된다. 리렌더링이 발생해도 특정 함수를 재생성하지 않도록 막아주는 것이다. `useMemo`와 동일하게 의존성 변수 배열을 기반으로 동작하고, 이 값이 변경되지 않는 한, 같은 함수 참조를 계속 유지한다.
+
+다음과 같은 경우에 활용될 수 있다.
+
+- 자식 컴포넌트에 `props`로 함수를 넘길 때, 부모가 리렌더링되며 함수도 매번 재생성되는 경우
+
+- `React.memo`로 감싼 자식 컴포넌트가 함수 변경으로 인해 리렌더링되는 걸 막고 싶을 때
+
+- 함수 내부에서 큰 비용(데이터 처리, 요청 등)의 작업이 일어나는 경우
+
+#### 테스트 시나리오
+
+실무에서 자주 발생하는 다음 조건으로 테스트를 구성한다.
+
+1. 부모 컴포넌트는 `count`라는 상태 변화로 자주 리렌더링된다.
+
+2. 자식 컴포넌트는 `React.memo`로 감싸져 있다.
+
+3. 자식 컴포넌트는 `onClick`이라는 함수 `props`를 통해 부모로부터 함수 참조를 받는다.
+
+4. 부모가 넘겨주는 `onClick` 함수는 내부에서 `count`를 사용하며, 매 렌더링마다 재생성된다.
+
+5. 결과적으로 `React.memo`의 캐싱이 무효화되어 자식 컴포넌트도 매번 리렌더링된다.
+
+이 때 `useCallback`을 통해 함수 참조를 고정하면, 자식 컴포넌트가 불필요하게 리렌더링되지 않아야 한다.
+
+다음 코드로 테스트를 시작해보자.
+
+```ts
+"use client";
+
+import React, { useCallback, useState } from "react";
+
+const heavyComputation = () => {
+  let total = 0;
+  for (let i = 0; i < 100_000_000; i++) {
+    total += Math.sqrt(i);
+  }
+  return total;
+};
+
+const Child = React.memo(function Child({ onClick }: { onClick: () => void }) {
+  const result = heavyComputation();
+  return (
+    <div>
+      <button onClick={onClick}>자식 버튼 (부모 이벤트)</button>
+      <p>계산 결과: {Math.floor(result)}</p>
+    </div>
+  );
+});
+
+export default function TestUseCallback() {
+  const [count, setCount] = useState(0);
+
+  const handleClick = () => {
+    console.log("부모 count:", count);
+  };
+
+  return (
+    <div>
+      <h2>부모 Count: {count}</h2>
+      <button onClick={() => setCount((c) => c + 1)}>부모 +1</button>
+      <Child onClick={handleClick} />
+    </div>
+  );
+}
+```
+
+위 코드에서는 `handleClick` 함수가 매 렌더링마다 새로 생성되기 때문에, `React.memo`가 적용된 Child 컴포넌트가 함수 참조가 매번 바뀌었다고 판단하여 리렌더링된다.
+
+-> 이로 인해 `heavyComputation()`이 매번 실행되어 CPU 부하가 계속 발생하고 브라우저가 느려진다.
+
+```ts
+const handleClick = useCallback(() => {
+  console.log("부모에서 count:", count);
+}, []);
+```
+
+#### Flame Chart 비교
+
+이번에도 여태 테스트와 동일하게 페이지 마운트 후, 버튼 클릭을 30회 발생시켰다.
+
+![Flame Chart 최적화 전/후](10.png)
+
+#### 최적화 전
+
+- `useCallback`이 없을 때에는 부모 컴포넌트의 상태(`count`)가 변경될 때마다 `handleClick` 함수가 새로 생성되고, `React.memo`가 적용된 자식 컴포넌트도 모두 리렌더링된다.
+
+- `heavyComputation()` 함수가 매번 실행되어, Main Thread에 긴 노란 블럭이 반복적으로 쌓이고, 프레임 지속시간은 **712ms**까지 걸린다. 아마 더 복잡한 UI에서는 프레임 드랍 가능성도 클 것이다.
+
+#### 최적화 후
+
+- `handleClick` 함수가 `useCallback`으로 감싸져 있어 참조값이 변경되지 않기에 최초 1회 실행 후 재호출은 발생하지 않는다.
+
+- Flame Chart의 메인 영역이 얇고 짧은 블록만 나타나는 **idle** 상태가 된다.
+
+- CPU 사용률도 낮고 프레임 간격도 널널하고 부드러운 UI 렌더링 처리가 이루어진다.
+
+#### JS Heap 지표 비교
+
+![JS Heap 최적화 전/후](11.png)
+
+`useCallback` 유무에 따라 JS Heap은 근소한 차이만을 가진다. 최적화 전에는 **86.1MB** ~ **88.4MB**, 최적화 후에는 **86.2MB** ~ **87.9MB**로 거의 차이가 없다. 따라서, 최적화를 검증하기에 큰 효력을 가지지 못한다. 왜일까?
+
+- Javascript에서 함수는 일급 객체지이지만, 구조가 단순해서 메모리 사용량이 작다.
+
+- 함수가 재생성되더라도 GC가 빠르게 회수해서 JS Heap에 눈에 띄눈 흔적이 남지 않는 것!이다.
+
+따라서, `useCallback`의 효과는 JS Heap 그래프보다는 Flame Chart, Scripting Time, Rendering Count 등의 지표로 확인하곤 한다.
+
+#### Scripting Time 비교
+
+![Scripting Time 최적화 전/후](12.png)
+
+최적화 전에는 **3464ms**로 Main Thread에서 무거운 JS 연산이 발생하면서 전체 Scripting Time이 급증했고, 최적화 후에는 1회만 실행되었기 때문에 **52ms** 걸렸다. JS 연산 부하가 대폭 줄어들며 약 98%가 감소되었다.
+
+## 마치며
+
+이렇듯, 여태까지 메모이제이션 최적화 기법을 살펴보았다. 최적화는 단순히 **쓰기만 하면 빨라진다**는 접근보다는, **어떤 경우에 어떤 방식으로 써야 하는지**를 이해하고 선택하는 것이 훨씬 중요하다.
+
+| 기법         | `React.memo`                                   | `useMemo`                                                  | `useCallback`                                            |
+| ------------ | ---------------------------------------------- | ---------------------------------------------------------- | -------------------------------------------------------- |
+| **대상**     | 컴포넌트 전체                                  | 복잡한 **값**                                              | **함수**                                                 |
+| **목적**     | 동일 props일 때 불필요한 **리렌더링 방지**     | 계산 비용이 큰 값의 **결과 캐싱**                          | 함수 참조 고정시켜 **자식 리렌더링 방지**                |
+| **조건**     | props가 바뀌지 않고, 부모가 자주 리렌더링될 때 | 연산이 무겁고, input이 자주 바뀌지 않을 때                 | 자식에게 함수를 props로 넘길 때                          |
+| **주의사항** | props가 매번 바뀌는 경우에는 의미 없음         | 값이 자주 바뀌거나 연산이 가벼운 경우에는 오히려 비용 증가 | 상태값이 의존성에 포함되면 → 매번 새로 생성되어 무의미함 |
+
+`React.memo`, `useMemo`, `useCallback`은 각각 대상이 다르고, 적용 시점과 효과도 다르기 때문에 상황에 따라 조합적으로 사용하는 것이 최적의 전략이다. 그리고 그렇게 적용된 방식에 대해 DevTools로 성능을 수치화하여 실제로 사용자 경험이 어떻게 반영되는지 지표를 통해 검증해보길 바란다. 메모이제이션으로 최적화에 대해서 정리한만큼, 다음 게시글에서는 브라우저 리렌더링 방지, 긴 리스트 최적화, 애니메이션 최적화, 이벤트 최적화 등 다뤄볼게 산더미처럼 남았다. 조금씩 정복해보자.
+
+게시글 내용과 다른 이야기를 잠깐 남겨보자면, 정리글을 나름 신경써서 써보려고 했는데, 많은 정보가 책장처럼 착착 정리가 잘되어서 보여지기엔 UI가 더 다듬어져야할 필요가 있다. 그 다음에 컨텐츠를 입히는 것이 순서에 맞고. 분석을 하기에 좀 부족한 글 같다. (잘 정리된 내용만큼 잘 읽히는 컨텐츠 디자인이 필요해..)

@@ -59,7 +59,7 @@
     "@types/lodash": "^4",
     "@types/node": "^22.14.1",
     "@types/punycode": "^2",
-    "@types/react": "^19.1.1",
+    "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@types/react-syntax-highlighter": "^15.5.13",
     "eslint": "^9",

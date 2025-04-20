@@ -10,6 +10,41 @@ export const MarkdownRenderer = {
     const alt = props.alt || "";
     const src = props.src || "";
 
+    const isGif = typeof src === "string" && src.endsWith(".gif");
+
+    if (isGif) {
+      return (
+        <span
+          style={{ display: "block", margin: "1.5rem 0", textAlign: "center" }}
+        >
+          <Image
+            src={src}
+            alt={alt}
+            width={800}
+            height={500}
+            style={{
+              maxWidth: "100%",
+              borderRadius: "6px",
+              border: "1px solid rgba(128, 128, 128, 0.2)",
+              objectFit: "cover",
+            }}
+          />
+          {alt && (
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.8rem",
+                marginTop: "0.75rem",
+                opacity: 0.6,
+              }}
+            >
+              {alt}
+            </span>
+          )}
+        </span>
+      );
+    }
+
     return (
       <span
         style={{
