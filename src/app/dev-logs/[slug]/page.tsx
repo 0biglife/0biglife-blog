@@ -11,6 +11,15 @@ export async function generateStaticParams() {
   return devLogs.map((log) => ({ slug: log.slug }));
 }
 
+export async function generateMetadata() {
+  return {
+    robots: {
+      index: false,
+      follow: false,
+    },
+  };
+}
+
 export default async function DevLogDetailPage({ params }: { params: Params }) {
   const { slug } = await params;
   if (!slug) return notFound();
