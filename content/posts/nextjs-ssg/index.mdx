@@ -56,7 +56,7 @@ App Router는 동적 세그먼트를 활용해 블로그 게시글과 같은 동
 
 ## 프로젝트 구조
 
-프로젝트 구조는 App Router에 맞게 구성하되, 정정 서빙될 컨텐츠는 `public`, `content`으로 나뉘어 작업되었다. 컨텐츠 운영과 유지보수를 고려하였으며, 구조는 아래처럼 꽤 간단하다. `src` 디렉토리 내부에는 `app`, `components`, `lib`으로 나뉘어져 있으며, 각각 페이지, 컴포넌트, 유틸리티 함수를 관리하고 있다. 하루 정도 잡고 `public`과 `content`를 통합하는 작업을 진행하는 것 외에는 현재 구조대로 운영될 예정이다.
+프로젝트 구조는 App Router에 맞게 구성하되, 정적 서빙될 컨텐츠는 `public`, `content`으로 나뉘어 작업되었다. 컨텐츠 운영과 유지보수를 고려하였으며, 구조는 아래처럼 꽤 간단하다. `src` 디렉토리 내부에는 `app`, `components`, `lib`으로 나뉘어져 있으며, 각각 페이지, 컴포넌트, 유틸리티 함수를 관리하고 있다. 하루 정도 잡고 `public`과 `content`를 통합하는 작업을 진행하는 것 외에는 현재 구조대로 운영될 예정이다.
 
 ```bash
 /0biglife-blog
@@ -141,7 +141,7 @@ const transformImagePaths = (content: string, slug: string): string => {
 
 ![](2.jpg)
 
-Next.js App Router에서는 동적 경로 생성을 위해 `generateStaticParams()`를 사용한다. 필요한 정보는 [공식 문서](https://nextjs.org/docs/app/api-reference/functions/generate-static-params)를 참고하자. 사용 중인 버전과 라우팅 방식에 맞는 내용이 있어 편리했다. 그리고 게시글이 보여지는 컴포넌트에서는 slub에 따라 동적으로 `.mdx` 파일을 불러와서 렌더링하는 방식으로 구현하였다.
+Next.js App Router에서는 동적 경로 생성을 위해 `generateStaticParams()`를 사용한다. 필요한 정보는 [공식 문서](https://nextjs.org/docs/app/api-reference/functions/generate-static-params)를 참고하자. 사용 중인 버전과 라우팅 방식에 맞는 내용이 있어 편리했다. 그리고 게시글이 보여지는 컴포넌트에서는 slug에 따라 동적으로 `.mdx` 파일을 불러와서 렌더링하는 방식으로 구현하였다.
 
 ```javascript
 // src/app/posts/[slug]/page.tsx/**
@@ -314,7 +314,7 @@ export async function getAllPosts() {
 - SSR(`getServerSideProps`), 동적 렌더링, 미들웨어 등 지원한다.
 - AWS Amplify, Docker, Vercel 등 Node 런타임 기반 플랫폼에 적합하다.
 
-이미 바로 윗문장을 보면 알곘지만, `output: "standalone"`을 선택했다. 이유는 추후 붙이게 될 조회수 API(Google Analytics 4)과 같은 서버 측 데이터 핸들링이 필요하였고 이를 위해 Next.js 15의 API Routes를 사용하고 싶어 `output: "standalone"`을 선택하였다. 그리고 AWS Amplify 의 환경 변수도 필요했기에 빌드 이후에 `.env` 값을 읽어올 수 있는 Node 서버가 없는 `output: "export"` 방식은 사용할 수 없었다.
+이미 바로 윗문장을 보면 알곘지만, `output: "standalone"`을 선택했다. 이유는 추후 붙이게 될 조회수 API(Google Analytics 4)과 같은 서버 측 데이터 핸들링이 필요하였고 이를 위해 Next.js 15의 API Routes를 사용하고 싶어 `output: "standalone"`을 선택하였다. AWS Amplify의 환경 변수도 필요하였고 환경 변수(`.env`)를 활용하려면 Node.js 런타임이 필요하기 때문에, 정적 HTML만 생성하고 Node 서버가 아예 없는 `output: "export"` 방식은 사용할 수 없었다.
 
 ## 생성된 정적 페이지 검증
 
