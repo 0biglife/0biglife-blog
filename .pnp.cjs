@@ -643,6 +643,10 @@ const RAW_RUNTIME_STATE =
       "npm:1.7.2"\
     ],\
     [\
+      "@vercel/analytics",\
+      "virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:1.5.0"\
+    ],\
+    [\
       "@zag-js/dom-query",\
       "npm:0.31.1"\
     ],\
@@ -2646,6 +2650,7 @@ const RAW_RUNTIME_STATE =
           ["@types/react", "npm:19.1.2"],\
           ["@types/react-dom", "virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:19.1.2"],\
           ["@types/react-syntax-highlighter", "npm:15.5.13"],\
+          ["@vercel/analytics", "virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:1.5.0"],\
           ["acorn", "npm:8.14.1"],\
           ["eslint", "virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:9.25.1"],\
           ["eslint-config-next", "virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:15.2.1"],\
@@ -2710,6 +2715,7 @@ const RAW_RUNTIME_STATE =
           ["@types/react", "npm:19.1.2"],\
           ["@types/react-dom", "virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:19.1.2"],\
           ["@types/react-syntax-highlighter", "npm:15.5.13"],\
+          ["@vercel/analytics", "virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:1.5.0"],\
           ["acorn", "npm:8.14.1"],\
           ["eslint", "virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:9.25.1"],\
           ["eslint-config-next", "virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:15.2.1"],\
@@ -4932,6 +4938,52 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "./.yarn/unplugged/@unrs-resolver-binding-win32-x64-msvc-npm-1.7.2-858af787b0/node_modules/@unrs/resolver-binding-win32-x64-msvc/",\
         "packageDependencies": [\
           ["@unrs/resolver-binding-win32-x64-msvc", "npm:1.7.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@vercel/analytics", [\
+      ["npm:1.5.0", {\
+        "packageLocation": "../../.yarn/berry/cache/@vercel-analytics-npm-1.5.0-638aefa6a6-10c0.zip/node_modules/@vercel/analytics/",\
+        "packageDependencies": [\
+          ["@vercel/analytics", "npm:1.5.0"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:1.5.0", {\
+        "packageLocation": "./.yarn/__virtual__/@vercel-analytics-virtual-3efa45eb0f/3/.yarn/berry/cache/@vercel-analytics-npm-1.5.0-638aefa6a6-10c0.zip/node_modules/@vercel/analytics/",\
+        "packageDependencies": [\
+          ["@remix-run/react", null],\
+          ["@sveltejs/kit", null],\
+          ["@types/next", null],\
+          ["@types/react", "npm:19.1.2"],\
+          ["@types/remix-run__react", null],\
+          ["@types/svelte", null],\
+          ["@types/sveltejs__kit", null],\
+          ["@types/vue", null],\
+          ["@types/vue-router", null],\
+          ["@vercel/analytics", "virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:1.5.0"],\
+          ["next", "virtual:3338385ac65693b1010b71de054760a81fcbf31b7e5fb77d2eaaef43cadf54c1ee126756f7b2e45991b951a41ab0ee7b0f3d1a05c45a18926df5edcba9559dcb#npm:15.3.1"],\
+          ["react", "npm:18.2.0"],\
+          ["svelte", null],\
+          ["vue", null],\
+          ["vue-router", null]\
+        ],\
+        "packagePeers": [\
+          "@remix-run/react",\
+          "@sveltejs/kit",\
+          "@types/next",\
+          "@types/react",\
+          "@types/remix-run__react",\
+          "@types/svelte",\
+          "@types/sveltejs__kit",\
+          "@types/vue-router",\
+          "@types/vue",\
+          "next",\
+          "react",\
+          "svelte",\
+          "vue-router",\
+          "vue"\
         ],\
         "linkType": "HARD"\
       }]\
