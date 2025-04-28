@@ -31,7 +31,8 @@
     "convert-webp.js",
     "next-sitemap.config.js",
     "convert-images.js",
-    "scripts/optimize-images.js"
+    "scripts/optimize-images.js",
+    "scripts/generate-rss.js"
   ],
   "exclude": ["node_modules"]
 }

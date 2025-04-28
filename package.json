@@ -7,6 +7,7 @@
     "start": "next start",
     "lint": "next lint",
     "serve": "yarn serve out",
+    "generate:rss": "ts-node scripts/generate-rss.js",
     "optimize:images": "ts-node scripts/optimize-images.js",
     "build": "yarn optimize:images && next build && yarn sitemap",
     "sitemap": "yarn next-sitemap"
