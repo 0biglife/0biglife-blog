@@ -6,10 +6,10 @@
     "dev": "next dev",
     "start": "next start",
     "lint": "next lint",
-    "serve": "pnpm serve out",
+    "serve": "yarn serve out",
     "generate:rss": "ts-node scripts/generate-rss.js",
     "optimize:images": "ts-node scripts/optimize-images.js",
-    "build": "pnpm optimize:images && next build && pnpm sitemap",
+    "build": "yarn optimize:images && next build && yarn sitemap",
     "sitemap": "next-sitemap"
   },
   "dependencies": {
@@ -25,7 +25,7 @@
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/mdx": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
-    "@next/bundle-analyzer": "^15.2.3",
+    "@next/bundle-analyzer": "^15.3.1",
     "@next/mdx": "^15.2.2",
     "@types/acorn": "^4.0.6",
     "@types/mdast": "^4.0.4",
@@ -35,7 +35,7 @@
     "googleapis": "^148.0.0",
     "gray-matter": "^4.0.3",
     "lodash": "^4.17.21",
-    "next": "15.1.7",
+    "next": "^15.3.1",
     "next-mdx-remote": "^5.0.0",
     "next-seo": "^6.6.0",
     "next-sitemap": "^4.2.3",
@@ -71,5 +71,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
-  "packageManager": "pnpm@10.10.0+sha512.d615db246fe70f25dcfea6d8d73dee782ce23e2245e3c4f6f888249fb568149318637dca73c2c5c8ef2a4ca0d5657fb9567188bfab47f566d1ee6ce987815c39"
+  "packageManager": "yarn@4.9.1"
 }
