@@ -8,6 +8,7 @@ const withBundleAnalyzer = bundleAnalyzer({
 const nextConfig = withBundleAnalyzer({
   pageExtensions: ["ts", "tsx", "mdx"],
   reactStrictMode: true,
+  outputFileTracingRoot: __dirname,
   compress: true, // gzip 압축 활성화 -> JS 실행 최적화
   transpilePackages: ["next-mdx-remote"],
   experimental: {
