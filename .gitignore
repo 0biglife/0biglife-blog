@@ -6,6 +6,9 @@
 node_modules/
 .pnpm-debug.log*
 
+!.pnp.cjs
+
+
 # Yarn v2+ (Berry)
 # .pnp.*
 .yarn/*
