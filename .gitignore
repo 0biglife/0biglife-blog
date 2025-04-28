@@ -4,11 +4,11 @@
 # dependencies
 # ----------------------
 node_modules/
-.pnp.*
+# .pnp.*
 .pnpm-debug.log*
 
 # Yarn v2+ (Berry)
-.pnp.*
+# .pnp.*
 .yarn/*
 !.yarn/cache/
 !.yarn/patches
