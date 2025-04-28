@@ -1,0 +1,27 @@
+version: 1
+frontend:
+  # Framework 명시가 빠져서 standalone 인식 불가 이슈 -> 추후 SSR 기능 많아지면 ampllify app 새로 설정해야할 수도 있음
+  # 왜냐면, 앱 설치 과정에서 빌드 설정(amplify.yml)이 되어야 내부적으로 routing, headers 걸정, server function deployment 자동으로 잡아주는게 지금 누락된 상태
+  framework: nextjs
+  phases:
+    preBuild:
+      commands:
+        - corepack enable
+        - corepack prepare yarn@4.8.1 --activate
+        - export NODE_OPTIONS=--openssl-legacy-provider
+        - echo "GA_CLIENT_EMAIL=$GA_CLIENT_EMAIL" >> .env.production
+        - echo "GA_PROPERTY_ID=$GA_PROPERTY_ID" >> .env.production
+        - echo "GA_PRIVATE_KEY=$GA_PRIVATE_KEY" >> .env.production
+    build:
+      commands:
+        - export NODE_OPTIONS=--openssl-legacy-provider
+        - yarn install --immutable
+        - yarn build
+  artifacts:
+    baseDirectory: .next/standalone
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - ".next/cache/**/*"
+      - ".yarn/cache/**/*"
