@@ -1,6 +1,6 @@
 ---
 title: "[Next.js] 리액트 서버 컴포넌트(RSC)는 어떻게 렌더링되는가"
-date: "2025-04-25"
+date: "2025-04-27"
 description: "SSR 구현 과정에 대해 게시글을 쓰다가 서버 컴포넌트에 대해 따로 분리해서 게시글을 적어야겠다 싶어서 작성한다. React Serve Component(RSC)는 서버에서 실행되는 특별한 컴포넌트다. Next.js 13부터 도입된 서버 컴포넌트는 기존 클라이언트 렌더리방식과는 전혀 다른 렌더링 방식을 가지기 때문에 이를 정리해보고자 한다. 이 게시글은 Next.js 공식 문서와 해외 블로그를 참고해서 작성되었다. 이 게시글을 보고 '서버 컴포넌트가 어떻게 렌더링되는지'와 '서버 컴포넌트 덕분에 초기 로드 속도가 왜 빨라졌는지'를 명확하게 알아가길 바란다. 시작해보자!"
 thumbnail: "thumbnail.png"
 category: "Frontend"
@@ -14,23 +14,25 @@ SSR 구현 과정에 대해 게시글을 쓰다가 서버 컴포넌트에 대한
 
 ## 컴포넌트란?
 
-서버 컴포넌트 렌더링을 이해하기 전에, **컴포넌트**가 뭔지 가볍게 짚고 넘어가자. 컴포넌트는 데이터(`props`)를 인자로 받아서 JSX를 반환하는 자바스크립트 함수다. 이 컴포넌트는 "렌더링"되기 위해 다음 과정을 거친다.
+서버 컴포넌트 렌더링을 이해하기 전에, **컴포넌트**가 뭔지 가볍게 짚고 넘어가자. 컴포넌트는 데이터(`props`)를 인자로 받아서 JSX를 반환하는 자바스크립트 함수다. 이 컴포넌트는 "**렌더링**"되기 위해 다음 과정을 거친다.
 
 1. 반환된 JSX가 **Babel**에 의해 트랜스파일링되어 `React.createElement` 형태로 변환된다.
 
-2. 그 결과 JSX가 **React Element**라는 JS 객체가 된다(이 객체는 DOM에 표현될 필요 정보들을 담고 있다).
+2. 그 결과 JSX가 **React Element**라는 JS 객체가 된다. 이 때, 이 객체는 DOM에 표현될 필요 정보들을 담고 있다.
 
 3. React는 이를 기반으로 **Fiber**라는 구조로 만들어 Virtual DOM 트리를 구성한다.
 
 4. 최종적으로 실제 DOM에 반영시킨다.
 
-즉, "컴포넌트가 렌더링된다"는 것은 단순히 함수가 호출되는 것이 아니라, `JSX -> React Element -> Fiber Tree -> Virtual DOM -> 실제 DOM`이라는 파이프라인이 동작하는 것이다.
+즉, "**컴포넌트가 렌더링된다**"는 것은 단순히 함수가 호출되는 것이 아니라, `JSX -> React Element -> Fiber Tree -> Virtual DOM -> 실제 DOM`이라는 파이프라인이 동작하는 것이다.
 
 ## 서버 컴포넌트(RSC)
 
 클라이언트 컴포넌트는 브라우저에서 모든 로직을 처리한다. 그렇기 때문에 JS 번들 크기가 커짐에 따라 느려지는 FCP(First Contentful Paint), SEO 문제 등을 해결하고자 React는 **서버에서 렌더링 가능한 컴포넌트**라는 새로운 개념을 도입했다.
 
 ### 렌더링 구조
+
+![Next.js Doc.](1.png)
 
 Next.js는 React를 위한 프레임워크이며, 이는 곧 React를 활용해서 무언가를 한다는 것을 의미한다. 문서에 있는 말을 빌리자면, **"On the server, Next.js uses React's APIs to orchestrate rendering. The rendering work is split into chunks: by individual route segments and Suspense Boundaries."** 즉, Next.js는 React API를 통해 렌더링을 조정하며, 이 때 렌더링 작업은 **Route Segment**와 **Suspense Boundary**를 기준으로 chunk로 나뉘어진다.
 
@@ -68,6 +70,10 @@ React가 서버 컴포넌트를 렌더하며 이 과정에서 RSC Payload를 만
 
 Next.js가 React로부터 만들어진 RSC Payload와 클라이언트 컴포넌트 자바스크립트 인스트럭션(JS 명령어 뭉치)을 조합하여 HTML을 생성한다. 단, 이 때 HTML은 Placeholder를 남겨둔 상태이다.
 
+#### JS 인스트럭션
+
+JS 인스트럭션은 `useState`, `onClick`과 같은 클라이언트 기능을 가능하게 하는 JS 코드 조각이다. 서버는 이 HTML과 함께 필요한 JS 조각을 준비해둔다.
+
 여기까지 서버에서 벌어지는 일이다. RSC Payload로 만들어진 HTML이 준비가 되었다면, 이제 클라이언트에서는 이걸 받아서 다음 동작을 실행한다.
 
 ### 클라이언트 측 동작
@@ -79,6 +85,8 @@ Next.js가 React로부터 만들어진 RSC Payload와 클라이언트 컴포넌�
 브라우저에서는 서버에서 받은 HTML을 그대로 그려 보여준다. 그러기 때문에 사용자 입장에서는 바로 관측 가능하여 초기 로드 속도가 빠른 효과가 있는 것이다.
 
 #### 2. Reconciliation(조정 단계)
+
+![](2.png)
 
 React는 RSC Payload를 기반으로 **클라이언트 컴포넌트를 다시 구성**한다. 이 과정에서 앞에서 남겨준 클라이언트 컴포넌트 빈자리인 Placeholder를 채워준다. 이 과정을 통해 클라이언트 컴포넌트 트리와 서버 컴포넌트 트리를 재조정하여 결과적으로 리액트 컴포넌트 트리가 만들어진다. 그 결과, Virtual DOM이 실제 DOM에 업데이트를 하게 된다.
 
@@ -104,6 +112,49 @@ React Server Component(RSC)는 단순히 서버에서 렌더링되는 컴포넌�
 
 - 클라이언트 동작 : 서버에서 완성된 HTML을 화면에 즉시 렌더링 -> RSC Payload 기반으로 재조정 -> Hydration으로 인터랙션 추가
 
+## 실제 예제
+
+이제 컴포넌트가 렌더링됨에 따라 JSX, Hydrate 등의 동작을 직접 개발자도구에서 찾아보자. Next.js 13부터는 서버 컴포넌트가 기본값으로 설정되어 있다. 따라서, `app` 디렉토리 하위에 있는 컴포넌트들은 모두 서버 컴포넌트로 렌더링된다. 클라이언트 컴포넌트로 렌더링하고 싶다면, `use client`를 추가해주면 된다.
+
+```tsx
+"use client";
+
+export default function Home() {
+  const [value, setValue] = useState<number>(0);
+
+  const handleClick = () => {
+    console.log("tapped!");
+    setValue((prev: number) => prev + 1);
+  };
+
+  return (
+    <div>
+      <h1>Home</h1>
+      <h2>Count: {value}</h2>
+      <button onClick={handleClick}>{value}</button>
+    </div>
+  );
+}
+```
+
+이렇게 `Home` 이라는 클라이언트 컴포넌트를 간단히 루트에 선언해주고, `yarn build`를 해주자. 그러면 `.next` 폴더가 생성될테고 `yarn start`로 서버를 실행하면 `localhost:3000`으로 호스팅되어 접속할 수 있다.
+
+![](3.png)
+
+브라우저 개발자 도구 -> `localhost` -> `Preview` 탭을 보면 뼈대만 존재하는 HTML이 보인다. 이 시점에서는 서버에서 React가 TSC Payload를 만들고, Next.js가 JS 인스트럭션을 붙여 생성한 HTML만 렌더링되었기 때문에 버튼 클릭(인터랙션)이 동작하지 않는다.
+
+![js instruction path](4.png)
+
+앞에서 **JS 인스트럭션은 useState, onClick과 같은 클라이언트 기능을 가능하게 하는 JS 코드 조각**이라고 했다. 이는 콘솔 처리해둔 `tapped!`를 vscode 상에 검색해보면, `./next/standalone/.next/server/app/page.js` 안에 있다(필자는 `output` 설정을 `standalone`으로 해두었기에 해당 경로에 있어 다른 분들과는 다를 수 있다). 게다가, 루트 page.tsx에서 쓰이는 JS 인스트럭션 파일(`.js`)도 동일한 경로에 있는 것을 확인할 수 있다.
+
+![](5.png)
+
+이제 클라이언트에서 Reconciliation 단계를 통해 RSC Payload를 받아서 컴포넌트 트리를 만들고, 빈 자리에 Placeholder를 채웠을테고, 위 사진처럼 `tapped!`가 검색되었던 js 인스트럭션 코드 조각을 받아와서 Hydrate을 하고, `onClick`이 이제 버튼에 붙어서 할당된 흐름이다. 이 시점부터 이제 우리는 브라우저 상에서 버튼 클릭과 같은 인터랙션이 가능한 것이다.
+
 ## 마치며
 
 이렇게 서버 컴포넌트가 뭔지, 어떻게 렌더되는지 알아보았다. 이제야 비로소 SSR에 대해 정리할 차례가 된 듯하다.
+
+```
+
+```
