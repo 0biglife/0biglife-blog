@@ -1,10 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Box, Flex, Link } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  IconButton,
+  Link,
+  Tooltip,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import NextLink from "next/link";
 import { ThemeToggle } from "@/components";
+import { SiLighthouse } from "react-icons/si";
 
 const BLOG_URL = "https://0biglife.com";
+const LIGHER_HOUSE_URL = "https://lighterhouse.0biglife.com";
+const LIGHER_HOUSE_NAME = "Lighthouse Service";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
@@ -17,6 +27,8 @@ export default function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const iconColor = useColorModeValue("gray.800", "white");
 
   return (
     <Box
@@ -56,7 +68,32 @@ export default function Header() {
           0biglife.
         </Link>
 
-        <ThemeToggle />
+        <Flex justify="space-between" gap="8px">
+          <Tooltip
+            label={LIGHER_HOUSE_NAME}
+            hasArrow
+            mt={1}
+            borderRadius={4}
+            arrowSize={8}
+            fontSize={12}
+          >
+            <IconButton
+              as="a"
+              href={LIGHER_HOUSE_URL}
+              target="_blank"
+              borderRadius={20}
+              rel="noopener noreferrer"
+              aria-label="Beacon Service"
+              icon={<SiLighthouse size={20} />}
+              variant="ghost"
+              color={iconColor}
+              // _hover={{ transform: "scale(1.1)", color: "teal.400" }}
+              _active={{ transform: "scale(0.95)" }}
+              cursor="pointer"
+            />
+          </Tooltip>
+          <ThemeToggle />
+        </Flex>
       </Flex>
     </Box>
   );
