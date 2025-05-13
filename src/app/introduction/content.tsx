@@ -281,8 +281,8 @@ export default function IntroductionClient() {
           </Box>
 
           <Box>
-            <Heading size="md" mb={2} color="white">
-              지원동기 및 포부
+            <Heading size="md" mb={2}>
+              지원 포부
             </Heading>
             <Text
               mb={1}
