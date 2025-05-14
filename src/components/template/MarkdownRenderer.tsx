@@ -99,7 +99,7 @@ export const MarkdownRenderer = {
           fontSize: "1.5rem",
           fontWeight: "bold",
           margin: "1.5rem 0 1rem",
-          marginTop: "2rem",
+          marginTop: "3rem",
         }}
         {...props}
       />
@@ -116,6 +116,7 @@ export const MarkdownRenderer = {
           fontSize: "1.25rem",
           fontWeight: 600,
           margin: "1.25rem 0 0.75rem",
+          marginTop: "2rem",
         }}
         {...props}
       />
