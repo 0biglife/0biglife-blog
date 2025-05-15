@@ -5,6 +5,12 @@ import Image from "next/image";
 import React from "react";
 import { slugify } from "@/lib/utils";
 
+const baseTextStyle = {
+  fontSize: "1rem",
+  lineHeight: "1.7",
+  fontWeight: 600,
+};
+
 export const MarkdownRenderer = {
   img: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
     const alt = props.alt || "";
@@ -175,15 +181,14 @@ export const MarkdownRenderer = {
     );
   },
 
-  gray: (props: React.HTMLAttributes<HTMLElement>) => (
-    <span style={{ color: "#718096" }} {...props} />
+  Red: (props: React.HTMLAttributes<HTMLElement>) => (
+    <span style={{ ...baseTextStyle, color: "#e53e3e" }} {...props} />
   ),
-  red: (props: React.HTMLAttributes<HTMLElement>) => (
-    <span style={{ color: "#e53e3e" }} {...props} />
+  Blue: (props: React.HTMLAttributes<HTMLElement>) => (
+    <span style={{ ...baseTextStyle, color: "#3182ce" }} {...props} />
   ),
-
-  del: (props: React.HTMLAttributes<HTMLElement>) => (
-    <del style={{ textDecoration: "line-through", opacity: 0.65 }} {...props} />
+  Green: (props: React.HTMLAttributes<HTMLElement>) => (
+    <span style={{ ...baseTextStyle, color: "#38a169" }} {...props} />
   ),
 
   code: ({
