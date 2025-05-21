@@ -164,6 +164,8 @@ export const getAllDevLogs = (): DevLog[] => {
       const { data } = matter(fileContents);
       const slug = folder;
 
+      if (!data.visible) return null;
+
       return {
         slug,
         title: data.title,
