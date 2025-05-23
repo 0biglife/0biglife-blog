@@ -61,6 +61,7 @@ export async function generateMetadata({ params }: { params: Params }) {
       description: post.description,
       images: [{ url: post.thumbnail, alt: post.title }],
       type: "article",
+      url: url,
       publishedTime: post.date,
     },
     twitter: {

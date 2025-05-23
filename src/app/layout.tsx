@@ -1,5 +1,6 @@
 import { Chakra, ScrollToTopButton } from "@/components";
 import "../styles/globals.css";
+// import { WebVitalsReporter } from "@/components/template";
 
 const GOOGLE_ANALYTICS_ID = process.env.GA_ID;
 
@@ -43,6 +44,11 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        <meta
+          name="naver-site-verification"
+          content="c7182802fcb6e7c655876d4d3a412fa6915b7cd2"
+          // -> content 공개되어도 무방
+        />
         <link
           rel="alternate"
           type="application/rss+xml"
@@ -84,6 +90,7 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <Chakra>
           {children}
+          {/* <WebVitalsReporter /> */}
           <ScrollToTopButton />
         </Chakra>
       </body>
