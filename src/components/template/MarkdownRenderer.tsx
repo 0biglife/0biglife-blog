@@ -201,7 +201,11 @@ export const MarkdownRenderer = {
     const match = /language-(\w+)/.exec(className || "");
 
     if (!match) {
-      return <code className="inline-code">{children}</code>;
+      return (
+        <code className="inline-code" style={{ fontWeight: 600 }}>
+          {children}
+        </code>
+      );
     }
 
     return (

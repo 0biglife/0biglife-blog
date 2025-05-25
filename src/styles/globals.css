@@ -38,14 +38,18 @@ a {
 .inline-code {
   display: inline-block;
   font-size: 0.75em;
-  padding: 0.06em 0.5em;
+  padding: 0.2em 0.5em;
+  /* padding: 0.2em 0.4em; */
   margin-right: 2px;
   border-radius: 4px;
   line-height: 1.4;
-  font-weight: 500;
+  /* line-height: 1; */
+  font-weight: 600;
   word-break: break-word;
   background-color: #eaeaea;
+  /* background-color: #f4f4f5; */
   color: #1a202c;
+  vertical-align: middle;
 }
 
 body.chakra-ui-dark .inline-code {
