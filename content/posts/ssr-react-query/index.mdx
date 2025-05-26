@@ -1,7 +1,7 @@
 ---
-title: "[Next.js] React Query SSR로 LCP 76% 개선하기"
+title: "[Next.js] React Query SSR로 LCP 93% 개선하기"
 date: "2025-05-25"
-description: "개인 프로젝트로 AWS App Runner에 배포해둔 백엔드 서버가 하나 있다. 몇 년치 나스닥 상위 대형주들의 주가 데이터를 Neon이라는 DB 서비스에 저장하고 있고, 현재는 증시 마감 시간에 맞춰 매일 Cron 작업을 통해 전날 마감 주가 업로드를 자동화해두었다. 이번 게시글에서는 이 주가 데이터를 Next.js 기반 프론트엔드 애플리케이션에 React Query + SSR 방식으로 효율적으로 렌더링하고, 그 결과로 LCP(Largest Contentful Paint)를 약 76% 개선한 과정을 정리해본다. 특히, SSG와 CSR 방식과 비교했을 때, 초기 페이지 로딩 속도 개선이 어떤 방식으로 이루어졌는지 실제 Lighthouse 분석 결과를 바탕으로 설명할 예정이다."
+description: "개인 프로젝트로 AWS App Runner에 배포해둔 백엔드 서버가 하나 있다. 몇 년치 나스닥 상위 대형주들의 주가 데이터를 Neon이라는 DB 서비스에 저장하고 있고, 현재는 증시 마감 시간에 맞춰 매일 Cron 작업을 통해 전날 마감 주가 업로드를 자동화해두었다. 이번 게시글에서는 이 주가 데이터를 Next.js 기반 프론트엔드 애플리케이션에 React Query + SSR 방식으로 효율적으로 렌더링하고, 그 결과로 LCP(Largest Contentful Paint)를 약 93% 개선한 과정을 정리해본다. 특히, SSG와 CSR 방식과 비교했을 때, 초기 페이지 로딩 속도 개선이 어떤 방식으로 이루어졌는지 실제 Lighthouse 분석 결과를 바탕으로 설명할 예정이다."
 thumbnail: "thumbnail.png"
 category: "Frontend"
 subcategory: "Next.js"
@@ -12,15 +12,15 @@ tags: []
 
 개인 프로젝트로 `AWS App Runner`에 배포해둔 백엔드 서버가 하나 있다. 몇 년치 나스닥 상위 대형주들의 주가 데이터를 Neon이라는 DB 서비스에 저장하고 있고, 현재는 증시 마감 시간에 맞춰 매일 `Cron` 작업을 통해 전날 마감 주가 업로드를 자동화해두었다.
 
-이번 게시글에서는 이 주가 데이터를 Next.js 기반 프론트엔드 애플리케이션에 **React Query + SSR** 방식으로 효율적으로 렌더링하고, 그 결과로 **LCP**(**Largest Contentful Paint**)를 **약 76% 개선**한 과정을 정리해본다. 특히, SSG와 CSR 방식과 비교했을 때, 초기 페이지 로딩 속도 개선이 어떤 방식으로 이루어졌는지 실제 Lighthouse 분석 결과를 바탕으로 설명할 예정이다.
+이번 게시글에서는 이 주가 데이터를 Next.js 기반 프론트엔드 애플리케이션에 **React Query + SSR** 방식으로 효율적으로 렌더링하고, 그 결과로 **LCP**(**Largest Contentful Paint**)를 **약 93% 개선**한 과정을 정리해본다. 특히, SSG와 CSR 방식과 비교했을 때, 초기 페이지 로딩 속도 개선이 어떤 방식으로 이루어졌는지 실제 Lighthouse 분석 결과를 바탕으로 설명할 예정이다.
 
 ## App Router 기반 프로젝트 구조
 
-프로젝트는 Next.js 15.2 App Router 구조를 기반으로 개발하였다. App Router는 중첩 레이아웃, 서버 컴포넌트 기반의 SSR, SSR-CSR의 유연한 혼합 등 다양한 장점을 제공하기 때문에 Page Router보다 확장성과 유지보수가 좋다. 그렇기 때문에 기존 Page Router에서 사용하던 `getServerSideProps`와 같은 데이터 패칭 함수가 전혀 필요하지 않다. App Router 구조에서는 서버 컴포넌트 자체가 SSR의 진입점이 되며, 파일 상단에 `use client` 디렉티브가 없는 컴포넌트는 자동으로 Next.js가 서버 컴포넌트로 간주된다.
+프로젝트는 Next.js 15.2 App Router 구조를 기반으로 개발하였다. App Router는 중첩 레이아웃, 서버 컴포넌트 기반의 SSR, SSR-CSR의 유연한 혼합 등 다양한 장점을 제공하기 때문에 Page Router보다 확장성과 유지보수가 좋다. 그렇기 때문에 기존 Page Router에서 사용하던 `getServerSideProps`와 같은 데이터 패칭 함수가 전혀 필요하지 않다. App Router 구조에서는 서버 컴포넌트 자체가 SSR의 진입점이 되며, 파일 상단에 `use client` 디렉티브가 없는 컴포넌트는 자동으로 Next.js가 서버 컴포넌트로 인식한다.
 
 따라서 App Router에서 SSR을 구현하는 일은 생각보다 단순하다. 별도의 데이터 패칭 함수 없이, 서버 컴포넌트(예: `page.tsx`) 내에서 `await`를 활용해 직접 데이터를 불러오고, 이를 JSX에 렌더링하면 된다.
 
-현재 디렉토리 구조는 다음과 같이 구성되어 있다. 참고로, 디렉토리 구조는 `tree src`로 조회 가능하다.
+현재 디렉토리 구조는 다음과 같이 구성되어 있다( 참고로, 디렉토리 구조는 `tree src`로 조회 가능하다 ).
 
 ```zsh
 ➜  wetopia git:(main) ✗ tree src
@@ -55,11 +55,12 @@ src
 
 이 구조는 서버에서 데이터를 미리 패칭하고, 클라이언트에서 hydrate하는 구조에 최적화되도록 초점을 맞췄으며, `/components/*` 경로에 클라이언트 컴포넌트를 배치하고, 공용 훅 및 API 레이어는 각각 `/hooks`와 `/lib/api`에 분리시켰다. (혹여 서버 컴포넌트 또는 hydrate에 대해 궁금하다면 [정리해둔 게시글](https://www.0biglife.com/posts/server-component)을 참고하자)
 
-### /constants/endpoints
+### API 관리 방식
 
-앞으로 붙이게 될 엔드포인트들을 모아둔 파일이다. `${API_ENDPOINTS.STOCK.DASHBOARD}` 방식으로 가져다쓰면 명시적이고, 앤드포인트가 많아질수록 유지보수하기에 좋다.
+`/constants/endponts.ts`는 앞으로 붙이게 될 엔드포인트들을 모아둔 파일이다. `${API_ENDPOINTS.STOCK.DASHBOARD}` 방식으로 가져다쓰면 명시적이고, 앤드포인트가 많아질수록 유지보수하기에 좋다.
 
-```ts
+```js
+// src/constants/endpoints.ts
 const API = "/api";
 
 export const API_ENDPOINTS = {
@@ -70,3 +71,428 @@ export const API_ENDPOINTS = {
   // ...
 };
 ```
+
+위 엔드포인트로 실제 API를 다음과 같이 구성한다.
+
+```js
+// src/lib/api/stock.api.ts
+
+import { API_ENDPOINTS } from "@/constants";
+import { axiosInstance } from "./axios";
+
+export const getStockDashboard = async () => {
+  const res = await axiosInstance.get(API_ENDPOINTS.STOCK.DASHBOARD);
+  return res.data;
+};
+```
+
+### page.tsx
+
+이제 실제 서버 컴포넌트에 주가 데이터를 SSR로 받아오는 코드를 작성한다. Next.js 서버 컴포넌트에서 `await getStockDashboard()`만으로도 SSR 방식으로 API 호출이 가능하다.
+
+하지만 이 데이터를 React Query와 함께 사용할 것이기 때문에, 몇 가지 절차를 추가로 거쳐야 한다. 먼저, `queryClient` 인스턴스를 생성한 뒤, `prefetchQuery()`를 통해 서버에서 데이터를 미리 받아 React Query 캐시에 저장한다. 이후 `dehydrate()`를 통해 해당 캐시 상태를 클라이언트에 전달해줘야한다.
+
+```js
+import { ReactQueryHydrator } from "@/providers";
+import { dehydrate, QueryClient } from "@tanstack/react-query";
+
+export default async function Home() {
+  const queryClient = new QueryClient(); // 1. 인스턴스 생성
+
+  await queryClient.prefetchQuery({
+    // 2. 데이터 패칭 + 캐싱
+    queryKey: STOCK_QUERY_KEYS.dashboard(),
+    queryFn: getStockDashboard,
+  });
+
+  const dehydratedState = dehydrate(queryClient); // 3. dehydrate
+
+  return (
+    // 4. dehydrate된 상태를 ReactQueryHydrator에 전달
+    <ReactQueryHydrator dehydratedState={dehydratedState}>
+      <Box px={6} py={2}>
+        <StockContainer />
+      </Box>
+    </ReactQueryHydrator>
+  );
+}
+```
+
+이처럼 `1 -> 2 -> 3 -> 4` 단계를 통해 React Query 기반의 SSR을 구현할 수 있다. 추가된 코드는 10줄이 채 되지 않지만, 처음 본다면 `왜 저런게 필요한지`, `감싸고 있는 <ReactQueryHydrator />는 또 뭔지` 궁금할게 분명하다.
+
+## React Query
+
+주가와 같은 외부 데이터는 **캐시 전략**이 더욱 중요한 데이터다. CSR 방식에서는 `useEffect` 안에서 데이터를 불러오기 때문에, 초기 화면은 비어 있는 상태로 노출이 된다. 사용자는 아무것도 없는 화면을 마주하게 되고, 그 데이터의 크기나 로딩 시간에 따라 LCP 등 성능 지표에도 부정적인 영향을 준다.
+
+이러한 CSR의 한계는 SSR로도 어느정도 커버 가능하다. 그렇다면 React Query는 왜 사용하는가?
+
+### 필요성
+
+단순 SSR은 "초기 화면을 그려주는 것"에 초점을 맞춘다. 하지만 클라이언트 측에서의 인터랙션, 데이터 재요청, 캐시 전략 등 전체 사용자 흐름을 제어하기에는 한계가 있다. 이러한 "데이터 흐름 전반"을 관리하는 것이 React Query의 역할이다.
+
+즉, 단순히 서버에서 데이터를 받아오는 것을 넘어서, 다음 기능을 제공한다.
+
+- 클라이언트 전환 이후에도 데이터 재사용(`hydrate`된 캐시 활용)
+
+- 중복 요처방지 및 불필요한 로딩 제거
+
+- 자동 리패칭, 에러 재시도, 포커스시 갱신 등 풍부한 UX 제어
+
+따라서, SSR + React Query의 조합은 선택의 문제 이상의 필수 전략에 가깝다..!
+
+### 동작 방식
+
+[위 코드](#pagetsx)를 포함한 전체 동작 흐름을 알아보자. 서버 컴포넌트 동작을 알지 못하면 이해하기가 어려워 [정리해준 게시글](https://www.0biglife.com/posts/server-component)을 참고하면 좋겠다.
+
+React Query 기반 SSR 동작은 크게 두 단계로 나뉜다.
+
+1. **서버 컴포넌트**: 데이터를 미리 패칭하고 캐시에 저장된
+
+2. **클라이언트 컴포넌트**: 미리 저장된 캐시를 `hydrate`하여 재사용
+
+이 흐름에서 React Query의 `HydrationBoundary`가 서버와 클라이언트의 캐시 상태를 연결하는 핵심 역할을 한다.
+
+#### 서버 컴포넌트
+
+#### 1. 데이터 패칭
+
+```js
+const queryClient = new QueryClient();
+await queryClient.prefetchQuery({
+  queryKey: STOCK_QUERY_KEYS.dashboard(),
+  queryFn: getStockDashboard,
+});
+```
+
+`QueryClient` 인스턴스를 생성한 뒤, `prefetchQuery()`를 통해 데이터를 미리 패칭한다.
+
+#### 2. 캐시 직렬화(`dehydrate`)
+
+React Query는 1번을 통해 받아온 데이터 상태를 클라이언트로 넘기기 위해 `dehydrate()`라는 메서드를 제공한다. 이렇게 미리 패칭해온 데이터를 React Query로 보관하고 있다가 클라이언트 측에서 `useQuery`로 사용할 때, 이미 캐시가 존재한다면 다시 받아오지 않고 재사용할 것이다.
+
+---
+
+### hydrate vs dehydrate
+
+`dehydrate`을 제공한다고 알고 넘어가기엔 우리에게 너무 익숙한 단어가 있다. 바로 `hydrate`다.
+
+- 기존의 React `hydrate`는, SSR로 생성된 HTML에 대해 클라이언트 JS가 이벤트 핸들러를 붙이고 인터랙션을 복원하는 과정이다.
+
+- 반면, React Query의 `dehydrate`는, 서버에서 생성한 캐시 상태를 JSON 형태로 직렬화하여 클라이언트로 전달하는 작업이다.
+
+이 두 개념은 "단순히 반대 관계"라기보다는, 서로 연결된 "직렬화"와 "복원"의 개념으로 이해하는게 필자는 더 편했다.
+
+따라서, `dehydrate`는 React Query가 클라이언트가 다시 `hydrate`할 수 있도록 서버의 상태를 전달 가능한 형태(`JSON`)로 바꾸는 과정을 말한다.
+
+### 직렬화란?
+
+솔직히 와닿지 않는다. `이건 이래요` 라고 알고 넘어가기에 아직 모호한 느낌이다. 그렇다면 이렇게 설명하면 어떨까? 직렬화는 복잡한 데이터 구조(객체, `Map`, `Set` 등)을 네트워크나 파일로 전송할 수 있도록 문자열(`JSON` 등) 형태로 일렬로 나열해 변환하는 과정을 의미한다.
+
+예를 들어, 서버에서 다음과 같은 상태를 React Query가 가지고 있다고 가정하자.
+
+```js
+// 직렬화 이전(복잡한 객체 상태)
+const state = {
+  status: "success",
+  data: { price: 123.45 },
+  error: null,
+};
+```
+
+이 상태는 곧바로 클라이언트로 전송할 수 없다. `dehydrate()`를 통해 직렬화하면 아래와 같이 변환된다.
+
+```json
+{
+  "queries": [
+    {
+      "queryKey": ["stock"],
+      "state": {
+        "status": "success",
+        "data": { "price": 123.45 },
+        "error": null,
+        "isFetching": false
+      }
+    }
+  ]
+}
+```
+
+이렇게 변환된 JSON은 HTML의 `<script>` 태그나 네트워크 응답 본문에 담아 브라우저로 안전하게 전달된다(번외로, `JSON.stringify()` 역시 직렬화 방식이다).
+
+추가로 기억하자: 클라이언트에 값을 전달하려면 반드시 "순수 JSON"이어야 한다. React 자체도 (`props`도 그렇지만) 직렬화 가능한 값만 허용하며, 브라우저와 서버 간 통신 역시 문자열 기반이다. 이 때문에 React Query의 내부 캐시 구조도 반드시 직렬화 과정을 거쳐야만 한다.
+
+---
+
+#### 클라이언트 컴포넌트
+
+클라이언트 측에서는 서버에서 직렬화된 상태(`dehydratedState`)를 React Query의 `HydrationBoundary`를 통해 복원(`hydrate`)한다. 이렇게 복원된 상태는 `useQuery()`에서 별도의 네트워크 요청 없이 즉시 사용 가능하다.
+
+```js
+<QueryClientProvider client={queryClient}>
+  <HydrationBoundary state={dehydratedState}>{children}</HydrationBoundary>
+</QueryClientProvider>
+```
+
+#### `HydrationBoundary`의 역할
+
+좀 더 자세히 살펴보자. `HydrationBoundary`는 내부적으로 `hydrate()`를 실행하여, 이 JSON을 `QueryClient`의 캐시로 되살린다.
+
+우선, `dehydratedState`는 서버로부터 전달 받아온 단순 `JSON`이다. 하지만 이 `JSON`은 여전히 React Query 입장에서는 "캐시"가 아닌 단순 데이터로 취급된다.
+
+단순 데이터로 취급되지 않기 위해서 어떻게 해야할까? 클라이언트에서 이를 실제 캐시로 사용하려면, `hydrate()` 과정을 거쳐 React Query의 `QueryClient` 내부에 주입해줘야 한다. `HydrationBoundary`는 이 `hydrate()` 과정을 자동으로 수행해주며, 클라이언트에 도착한 `JSON` 데이터를 다시 React Query가 사용할 수 있는 정식 캐시로 복원해준다.
+
+이 덕분에 위에서 언급했던 `useQuery()` 동작이 가능하다. `useQuery()`는 해당 쿼리 키에 대한 캐시가 이미 존재한다는 사실을 인식하고, 불필요한 네트워크 요청 없이 즉시 캐시된 데이터를 반환할 수 있게 된다. 이로써 사용자 입장에서는 빠른 렌더링, 즉각적인 데이터 표시라는 경험을 누릴 수 있다.
+
+## 코드 적용 및 정리
+
+설명이 너무 주절 주절 많았다. 그치만 이해하기 위해서 최대한 필요한 설명과 예시를 들어야헀다(타자료 없이 이 글만 보면 전부 이해되기 위함이다).
+
+자, 이제 동작 흐름도 알았겠다 최종 정리해보고 얼른 테스트 결과를 살펴보자!
+
+### page.tsx
+
+서버 컴포넌트 진입점인 `page.tsx` 코드부터 살펴보면,
+
+```ts
+export default async function Home() {
+  // 1. QueryClient 인스턴스를 생성하고
+  const queryClient = new QueryClient();
+
+  // 2. prefetchQuery() 로 서버에서 미리 데이터를 불러온다.
+  await queryClient.prefetchQuery({
+    // 2-1. 해당 키로 quertClient 내부에 캐시를 저장한다
+    queryKey: STOCK_QUERY_KEYS.dashboard(),
+    queryFn: getStockDashboard,
+  });
+
+  // 3. dehydrate 호출로 JSON 직렬화 진행한다.
+  const dehydratedState = dehydrate(queryClient);
+
+  return (
+    <ReactQueryHydrator dehydratedState={dehydratedState}>
+      <Box px={6} py={2}>
+        <StockContainer />
+      </Box>
+    </ReactQueryHydrator>
+  );
+}
+```
+
+### StockContainer.tsx / useStockDashboard.tsx
+
+`StockContainer`는 클라이언트 컴포넌트이며, 내부에서 `useStockDashboard` 훅을 통해 데이터를 가져온다. 이 훅 내부에서 `useQuery`가 사용되는데, SSR 단계에서 미리 캐시된 쿼리 키가 존재하기 때문에 클라이언트에서는 별도의 `fetch` 없이 이미 존재하는 캐시를 즉시 사용하게 된다.
+
+이 구조 덕분에 사용자는 `Spinner`나 깜빡임 없이, 마치 정적 콘텐츠처럼 즉시 데이터를 확인할 수 있는 UX를 경험하게 된다.
+
+```js
+// src/components/domain/stock/StockContainer.tsx
+"use client";
+
+export default function StockContainer() {
+  const { data, isLoading, isError } = useStockDashboard();
+
+  // ... 생략
+
+  return (
+    <Box py={4}>
+      <Heading size="md" mb={4}>
+        {STOCK_CONTAINER_TITLE}
+      </Heading>
+      {data.map((stock) => (
+        <Box key={stock.symbol} mb={6}>
+          <Text>{stock.symbol}</Text>
+          {/* 차트 등 시각화 구성 */}
+        </Box>
+      ))}
+    </Box>
+  );
+}
+
+// src/hooks/useStockDashboard.tsx
+export const useStockDashboard = () =>
+  useQuery({
+    queryKey: STOCK_QUERY_KEYS.dashboard(),
+    queryFn: getStockDashboard,
+    staleTime: 1000 * 60 * 5, // 5분 동안 fresh
+    retry: 2,
+    refetchOnWindowFocus: false,
+  });
+```
+
+### ReactQueryHydrator.tsx
+
+이 컴포넌트 역시 클라이언트 컴포넌트로, SSR 과정에서 직렬화된 상태(`dehydratedState`)를 전달받아 React Query 클라이언트의 초기화 및 캐시 복원(`hydration`) 역할을 수행한다.
+
+다음과 같은 역할을 한다.
+
+1. 클라이언트에서 `QueryClient` 인스턴스를 생성한다.
+
+2. `QueryClientProvider`로 전역 쿼리 클라이언트를 감싼다.
+
+3. `HydrationBoundary`를 통해 전달받은 `JSON`(`dehydratedState`)을 React Query 내부 캐시로 복원한다.
+
+4. `Devtools`를 붙여서 쿼리 상태를 시각적으로 확인할 수 있도록 한다.
+
+```js
+// src/providers/ReactQueryHydrator.tsx
+"use client";
+
+export default function ReactQueryHydrator({
+  children,
+  dehydratedState,
+}: {
+  children: ReactNode,
+  dehydratedState: unknown,
+}) {
+  const [queryClient] = useState(() => new QueryClient()); // 클라이언트용 초기화
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <HydrationBoundary state={dehydratedState}>
+        <>
+          {children}
+          {process.env.NODE_ENV === "development" && (
+            <ReactQueryDevtools initialIsOpen={false} />
+          )}
+        </>
+      </HydrationBoundary>
+    </QueryClientProvider>
+  );
+}
+```
+
+#### Provider로 취급하여 분리한 이유
+
+ReactQueryHydrator는 SSR을 통해 전달받은 dehydratedState를 클라이언트에서만 복원할 필요가 있기 때문에, 별도의 컴포넌트로 분리하였다.
+
+분리한 덕분에,
+
+- SSR이 적용된 페이지에서는 `ReactQueryHydrator`만으로 SSR + Hydration 처리가 가능하고,
+
+- 일반적인 페이지나 `layout.tsx`에서는 기존 `ClientProvider`를 유지할 수 있다.
+
+### 코드 실행
+
+여태까지의 코드를 `yarn dev`로 실행하면 성공적으로 렌더링되는 것을 확인할 수 있다. SSR이 성공적이라는 것을 알기 위해, 개발자 도구에서 네트워크탭을 통해 온 데이터를 살펴보자. CSR 방식에서 API 호출로 받아올 데이터가 이미 입혀진 채로 HTML을 받아온 것이 확인 가능하다.
+
+![localhost:3000](1.png)
+
+### Devtools
+
+위 스크린샷을 보면 렌더링 화면의 우측 하단에 "섬 아이콘"을 볼 수 있다. `ReactQueryHydrator.tsx` 코드를 보면 `<ReactQueryDevtools initialIsOpen={false} />` 를 볼 수 있다.
+
+```ts
+{
+  process.env.NODE_ENV === "development" && (
+    <ReactQueryDevtools initialIsOpen={false} />
+  );
+}
+```
+
+ReactQueryDevtools는 React Query에서 제공하는 개발자 도구로, 현재 캐시된 쿼리 상태, 쿼리 키, 상태 변화(Fetching, Stale, Success 등), 네트워크 요청 발생 여부 등을 시각적으로 확인할 수 있게 해주는 도구이다.
+
+이를 통해 `useQuery()`가 실제 네트워크 요청을 보내는지, 각 쿼리의 staleTime, isFetching 등 여부로 실시간으로 확인 가능해서 편리하다.
+
+![react query devtools](2.png)
+
+위 캡쳐된 사진을 보면,
+
+- `status: "success"`, `fetchStatus: "idle"`로 표시되는 것을 볼 수 있다. 이는 클라이언트 측에서 별도의 네트워크 요청 없이, 서버에서 전달된 캐시된 데이터를 즉시 활용하고 있다는 것을 의미한다.
+
+- `error: null`, `isInvalidated: false`로 나타나는 것을 보면, 쿼리는 정상적으로 처리되어 유효한 상태인 것이 확인 가능하다.
+
+이처럼 Devtools를 활용하면 SSR이 제대로 적용되었는지 직관적으로 검증할 수 있다.
+
+---
+
+## 성능 테스트
+
+(.. 정리중)
+
+이제 실제 CSR, SSR 상태를 돌려 성능 지표 비교를 해본다.
+
+![CSR / SSR (좌/우)](4.png)
+
+정리해보면,
+
+### Lighthouse 기반으로
+
+#### Javascript Execution Time
+
+JavaScript Execution Time
+
+- CSR: 4.7초
+- SSR: 3.6초
+
+개선 원인: 클라이언트에서 fetch & 렌더 트리 작업 감소 + React Query가 클라이언트에서 실행할 로직이 대폭 줄어듦
+
+#### Main-thread Work 최소화
+
+- CSR: 4.8초
+- SSR: 3.7초
+  → JS 실행/렌더링 등 브라우저가 동작을 잠식하는 시간 감소
+
+#### Server Response Time
+
+- CSR: 3,610ms
+- SSR: 약 400ms 내외
+
+#### Javascrpt, 네트워크 크기
+
+- CSR: 8.8MB (JS 중복 + 대기)
+- SSR: 8.8MB (동일), 개선은 안 됐지만 LCP에는 영향 없음
+- Reduce unused JS: 약 3MB 잠재적 절감 가능 (CSR/SSR 동일)
+
+## 개선 사항
+
+SSR을 적용하고자하는 서버 컴포넌트는 무조건 `<ReactQueryHydrator />`로 감싸주어야한다. 만약 프로젝트 규모가 커짐에 따라 여러 라우터에서 매번 `<ReactQueryHydrator />`로 감싸줘야한다면 코드 작성에 대한 비용과 추후 수정 여부에 따라 발생할 사이드 이팩트가 커지지 않을까?
+
+### 페지이마다 감싸되, 헬퍼 함수로 추상화하자
+
+SSR 대상 서버 컴포넌트에 반복되는 `QueryClient`, `prefetchQuery`, `dehydrate`, `<ReactQueryHydrator />` 구조를 재사용 가능하게 추상화시킨다.
+
+```js
+export async function withSSRHydration(
+  fn: (queryClient: QueryClient) => Promise<React.ReactNode>
+) {
+  const queryClient = new QueryClient();
+
+  const content = await fn(queryClient);
+  const dehydratedState = dehydrate(queryClient);
+
+  return (
+    <ReactQueryHydrator dehydratedState={dehydratedState}>
+      {content}
+    </ReactQueryHydrator>
+  );
+}
+```
+
+`withSSRHydration` 함수로 기존 서버 컴포넌트 진입점인 `page.tsx`를 아래와 같이 감싸준다. 테스트 결과 기존과 동일하게 정상 동작한다.
+
+```js
+export default async function Home() {
+  return withSSRHydration(async (queryClient) => {
+    await queryClient.prefetchQuery({
+      queryKey: STOCK_QUERY_KEYS.dashboard(),
+      queryFn: getStockDashboard,
+    });
+
+    return (
+      <Box px={6} py={2}>
+        <StockContainer />
+      </Box>
+    );
+  });
+}
+```
+
+이로써, 라우터별 반복되는 불필요 코드가 제거되었고, 추후 `ReactQueryHydrator`의 내부 로직이 변경될 시 전역 반영이 가능해져서 구고적인 일관성을 가질 수 있게 되었다.
+
+## 마치며
+
+여태까지 SSR과 React Query를 어떻게 병행해서 사용하는지 살펴보았다. 얼마 전에 그런 글을 읽었다. 좋은 기술 블로깅이란, "**단순히 지식을 나열하는 글**"이 아닌 "**실무자가 끝까지 읽어낼 수 있는 임팩트를 주는 글**"이다. 나름의 고민 끝에, 그저 SSR에 대한 기술 설명 보다는 조금 더 실무 위주와 고민의 흐름에 따라 정리해보았다.
+
+다만, 이 과정에서 글을 읽다가 이탈하는 사람들은 '너무 하나하나 설명해버려서 느슨해져버린 글' 때문인지 '글의 디자인이 너무 루즈한다던지'와 같은 이유로 인해 좋은 글이 아닐 수도 있겠다는 막연한 어려움이 있다. 분명 다듬어야할 부분도 있을테고, 기술적으로 놓친 부분도 있을테다. (이런 것들을 소통하고자 댓글 기능을 붙였으나 아직은 소통도 없는 듯하고..)
+
+좋은 글을 쓰는건 늘 쉽지 않지만, 시간은 언제나 과정 속에 있으니 더 나아질거라 확신하며, 조금이라도 누군가에게 도움이 되었으면 싶은 글이 되었으면 하는 마음으로 이번 게시글을 마무리한다.

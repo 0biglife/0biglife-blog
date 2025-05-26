@@ -17,6 +17,50 @@ export const MarkdownRenderer = {
     const src = props.src || "";
 
     const isGif = typeof src === "string" && src.endsWith(".gif");
+    const isVideo =
+      typeof src === "string" &&
+      (src.endsWith(".webm") || src.endsWith(".mp4"));
+
+    if (isVideo) {
+      return (
+        <span
+          style={{
+            display: "block",
+            margin: "1.5rem 0",
+            textAlign: "center",
+          }}
+        >
+          <video
+            src={src}
+            autoPlay
+            loop
+            muted
+            playsInline
+            controls={false}
+            width={800}
+            height={500}
+            style={{
+              maxWidth: "100%",
+              borderRadius: "6px",
+              border: "1px solid rgba(128, 128, 128, 0.2)",
+              objectFit: "cover",
+            }}
+          />
+          {alt && (
+            <span
+              style={{
+                display: "block",
+                fontSize: "0.8rem",
+                marginTop: "0.75rem",
+                opacity: 0.6,
+              }}
+            >
+              {alt}
+            </span>
+          )}
+        </span>
+      );
+    }
 
     if (isGif) {
       return (
