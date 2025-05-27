@@ -10,7 +10,7 @@ export async function GET() {
     id: siteUrl,
     link: siteUrl,
     language: "ko",
-    favicon: `${siteUrl}/favicon.ico`,
+    favicon: `${siteUrl}/favicon.png`,
     copyright: `© ${new Date().getFullYear()} 0biglife`,
   });
 

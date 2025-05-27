@@ -53,17 +53,10 @@ const getThumbnail = (folderName: string): string => {
 
 // mdx 내부 이미지에 경로 주입
 const transformImagePaths = (content: string, slug: string): string => {
-  // return content.replace(
-  //   /!\[(.*?)\]\((?!https?:\/\/)(.*?)\.(jpg|jpeg|png)\)/g,
-  //   (match, alt, srcBase) => {
-  //     return `![${alt}](/assets/posts/${slug}/${srcBase}-optimized.webp)`;
-  //   }
-  // );
   return content.replace(
-    /!\[(.*?)\]\((?!https?:\/\/)(.*?)\.(jpg|jpeg|png|gif)\)/g,
+    /!\[(.*?)\]\((?!https?:\/\/)(.*?)\.(jpg|jpeg|png|gif|mov|webm)\)/g,
     (match, alt, srcBase, ext) => {
-      // gif는 변환하지 않고 원본 유지
-      if (ext === "gif") {
+      if (ext === "gif" || ext === "mov" || ext === "webm") {
         return `![${alt}](/assets/posts/${slug}/${srcBase}.${ext})`;
       }
 
@@ -128,7 +121,11 @@ export const getPostBySlug = async (slug: string): Promise<Post | null> => {
 
   const mdxSource = await compileMDX({
     source: transformedContent,
-    components: MarkdownRenderer,
+    // components: MarkdownRenderer,
+    components: {
+      ...MarkdownRenderer,
+      img: (props) => MarkdownRenderer.img({ ...props, slug }),
+    },
     options: {
       mdxOptions: {
         remarkPlugins: [remarkGfm],

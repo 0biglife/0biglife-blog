@@ -12,14 +12,95 @@ const baseTextStyle = {
 };
 
 export const MarkdownRenderer = {
-  img: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+  img: (
+    props: React.ImgHTMLAttributes<HTMLImageElement> & { slug?: string }
+  ) => {
     const alt = props.alt || "";
     const src = props.src || "";
+    const slug = props.slug || "";
+
+    if (typeof src === "string" && src.includes(",")) {
+      const [leftSrc, rightSrc] = src.split(",").map((s) => s.trim());
+
+      if (!leftSrc || !rightSrc)
+        return (
+          <span style={{ color: "red", fontStyle: "italic" }}>
+            Wrong Format: <code>{src}</code>
+          </span>
+        );
+
+      const isVideo = (s: string) =>
+        s.endsWith(".webm") || s.endsWith(".mp4") || s.endsWith(".mov");
+
+      return (
+        <div
+          style={{
+            margin: "1.5rem 0",
+            width: "100%",
+            maxWidth: "800px",
+            marginInline: "auto",
+            textAlign: "center",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              gap: "4px",
+              justifyContent: "center",
+            }}
+          >
+            {[leftSrc, rightSrc].map((file, i) => {
+              const fullPath = file.startsWith("/")
+                ? file
+                : `/assets/posts/${slug}/${file}`;
+              const commonStyle = {
+                flex: 1,
+                maxWidth: "50%",
+                borderRadius: "6px",
+                border: "1px solid rgba(128, 128, 128, 0.2)",
+                objectFit: "cover" as const,
+              };
+
+              return isVideo(file) ? (
+                <video
+                  key={i}
+                  src={fullPath}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  controls={false}
+                  style={commonStyle}
+                />
+              ) : (
+                <Image
+                  key={i}
+                  src={fullPath}
+                  alt={`${alt} ${i === 0 ? "(좌)" : "(우)"}`}
+                  width={800}
+                  height={500}
+                  style={commonStyle}
+                />
+              );
+            })}
+          </div>
+          <div
+            style={{
+              marginTop: "0.75rem",
+              fontSize: "0.8rem",
+              opacity: 0.6,
+            }}
+          >
+            {alt || "비교 이미지"}
+          </div>
+        </div>
+      );
+    }
 
     const isGif = typeof src === "string" && src.endsWith(".gif");
     const isVideo =
       typeof src === "string" &&
-      (src.endsWith(".webm") || src.endsWith(".mp4"));
+      (src.endsWith(".webm") || src.endsWith(".mov") || src.endsWith(".mp4"));
 
     if (isVideo) {
       return (
@@ -192,9 +273,8 @@ export const MarkdownRenderer = {
     );
   },
 
-  // ✅ 핵심 수정: p 내부 block 요소 감지 시 div로 변경
+  // 핵심 수정: p 내부 block 요소 감지 시 div로 변경
   p: (props: React.HTMLAttributes<HTMLParagraphElement>) => {
-    // const children = React.Children.toArray(props.children);
     const children = React.Children.toArray(props.children).map((child) => {
       if (typeof child === "string") {
         return child.replace(/->/g, "→");
@@ -205,8 +285,7 @@ export const MarkdownRenderer = {
     const hasBlockLevel = children.some((child) => {
       if (!React.isValidElement(child)) return false;
       const tag = typeof child.type === "string" ? child.type : "";
-      // Image 컴포넌트도 block처럼 처리
-      return ["div", "pre", "figure", "Image"].includes(tag);
+      return ["div", "pre", "figure", "Image", "video", "img"].includes(tag);
     });
 
     const Tag = hasBlockLevel ? "div" : "p";
@@ -218,10 +297,6 @@ export const MarkdownRenderer = {
       >
         {children}
       </Tag>
-      // <Tag
-      //   style={{ fontSize: "1rem", lineHeight: "1.7", margin: "1rem 0" }}
-      //   {...props}
-      // />
     );
   },
 
