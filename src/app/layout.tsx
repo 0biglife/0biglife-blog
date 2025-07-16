@@ -1,6 +1,5 @@
 import { Chakra, ScrollToTopButton } from "@/components";
 import "../styles/globals.css";
-// import { WebVitalsReporter } from "@/components/template";
 
 const GOOGLE_ANALYTICS_ID = process.env.GA_ID;
 
@@ -90,7 +89,6 @@ export default function RootLayout({
       <body suppressHydrationWarning>
         <Chakra>
           {children}
-          {/* <WebVitalsReporter /> */}
           <ScrollToTopButton />
         </Chakra>
       </body>

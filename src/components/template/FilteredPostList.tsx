@@ -24,7 +24,7 @@ import { motion } from "framer-motion";
 const CATEGORY_ORDER = {
   Frontend: 1,
   Backend: 2,
-  Kubernetes: 3,
+  DevOps: 3,
   Productivity: 4,
   // ...
 };

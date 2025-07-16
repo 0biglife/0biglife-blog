@@ -1,5 +1,5 @@
 ---
-title: "[Next.js] React Query SSR로 LCP 92% 개선하기"
+title: "[Next.js] React Query + SSR로 LCP 92% 개선하기"
 date: "2025-05-25"
 description: "개인 프로젝트로 AWS App Runner에 배포해둔 백엔드 서버가 하나 있다. 몇 년치 나스닥 상위 대형주들의 주가 데이터를 Neon이라는 DB 서비스에 저장하고 있고, 현재는 증시 마감 시간에 맞춰 매일 Cron 작업을 통해 전날 마감 주가 업로드를 자동화해두었다. 이번 게시글에서는 이 주가 데이터를 Next.js 기반 프론트엔드 애플리케이션에 React Query + SSR 방식으로 효율적으로 렌더링하고, 그 결과로 LCP(Largest Contentful Paint)를 약 92% 개선한 과정을 정리해본다. 특히, SSG와 CSR 방식과 비교했을 때, 초기 페이지 로딩 속도 개선이 어떤 방식으로 이루어졌는지 실제 Lighthouse 분석 결과를 바탕으로 설명할 예정이다."
 thumbnail: "thumbnail.png"
@@ -490,7 +490,7 @@ CSR은 모든 렌더링을 브라우저가 맡게 되어 초기 로딩 시점에
 
 SSR을 적용하고자하는 서버 컴포넌트는 무조건 `<ReactQueryHydrator />`로 감싸주어야한다. 만약 프로젝트 규모가 커짐에 따라 여러 라우터에서 매번 `<ReactQueryHydrator />`로 감싸줘야한다면 코드 작성에 대한 비용과 추후 수정 여부에 따라 발생할 사이드 이팩트가 커지지 않을까?
 
-### 페지이마다 감싸되, 헬퍼 함수로 추상화하자
+### 헬퍼 함수 추상화
 
 SSR 대상 서버 컴포넌트에 반복되는 `QueryClient`, `prefetchQuery`, `dehydrate`, `<ReactQueryHydrator />` 구조를 재사용 가능하게 추상화시킨다.
 
@@ -530,7 +530,7 @@ export default async function Home() {
 }
 ```
 
-이로써, 라우터별 반복되는 불필요 코드가 제거되었고, 추후 `ReactQueryHydrator`의 내부 로직이 변경될 시 전역 반영이 가능해져서 구고적인 일관성을 가질 수 있게 되었다.
+이로써, 라우터별 반복되는 불필요 코드가 제거되었고, 추후 `ReactQueryHydrator`의 내부 로직이 변경될 시 전역 반영이 가능해져서 구고적인 일관성을 가질 수 있게 되었다. 앞으로 새로운 페이지마다 이 함수만 붙이면 문제없이 동작할 것이다.
 
 ---
 

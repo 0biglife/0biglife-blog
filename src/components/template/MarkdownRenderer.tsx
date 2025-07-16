@@ -4,6 +4,7 @@ import { CopyButton } from "@/components";
 import Image from "next/image";
 import React from "react";
 import { slugify } from "@/lib/utils";
+import { DualMedia } from "./DualMedio";
 
 const baseTextStyle = {
   fontSize: "1rem",
@@ -20,81 +21,7 @@ export const MarkdownRenderer = {
     const slug = props.slug || "";
 
     if (typeof src === "string" && src.includes(",")) {
-      const [leftSrc, rightSrc] = src.split(",").map((s) => s.trim());
-
-      if (!leftSrc || !rightSrc)
-        return (
-          <span style={{ color: "red", fontStyle: "italic" }}>
-            Wrong Format: <code>{src}</code>
-          </span>
-        );
-
-      const isVideo = (s: string) =>
-        s.endsWith(".webm") || s.endsWith(".mp4") || s.endsWith(".mov");
-
-      return (
-        <div
-          style={{
-            margin: "1.5rem 0",
-            width: "100%",
-            maxWidth: "800px",
-            marginInline: "auto",
-            textAlign: "center",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              gap: "4px",
-              justifyContent: "center",
-            }}
-          >
-            {[leftSrc, rightSrc].map((file, i) => {
-              const fullPath = file.startsWith("/")
-                ? file
-                : `/assets/posts/${slug}/${file}`;
-              const commonStyle = {
-                flex: 1,
-                maxWidth: "50%",
-                borderRadius: "6px",
-                border: "1px solid rgba(128, 128, 128, 0.2)",
-                objectFit: "cover" as const,
-              };
-
-              return isVideo(file) ? (
-                <video
-                  key={i}
-                  src={fullPath}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  controls={false}
-                  style={commonStyle}
-                />
-              ) : (
-                <Image
-                  key={i}
-                  src={fullPath}
-                  alt={`${alt} ${i === 0 ? "(좌)" : "(우)"}`}
-                  width={800}
-                  height={500}
-                  style={commonStyle}
-                />
-              );
-            })}
-          </div>
-          <div
-            style={{
-              marginTop: "0.75rem",
-              fontSize: "0.8rem",
-              opacity: 0.6,
-            }}
-          >
-            {alt || "비교 이미지"}
-          </div>
-        </div>
-      );
+      return <DualMedia src={src} alt={alt} slug={slug} />;
     }
 
     const isGif = typeof src === "string" && src.endsWith(".gif");
@@ -104,7 +31,7 @@ export const MarkdownRenderer = {
 
     if (isVideo) {
       return (
-        <span
+        <div
           style={{
             display: "block",
             margin: "1.5rem 0",
@@ -128,7 +55,7 @@ export const MarkdownRenderer = {
             }}
           />
           {alt && (
-            <span
+            <div
               style={{
                 display: "block",
                 fontSize: "0.8rem",
@@ -137,9 +64,9 @@ export const MarkdownRenderer = {
               }}
             >
               {alt}
-            </span>
+            </div>
           )}
-        </span>
+        </div>
       );
     }
 
@@ -370,6 +297,8 @@ export const MarkdownRenderer = {
 
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a
+      target="_blank"
+      rel="noopener noreferrer"
       style={{
         color: "#3182ce",
         textDecoration: "underline",

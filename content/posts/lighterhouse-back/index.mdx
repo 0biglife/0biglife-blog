@@ -1,0 +1,317 @@
+---
+title: "[AWS] Next.js를 Amplify로 배포하면 왜 Lambda가 자동 배포되는가 (Feat. App Runner)"
+date: "2025-07-02"
+description: "사건은 이렇게 시작된다. Lighterhouse를 배포하고 난 뒤, 블로그 URL을 입력하여 성능 분석이 잘 돌아간 것을 확인했고, 그 외 여러 테스트를 진행했다. 그러고 나서 이틀 뒤 쯤이었을까. naver.com을 성능 분석을 해본 결과, 지속적으로 에러가 반환되었다. 그 과정에서 클라이언트 측에서 대응하지 못한 에러 케이스를 위해 에러 핸들러를 추가했고, 문제점을 파악하는 과정에서 Gateway Timeout(504)이 일부 URL에서 지속적으로 발생하는 것을 알 수 있었다.
+"
+thumbnail: "thumbnail.png"
+category: "DevOps"
+subcategory: "AWS"
+tags: []
+---
+
+## 들어가며
+
+아직 게시글로 올리지 않았지만, 얼마 전에 개인 프로젝트로 **웹 성능 분석 도구**를 AWS에 배포했다. 프로젝트 이름은 `Lighterhouse`이며, 기존 Google Lighthouse의 개선점을 직접 반영하기 위해 만든 서비스다. [링크](https://lighterhouse.0biglife.com)를 타고 가면 이용할 수 있으며, 블로그 헤더 우측 버튼에도 추가해두었으니 사용해보고 불편한 점을 댓글로 남겨주면 참 좋겠다.
+
+무튼, 이 프로젝트는 AWS Amplify를 통해 배포했지만, 몇 가지 한계점으로 인해 `AWS App Runner`에 별개 백엔드 서버를 배포하게 되었다. 오늘은 Amplify의 SSR 처리 방식과, 내가 겪은 문제, App Runner 배포 과정을 정리해보려 한다.
+
+## 문제 발생
+
+사건은 이렇게 시작된다. `Lighterhouse`를 배포하고 난 뒤, 블로그 URL을 입력하여 성능 분석이 잘 돌아간 것을 확인했고, 그 외 여러 테스트를 진행했다. 그러고 나서 이틀 뒤 쯤이었을까. `naver.com`을 성능 분석을 해본 결과, 지속적으로 에러가 반환되었다. 그 과정에서 클라이언트 측에서 대응하지 못한 에러 케이스를 위해 에러 핸들러를 추가했고, 문제점을 파악하는 과정에서 **Gateway Timeout(504)**이 일부 URL에서 지속적으로 발생하는 것을 알 수 있었다.
+
+그렇게, 돌고 돌아 AWS Amplify에서 Next.js 서버가 돌아가는 방식을 조사하게 되었다.
+
+### Next.js API Route
+
+우선, `Lighterhouse`는 Next.js 15.2 기반의 애플리케이션으로, 클라이언트 컴포넌트와 서버 컴포넌트가 혼합된 구조이며 `API Routes`를 통해 백엔드 데이터를 직접 처리하는 기능도 함께 제공된다. 실제로 배포 환경에서도 가능한 일이었기에, 클라이언트 앱 하나로 서버 기능까지 된다는 사실에 참으로 놀랍고 편했다(돌이켜보니 Next.js뽕(?)에 차있었던 상태였기에 AWS Amplify를 너무 맹신한 것인듯 싶다).
+
+그치만 이것이 문제의 시작이었다. 편리해보였지만, 당연한 질문을 나는 하지 못한 것.. "Amplify가 서버 기능을 어떻게 담당 또는 배포하는가?" 잠깐의 검색으로 Amplify는 정적 사이트 호스팅에 최적화된 서비스지만, 최근에는 Next.js의 SSR 기능도 부분적으로 지원한다는 것을 찾았고, 그 동작 방식은 **Amplify에서 Next.js API Route나 SSR 기능을 위해 자동으로 AWS Lambda 함수를 생성한다**는 것이다.
+
+### AWS Lambda
+
+![AWS Lambda](1.png)
+
+이것이 내가 AWS Lambda를 처음 만난 순간이다. Lambda는 뭔까?
+
+Lambda는 서버를 직접 띄우거나 관리할 필요 없이 이벤트에 반응해 자동으로 실행되는 함수를 의미한다. Lambda는 필요할 때만 실행되고, 끝나면 즉시 종료되며, 사용한 만큼만 과금된다고 한다. 그리고 개발자가 인프라보다는 로직에만 집중할 수 있도록 만들어진 서비스이기 때문에, 예를 들어 이미지가 업로드되었을 때 자동으로 리사이징하거나, 외부 API 요청에 따라 실시간으로 데이터를 가공해 응답하는 등 다양한 작업을 수행할 수 있다.
+
+이 Lambda라는 녀석을 Amplify 앱이 배포됨과 동시에 Next.js의 `getServerSideProps`, `API Route` 등에 대한 요청이 필요할 때면 생성한다.
+
+#### Lambda의 기본 타임아웃
+
+Amplify가 생성하는 Lambda 함수는 설정 없이 기본적으로 다음과 같은 제약을 가진다.
+
+- **타임아웃: 기본 10초**
+- **메모리: 기본 512MB**
+- **Cold Start: 초기 호출 시 지연 발생 가능**
+
+웹 성능 분석 기능은 `Google PageSpeed API`를 호출에 의존한다. 이 과정은 종종 5 ~ 15초 이상 걸리기도 하는데, **Amplify에서 자동 생성된 Lambda는 10초를 초과하면 바로 타임아웃 에러를 반환**하게 된다.
+
+이를 수정하기 위해 Lambda의 타임아웃 설정을 늘리고 싶었지만, Amplify가 생성하는 Lambda는 사용자가 직접 제어할 수 없다. 이는 **Amplify가 "자동화된 추상화된 환경"**이라는 특성 때문이며, 그렇기 때문에 우리는 Amplify 콘솔에서 Lambda의 "L" 조차도 찾아볼 수 없다 😂
+
+### 문제 정리
+
+여태까지의 이야기를 정리하면 다음과 같다.
+
+Amplify에서 Next.js SSR 요청이나 API 요청은 다음과 같은 흐름을 거친다.
+
+```bash
+사용자 → CloudFront → Amplify Hosting → Lambda (SSR 처리) → 응답
+```
+
+이 때, 10초 내로 응답하지 않으면 Amplify Hosting은 CloudFront에 504 Gateway Timeout을 반환한다. 내가 늘 보던 바로 그 504 에러가 발생하는 것이다.
+
+그리고, 그 원인이 Amplify가 자동으로 생성한 Lambda 때문이며, 자동 생성되었기에 기본 10초 타임아웃이 설정되었고, 이 타임아웃을 수정하는 방안은 AWS에서 제공하지 않는다!
+
+#### 참고사항
+
+그치만 AWS Lambda에 대해서 오해하진 말자. Amplify가 자동 생성한 Lambda만 타임아웃이 그렇게 형편 없는 것이지, 그 외에 우리가 직접 생성하는 Lambda는 기본 3초, 최대 15분까지 설정이 가능하다. 더 자세한 내용을 알고 싶다면 [공식 문서](https://docs.aws.amazon.com/ko_kr/lambda/latest/dg/configuration-timeout.html)를 참고하자.
+
+## 타임아웃 해결하기
+
+타임아웃 문제를 해결하기 위해 API Route 방식을 완전히 제거하기로 했다. 완벽하게 독립된 형태로 가는 것 외에는 도저히 방법을 찾지 못했다. 따라서, **독립적인 Java 기반 백엔드 서버**로 구현하기로 했고, 이를 `AWS App Runner`에 배포하게 되었다.
+
+### Java 백엔드 구현
+
+Google API 하나만 호출하면 되는 백엔드 앱을 만들 것이기 때문에 Java와 Spring Boot에 대한 공부, 코드 공부를 시작하여 가벼운 백엔드 앱 하나를 만들었다. IntelliJ를 쓸까 싶다가 VS Code로 Extension으로 충분히 개발할 수 있어서 에디터는 그대로 유지했다.
+
+#### 백엔드 디렉토리
+
+디렉토리 구조는 Spring Boot 표준 구조에 맞게 구성했다. `main/java/com/example/{project_name}`에 CORS를 위한 `config`와 `controller`, `utils`를 추가했고, `application.properties`에서 포트 지정과 `API_KEY` 설정을 추가했다.
+
+```bash
+ ➜  lighterhouse-back: tree src
+ src
+ ├── main
+ │   ├── java
+ │   │   └── com
+ │   │       └── example
+ │   │           └── lighterhouse_back
+ │   │               ├── config
+ │   │               │   └── WebConfig.java
+│   │               ├── controller
+│   │               │   └── PsiController.java
+│   │               ├── LighterhouseBackApplication.java
+│   │               └── util
+│   │                   └── PsiUtils.java
+│   └── resources
+│       ├── application.properties
+│       ├── static
+│       └── templates
+└── test
+    └── java
+        └── com
+            └── example
+                └── lighterhouse_back
+                    └── LighterhouseBackApplicationTests.java
+
+17 directories, 6 files
+```
+
+#### 환경 변수 관리
+
+참고로, Java 백엔드에서는 `.env` 설정이 없기 때문에 `.vscode/launch.json`에 `env` 설정을 추가하여 `application.properties`에서 가져오게 하였고, 배포 환경에서는 App Runner 환경 변수에 `API_KEY`를 넣어서 관리한다.
+
+```java
+// launch.json
+{
+  "type": "java",
+  "name": "Spring Boot",
+  "request": "launch",
+  "mainClass": "com.example.**",
+  "env": {
+    "GOOGLE_PSI_KEY": "**"
+  }
+}
+
+// application.properties
+spring.application.name=lighterhouse-back
+google.psi.key=${GOOGLE_PSI_KEY}
+server.port=8080
+```
+
+#### Config 관리
+
+프론트엔드와 백엔드 간의 CORS 정책을 위해 `WebConfig.java`를 추가했다. `"*"`와일드카드 방식은 `allowCredentials(true)`와 함께 사용될 수 없기 때문에 배포 후의 실제 도메인인 `https://lighterhouse.0biglife.com`를 명시적으로 지정했다.
+
+```java
+@Configuration
+public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**")
+            .allowedOrigins(
+                // ...
+                "https://lighterhouse.0biglife.com"
+            )
+            .allowedMethods("GET", "POST")
+            .allowedHeaders("*")
+            .allowCredentials(true);
+    }
+}
+```
+
+#### PSI 분석 API 컨트롤러
+
+컨트롤러에서는 `/api/analyze` 엔드포인트를 구현하여 Google PageSpeed Insights API를 호출하고, 해당 URL의 성능 분석 결과를 반환하도록 했다. 이 과정에서 `RestTemplate`을 사용하여 외부 API를 호출하고, 응답을 가공하여 클라이언트에 전달한다.
+
+이때 필요한 API 키는 `application.properties`에서 `${google.psi.key}` 형식으로 가져오며, `@Value` 어노테이션을 통해 환경 변수로 주입되도록 구성했다. 이렇게 하면 운영 환경에서는 App Runner의 환경 변수 설정만으로 **보안 키를 안전하게 관리**할 수 있고, 로컬 환경에서는 `launch.json`으로 키를 주입할 수 있어 유연하게 동작 가능하다.
+
+```java
+@RestController
+@RequestMapping("/api")
+public class PsiController {
+    private static final Logger logger = LoggerFactory.getLogger(PsiController.class);
+
+    @Value("${google.psi.key}")
+    private String psiKey;
+
+    @GetMapping("/analyze")
+    public ResponseEntity<?> analyze(@RequestParam String url) {
+        try {
+            String endpoint = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=" + url +
+                "&strategy=desktop&category=performance&category=accessibility&category=seo&category=best-practices&key=" + psiKey;
+
+            // ...
+
+            return ResponseEntity.ok(lighthouseResult);
+
+        } catch (HttpStatusCodeException e) {
+            // ...
+        }
+    }
+}
+```
+
+### App Runner
+
+App Runner는 **Docker 기반으로 컨테이너화된 애플리케이션을 자동으로 빌드하고 배포**해주는 서비스로, 코드나 컨테이너만 있으면 인프라 설정 없이 웹 애플리케이션과 API 백엔드를 자동 배포하고 운영까지 맡아주는 완전관리형 서비스다(괜히 AWS AWS 하는게 아닌 듯 싶다).
+
+App Runner 를 쓴다면 다음과 같은 장점이 있다.
+
+- 타임아웃 제한 없이 장시간 처리 가능
+- Lambda보다 안정적인 cold start 성능
+- ECR 기반 이미지 직접 빌드/배포 가능
+- Github 기반 CI/CD 제공
+
+이제 App Runner 서비스를 만들면 끝난다. Amplify와 동일하게 Github 연동을 통해 자동 빌드, 배포를 설정할 수 있다. 근데,, 여기서 문제가 발생한다.
+
+#### 문제 발생
+
+이전에 주가 데이터 관련 NestJS 기반 백엔드 서버를 App Runner로 배포한 경험이 있기에, 이번 Java 프로젝트도 GitHub 연동만 하면 곧바로 자동 빌드 및 배포가 될 것이라 생각했다.
+
+하지만 GitHub 레포지토리를 연동하고 브랜치 push 시 자동 빌드/배포를 설정하는 과정에서 문제가 발생했다. 바로 App Runner에서 제공하는 기본 런타임 중 **Java는 Amazon Corretto 8, 11만 지원하는 점**이었다. 내가 사용한 Java 버전은 17 이상이었고, 프로젝트 또한 Temurin 21 + Maven 기반이었기 때문에 런타임 불일치로 인해 자동 빌드 구성이 불가능했다.
+
+![AWS App Runner 런타임 선택 과정](2.png)
+
+따라서, 다음 과정으로 Dockerfie, Github Actions 기반 CI 자동화 파이프라인을 구성하였다. CD는 App Runner 생성 과정에서 앞으로 만들 ECR의 URI를 입력하는 것으로 자동으로 처리된다.
+
+### CI 자동화 파이프라인 개발
+
+#### 1. Dockerfile 작성
+
+Java 21 기반으로 프로젝트를 빌드하고, `eclipse-temurin` 런타임으로 JAR 실행하도록 도커파일을 구성했다.
+
+```dockerfile
+# 1. build
+FROM maven:3.9.6-eclipse-temurin-21 AS build
+WORKDIR /app
+COPY . .
+RUN mvn clean package -DskipTests
+
+# 2. run
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+
+# 빌드 결과물 복사
+COPY --from=build /app/target/*.jar app.jar
+
+# 포트 설정 - application.properties - server.port
+EXPOSE 8080
+
+# 실행 명령
+ENTRYPOINT ["java", "-jar", "app.jar"]
+```
+
+#### 2. ECR 생성 및 AWS Secrets 생성
+
+Github Actions 워크플로우 yaml을 작성하기 전에, 빌드된 이미지를 보관할 컨테이너 레지스트리가 필요하다. 참, 여기서 ECR의 리전은 App Runner의 리전과 동일해야지 Docker 이미지를 배포할 수 있다.
+
+![Elastic Contaienr Registry](3.png)
+
+그리고 이 ECR(Elastic Container Registry)에 접근할 수 있는 권한을 가진 사용자의 **Access Key ID와 Secret Access Key**를 를 발급 받아야한다. 우측 상단에 아이디가 적힌 버튼을 누른 뒤 `보안 자격 증명 →
+
+![보안 자격 증명 > 액세스 키](4.png)
+
+마지막으로 이 시크릿을 Github Secrets에 등록해야 한다. 여기서 시크릿은 Github에 등록한 뒤에는 볼 수 없으므로 따로 복사해두자.
+
+![Github Secrets](5.png)
+
+#### 2. GitHub Actions 설정
+
+이제 Github Actions 워크플로우 yaml을 작성할 모든 준비를 마쳤다. main 브랜치에 push가 발생하면 자동으로 Docker 이미지를 빌드하고, ECR에 push하는 것까지가 이 yaml의 역할이 된다.
+
+```yaml
+name: Build and Push to ECR
+
+on:
+  push:
+    branches: [main] # main 브랜치에 push될 때만 실행
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ap-northeast-1 # ECR과 App Runner가 있는 리전
+      ECR_REPOSITORY: lighterhouse/back # ECR에 생성한 리포지토리 이름
+      IMAGE_TAG: latest # 푸시할 이미지 태그
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4 # 현재 레포지토리 코드 가져오기
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17" # App Runner는 지원해주지 못한 Java 버전..
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3 # 멀티 플랫폼 도커 빌드를 위한 빌더 설정
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2 # 로그인 후 리포지토리 URI 반환
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_URI="${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}"
+          echo "Pushing image to $IMAGE_URI"
+          docker build -t $IMAGE_URI .
+          docker push $IMAGE_URI
+```
+
+![Github Actions 동작 확인!](6.png)
+
+## 해결 완료
+
+이제 git push 시 Docker 이미지가 ECR에 푸시되고, App Runner에서는 ECR URI를 통해 지정된 태그명의 이미지를 가져와서 자동 배포한다.
+
+![App Runner 현황](7.png)
+
+Runnging 상태인 것을 확인하고 실제 서비스에서 다시 에러가 발생하던 케이스를 재현해보면, 타임아웃이 발생하지 않고 정상적으로 웹 성능 분석 데이터를 반환하는 것을 확인할 수 있다.
+
+![lighterhouse](8.png)
+
+## 마치며
+
+이렇게 해서 기존에 AWS Amplify로 배포해둔 Next.js API Route 기반 프론트엔드 앱에서 발생하던 Gateway Timeout 문제를 해결하고, App Runner를 통해 독립적인 Java 백엔드 서버를 배포하여 안정적인 성능 분석 서비스를 제공할 수 있게 되었다. AWS Amplify와 Next.js API Route 기능에 취해 허술하게 앱을 배포한 내 자신을 반성하며 이 글을 마친다.
