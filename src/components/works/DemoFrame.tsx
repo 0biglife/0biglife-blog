@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, HStack, IconButton, Skeleton, useColorModeValue } from "@chakra-ui/react";
-import { FiMaximize, FiRefreshCw } from "react-icons/fi";
+import { FiMaximize, FiMinimize, FiRefreshCw } from "react-icons/fi";
 
 type DemoFrameProps = {
   src: string; // e.g. /works/<slug>/demo/index.html
@@ -14,10 +14,36 @@ export default function DemoFrame({ src, aspectRatio, title }: DemoFrameProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [reloadKey, setReloadKey] = useState<number>(0);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [fullscreenSupported, setFullscreenSupported] = useState<boolean>(false);
 
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.300");
   const bgColor = useColorModeValue("gray.50", "gray.800");
   const shadow = useColorModeValue("md", "dark-lg");
+
+  // Fix 1: clear the loading skeleton even if the iframe never fires onLoad
+  // (e.g. the src 404s). Reset whenever the demo is refreshed.
+  useEffect(() => {
+    if (isLoaded) return;
+    const t = setTimeout(() => setIsLoaded(true), 10000);
+    return () => clearTimeout(t);
+  }, [isLoaded, reloadKey]);
+
+  // Fix 3: feature-detect fullscreen support once on mount.
+  useEffect(() => {
+    setFullscreenSupported(
+      typeof containerRef.current?.requestFullscreen === "function" && document.fullscreenEnabled,
+    );
+  }, []);
+
+  // Fix 2: keep isFullscreen in sync, including exits via Esc.
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(document.fullscreenElement === containerRef.current);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
 
   const handleRefresh = useCallback(() => {
     setIsLoaded(false);
@@ -42,6 +68,7 @@ export default function DemoFrame({ src, aspectRatio, title }: DemoFrameProps) {
     <Box
       ref={containerRef}
       role="group"
+      aria-label={`${title} controls`}
       position="relative"
       width="100%"
       aspectRatio={aspectRatio}
@@ -83,6 +110,7 @@ export default function DemoFrame({ src, aspectRatio, title }: DemoFrameProps) {
         transition="opacity 0.2s ease-in-out"
         _groupHover={{ opacity: 1 }}
         _focusWithin={{ opacity: 1 }}
+        sx={{ "@media (hover: none)": { opacity: 1 } }}
       >
         <IconButton
           aria-label="Restart demo"
@@ -96,18 +124,20 @@ export default function DemoFrame({ src, aspectRatio, title }: DemoFrameProps) {
           _active={{ bg: "blackAlpha.900" }}
           borderRadius="md"
         />
-        <IconButton
-          aria-label="View demo in fullscreen"
-          icon={<FiMaximize size={18} />}
-          onClick={handleFullscreen}
-          boxSize="44px"
-          minW="44px"
-          color="white"
-          bg="blackAlpha.700"
-          _hover={{ bg: "blackAlpha.800" }}
-          _active={{ bg: "blackAlpha.900" }}
-          borderRadius="md"
-        />
+        {fullscreenSupported && (
+          <IconButton
+            aria-label={isFullscreen ? "Exit fullscreen" : "View demo in fullscreen"}
+            icon={isFullscreen ? <FiMinimize size={18} /> : <FiMaximize size={18} />}
+            onClick={handleFullscreen}
+            boxSize="44px"
+            minW="44px"
+            color="white"
+            bg="blackAlpha.700"
+            _hover={{ bg: "blackAlpha.800" }}
+            _active={{ bg: "blackAlpha.900" }}
+            borderRadius="md"
+          />
+        )}
       </HStack>
     </Box>
   );
