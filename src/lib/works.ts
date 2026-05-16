@@ -43,7 +43,10 @@ const buildWorkMeta = (
   return {
     slug,
     title: data.title as string,
-    date: data.date as string,
+    date:
+      data.date instanceof Date
+        ? data.date.toISOString().slice(0, 10)
+        : String(data.date ?? ""),
     summary: (data.summary as string) ?? "",
     type: (data.type as WorkType) ?? "vanilla",
     tags: (data.tags as string[]) ?? [],

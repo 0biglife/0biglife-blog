@@ -30,11 +30,6 @@ export async function generateMetadata({ params }: { params: Params }) {
   }
 
   const url = `https://0biglife.com/works/${work.slug}`;
-  const rawDate: unknown = work.date;
-  const publishedTime =
-    rawDate instanceof Date
-      ? rawDate.toISOString()
-      : String(rawDate ?? "");
 
   return {
     title: work.title,
@@ -48,7 +43,7 @@ export async function generateMetadata({ params }: { params: Params }) {
       images: [{ url: work.cover, alt: work.title }],
       type: "article",
       url: url,
-      publishedTime: publishedTime,
+      publishedTime: work.date,
     },
     twitter: {
       card: "summary_large_image",
@@ -70,12 +65,6 @@ export default async function WorkDetailPage({ params }: { params: Params }) {
   if (!work) return notFound();
 
   const shareUrl = `https://0biglife.com/works/${work.slug}`;
-  // gray-matter가 따옴표 없는 YAML date를 Date 객체로 파싱하므로 렌더 전 문자열로 정규화
-  const rawDate: unknown = work.date;
-  const displayDate =
-    rawDate instanceof Date
-      ? rawDate.toISOString().slice(0, 10)
-      : String(rawDate ?? "");
 
   return (
     <Box display="flex" justifyContent="center" width="full" py={10} px={4}>
@@ -87,7 +76,7 @@ export default async function WorkDetailPage({ params }: { params: Params }) {
         <HStack mt={3} spacing={2}>
           <Text fontSize="smaller">{work.type}</Text>
           <Text fontSize="smaller" opacity={0.8}>
-            · {displayDate}
+            · {work.date}
           </Text>
         </HStack>
         {work.tags.length > 0 && (
