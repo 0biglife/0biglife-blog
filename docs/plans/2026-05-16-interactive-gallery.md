@@ -587,7 +587,7 @@ export default async function LogPage() {
 
 **Step 3: 기존 라우트 유지 확인**
 
-`/posts/[slug]`, `/dev-logs/[slug]`는 변경 없이 그대로 둔다 (정적 export는 redirect 미지원 — 기존 URL 깨뜨리지 않기 위해 유지).
+`/posts/[slug]`, `/dev-logs/[slug]`는 변경 없이 그대로 둔다 (기존 URL 깨뜨리지 않기 위해 유지).
 
 **Step 4: 검증**
 

@@ -10,7 +10,9 @@
 
 - 메인에 들어오면 전시회처럼 작업물 카드가 라이브로 동작
 - 작업물에 들어가면 실제 인터랙티브 아웃풋을 풀로 보고, 코드를 보고/가져갈 수 있음
-- 백엔드 없이 기존 Next.js 15 + MDX + 정적 export 구조 유지
+- 백엔드 없이 기존 Next.js 15 + MDX 구조 유지 (런타임 API 의존 없음, 전부 빌드타임 SSG)
+
+> **정정 (2026-05-16):** 초기 설계는 "정적 export"로 적었으나, 레포는 실제로 `next.config.ts`의 `output: "standalone"`(Node 서버 번들)로 빌드된다. 작업물 페이지는 전부 SSG로 prerender되고 데이터 접근도 빌드타임 `fs`뿐이라 기능상 차이는 없으나, 배포 호스트는 standalone Node 서버를 구동해야 한다 (기존 `/rss.xml` 동적 라우트도 이미 이를 전제).
 
 ## 확정된 핵심 결정
 
@@ -84,7 +86,7 @@ autoplay: true
 - iframe `sandbox="allow-scripts allow-pointer-lock"` 격리
 - 타입 무관하게 `/works/<slug>/demo/index.html` 동일 로드
 
-## 5. 빌드 파이프라인 (정적 export 유지)
+## 5. 빌드 파이프라인 (SSG 유지, standalone 빌드)
 
 `prebuild` 스크립트 추가. 빌드 시 `content/works/*` 순회:
 
