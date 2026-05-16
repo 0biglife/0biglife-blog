@@ -24,5 +24,17 @@ export const EMPTY_POST = "No Post";
 export const THUMNAIL_DATE_TEXT = "Updated: ";
 export const TABLE_OF_CONTENTS_TITLE = "Index";
 
+// Profile (Log 페이지 프로필 카드)
+export const PROFILE = {
+  name: "MINSEOK (Daniel) KIM",
+  title: "AI Data Engineer",
+  avatar: "/assets/profile.webp",
+  links: {
+    linkedin: "https://www.linkedin.com/in/0biglife/",
+    github: "https://github.com/0biglife",
+    email: "0biglife@gmail.com",
+  },
+} as const;
+
 // etc
 export const TESTING = "테스트중";

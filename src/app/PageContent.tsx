@@ -6,6 +6,7 @@ import {
   BLOG_RIGHT_TOP_CATEGORY,
 } from "@/lib/constant";
 import { Title } from "@/components";
+import { ProfileCard } from "@/components/template";
 import { Box, Container } from "@chakra-ui/react";
 import { DevLog, Post } from "@/lib/types";
 import { useEffect, useState } from "react";
@@ -77,19 +78,24 @@ export default function PostContent({
           opacity={0.9}
         />
         <Box
-          display={{ base: "none", sm: "flex" }}
+          display="flex"
           width={{ base: "100%", sm: "25%" }}
           flexDirection="column"
           flexGrow={1}
-          minHeight="300px"
+          minHeight={{ base: "auto", sm: "300px" }}
           p={1}
         >
-          <Title label={BLOG_RIGHT_TOP_CATEGORY} />
-          <LogContainer
-            logs={devLogs}
-            todayViews={views.today}
-            totalViews={views.total}
-          />
+          {/* 프로필 카드 — 모바일에서도 노출 */}
+          <ProfileCard />
+          {/* 데브로그 목록 — 데스크톱 전용 (기존 동작 유지) */}
+          <Box display={{ base: "none", sm: "block" }}>
+            <Title label={BLOG_RIGHT_TOP_CATEGORY} />
+            <LogContainer
+              logs={devLogs}
+              todayViews={views.today}
+              totalViews={views.total}
+            />
+          </Box>
         </Box>
       </Box>
       <FilteredPostList posts={posts} />
