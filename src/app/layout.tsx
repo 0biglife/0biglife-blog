@@ -4,7 +4,7 @@ import "../styles/globals.css";
 const GOOGLE_ANALYTICS_ID = process.env.GA_ID;
 
 const SITE_DESCRIPTION =
-  "직접 만든 인터랙티브 웹 작업물을 데모로 살펴보고, 코드를 열람하거나 내려받을 수 있는 0biglife의 작업물 갤러리입니다.";
+  "브라우저에서 바로 실행되는 인터랙티브 웹 실험들. 라이브 데모로 보고, 코드를 열람하거나 내려받을 수 있는 0biglife의 작업 갤러리입니다.";
 
 export const metadata = {
   title: {

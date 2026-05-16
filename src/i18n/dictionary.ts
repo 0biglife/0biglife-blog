@@ -33,7 +33,7 @@ const ko = {
   "footer.rights": "© 2025. 0biglife all rights reserved.",
   // works 갤러리 / 상세
   "works.tagAll": "전체",
-  "works.subtitle": "직접 만든 인터랙티브 작업물을 라이브 데모로 둘러보세요.",
+  "works.subtitle": "브라우저에서 바로 실행되는 인터랙티브 실험들.",
   "works.countSuffix": "개의 작업물", // `${n}${suffix}` 형태로 사용
   "works.noResults": "결과 없음",
   "works.empty": "아직 작업물이 없습니다.",
@@ -71,7 +71,7 @@ const en: Record<TranslationKey, string> = {
   "notFound.home": "Back to home",
   "footer.rights": "© 2025. 0biglife all rights reserved.",
   "works.tagAll": "All",
-  "works.subtitle": "Browse my interactive works as live demos.",
+  "works.subtitle": "Interactive experiments that run right in the browser.",
   "works.countSuffix": " works",
   "works.noResults": "No results",
   "works.empty": "No works yet.",
@@ -106,7 +106,7 @@ const ja: Record<TranslationKey, string> = {
   "notFound.home": "ホームに戻る",
   "footer.rights": "© 2025. 0biglife all rights reserved.",
   "works.tagAll": "すべて",
-  "works.subtitle": "自作のインタラクティブ作品をライブデモでご覧ください。",
+  "works.subtitle": "ブラウザ上でそのまま動くインタラクティブな実験。",
   "works.countSuffix": "件の作品",
   "works.noResults": "結果なし",
   "works.empty": "作品がまだありません。",

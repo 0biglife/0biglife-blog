@@ -118,7 +118,7 @@ function buildAudio() {
   const lfo = ac.createOscillator();
   lfo.frequency.value = 0.07;
   const lfoGain = ac.createGain();
-  lfoGain.gain.value = 240;
+  lfoGain.gain.value = 180;
   lfo.connect(lfoGain);
   lfoGain.connect(padFilter.frequency);
   lfo.start();
@@ -203,9 +203,10 @@ function draw(now) {
   if (audio) {
     const ac = audio.ac;
     const tc = ac.currentTime;
-    // Cursor X -> filter cutoff (exponential 250 Hz .. 3000 Hz).
+    // Cursor X -> filter cutoff (exponential 340 Hz .. 3400 Hz). The range
+    // stays clear of the LFO trough so the pad never drops out at the edge.
     audio.padFilter.frequency.setTargetAtTime(
-      250 * Math.pow(12, pointer.x),
+      340 * Math.pow(10, pointer.x),
       tc,
       0.2
     );
