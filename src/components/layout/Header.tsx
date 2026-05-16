@@ -13,7 +13,6 @@ import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components";
 import { SiLighthouse } from "react-icons/si";
 
-const BLOG_URL = "https://0biglife.com";
 const LIGHER_HOUSE_URL = "https://lighterhouse.0biglife.com";
 const LIGHER_HOUSE_NAME = "Lighthouse Service";
 
@@ -73,7 +72,7 @@ export default function Header() {
       <Flex justifyContent="space-between" alignItems="center">
         <Link
           as={NextLink}
-          href={BLOG_URL}
+          href="/"
           fontWeight="bold"
           fontStyle="italic"
           fontSize="22px"

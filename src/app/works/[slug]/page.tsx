@@ -11,7 +11,7 @@ type Params = Promise<{ slug: string }>;
 export async function generateStaticParams() {
   const slugs = getAllWorkSlugs();
   if (!slugs || slugs.length === 0) {
-    console.error("⚠️ No works found! Check your content/works directory.");
+    console.warn("No works found. Check your content/works directory.");
     return [];
   }
   return slugs.map((slug) => ({ slug }));

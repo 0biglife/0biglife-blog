@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Box, HStack, IconButton, Skeleton, useColorModeValue } from "@chakra-ui/react";
+import { Box, HStack, IconButton, Skeleton, Text, useColorModeValue } from "@chakra-ui/react";
 import { FiMaximize, FiMinimize, FiRefreshCw } from "react-icons/fi";
 
 type DemoFrameProps = {
@@ -14,18 +14,24 @@ export default function DemoFrame({ src, aspectRatio, title }: DemoFrameProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [reloadKey, setReloadKey] = useState<number>(0);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
+  const [loadFailed, setLoadFailed] = useState<boolean>(false);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [fullscreenSupported, setFullscreenSupported] = useState<boolean>(false);
 
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.300");
   const bgColor = useColorModeValue("gray.50", "gray.800");
   const shadow = useColorModeValue("md", "dark-lg");
+  const fallbackTextColor = useColorModeValue("gray.500", "gray.400");
 
   // Fix 1: clear the loading skeleton even if the iframe never fires onLoad
-  // (e.g. the src 404s). Reset whenever the demo is refreshed.
+  // (e.g. the src 404s). When the timeout fires without a successful load,
+  // surface a fallback message instead of a blank frame. Reset on refresh.
   useEffect(() => {
     if (isLoaded) return;
-    const t = setTimeout(() => setIsLoaded(true), 10000);
+    const t = setTimeout(() => {
+      setIsLoaded(true);
+      setLoadFailed(true);
+    }, 10000);
     return () => clearTimeout(t);
   }, [isLoaded, reloadKey]);
 
@@ -47,6 +53,7 @@ export default function DemoFrame({ src, aspectRatio, title }: DemoFrameProps) {
 
   const handleRefresh = useCallback(() => {
     setIsLoaded(false);
+    setLoadFailed(false);
     setReloadKey((prev) => prev + 1);
   }, []);
 
@@ -84,7 +91,10 @@ export default function DemoFrame({ src, aspectRatio, title }: DemoFrameProps) {
         src={src}
         title={title}
         loading="lazy"
-        onLoad={() => setIsLoaded(true)}
+        onLoad={() => {
+          setIsLoaded(true);
+          setLoadFailed(false);
+        }}
         sandbox="allow-scripts allow-pointer-lock allow-pop-ups-to-escape-sandbox"
         style={{ width: "100%", height: "100%", border: 0, display: "block" }}
       />
@@ -99,6 +109,25 @@ export default function DemoFrame({ src, aspectRatio, title }: DemoFrameProps) {
           startColor={bgColor}
           endColor={borderColor}
         />
+      )}
+
+      {loadFailed && (
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          width="100%"
+          height="100%"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          px={6}
+          bg={bgColor}
+        >
+          <Text fontSize="sm" color={fallbackTextColor} textAlign="center">
+            데모를 불러올 수 없습니다
+          </Text>
+        </Box>
       )}
 
       <HStack
