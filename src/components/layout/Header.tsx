@@ -16,6 +16,12 @@ const BLOG_URL = "https://0biglife.com";
 const LIGHER_HOUSE_URL = "https://lighterhouse.0biglife.com";
 const LIGHER_HOUSE_NAME = "Lighthouse Service";
 
+const NAV_LINKS = [
+  { label: "Works", href: "/" },
+  { label: "Log", href: "/log" },
+  { label: "소개", href: "/introduction" },
+];
+
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
 
@@ -68,7 +74,27 @@ export default function Header() {
           0biglife.
         </Link>
 
-        <Flex justify="space-between" gap="8px">
+        <Flex justify="flex-end" alignItems="center" gap={{ base: "2px", sm: "8px" }}>
+          <Flex
+            as="nav"
+            alignItems="center"
+            gap={{ base: "10px", sm: "18px" }}
+            mr={{ base: "2px", sm: "8px" }}
+          >
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                as={NextLink}
+                href={link.href}
+                fontSize={{ base: "13px", sm: "15px" }}
+                fontWeight="medium"
+                color={iconColor}
+                _hover={{ textDecoration: "none", opacity: 0.5 }}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </Flex>
           <Tooltip
             label={LIGHER_HOUSE_NAME}
             hasArrow
