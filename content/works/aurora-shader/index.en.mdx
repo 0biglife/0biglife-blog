@@ -1,0 +1,33 @@
+---
+title: "Aurora Shader"
+summary: "A domain-warped fractal aurora drawn by a GPU fragment shader — the cursor stirs the noise field"
+---
+
+## Idea
+
+A single rectangle covering the whole screen is painted by a fragment
+shader. Every pixel is computed at once on the GPU, and a **domain warping**
+technique — bending fractal noise with noise once more — creates a flowing
+aurora.
+
+## Core code
+
+The heart of it is a two-stage warp that pushes the noise coordinates
+themselves by noise results.
+
+```glsl
+vec2 q = vec2(fbm(uv + t), fbm(uv - t));
+vec2 r = vec2(
+  fbm(uv + 4.0 * q + t * 1.4 + mouse),
+  fbm(uv + 4.0 * q - t * 1.1 + mouse)
+);
+float f = fbm(uv + 4.0 * r);
+```
+
+The value `f` is passed through a cosine palette to get the iridescent
+color, and a folded `sin` adds thin ribbons of light on top.
+
+## Interaction
+
+The cursor position enters as an offset into the noise domain. Move the
+mouse and the whole aurora is drawn toward it, rippling.

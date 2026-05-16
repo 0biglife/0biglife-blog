@@ -35,8 +35,11 @@ const MAX_VISIBLE_TAGS = 3;
  * `pointerEvents: "none"` so clicks fall through to the card's LinkOverlay.
  */
 export default function WorkCard({ work }: WorkCardProps) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // 카드 제목 — 현재 언어 버전 (번역이 없으면 ko 로 폴백된 값).
+  const localizedTitle = work.i18n[lang].title;
 
   // True once the card is at (or near) the viewport. Pre-arms slightly early
   // via the IntersectionObserver rootMargin so the demo is ready in time.
@@ -141,7 +144,7 @@ export default function WorkCard({ work }: WorkCardProps) {
           <iframe
             key={`demo-${work.slug}-${mountId}`}
             src={`/works/${work.slug}/demo/index.html`}
-            title={`${work.title}${t("workCard.previewSuffix")}`}
+            title={`${localizedTitle}${t("workCard.previewSuffix")}`}
             loading="lazy"
             sandbox="allow-scripts"
             tabIndex={-1}
@@ -167,7 +170,7 @@ export default function WorkCard({ work }: WorkCardProps) {
       <Box p={4}>
         <LinkOverlay as={NextLink} href={`/works/${work.slug}`}>
           <Heading as="h3" size="sm" color={titleColor} noOfLines={2}>
-            {work.title}
+            {localizedTitle}
           </Heading>
         </LinkOverlay>
 

@@ -1,0 +1,36 @@
+---
+title: "Slime Mold"
+summary: "262,144 agents leaving and following pheromone trails — growing a network like a slime mold"
+---
+
+## Idea
+
+The slime mold *Physarum polycephalum* has no brain, yet it finds the
+shortest path through a maze. The secret is simple — it leaves a chemical on
+its trail, and it moves toward where that chemical is strongest. This piece
+recreates that behavior with **262,144 agents**.
+
+## Three rules
+
+Every frame, each agent:
+
+1. **Senses** — reads the pheromone concentration at three points ahead
+   (left, center, right)
+2. **Turns** — steers toward the strongest one
+3. **Steps** — moves one step forward, depositing pheromone where it stands
+
+The pheromone map slightly spreads (diffuses) and fades (decays) each frame.
+From this feedback loop alone — with no designer — a vein-like network
+emerges.
+
+## Core technique
+
+The position and heading of all 262,144 agents live in a GPU texture, and
+the pheromone map is a separate floating-point texture. One frame is a
+ping-pong of four passes — agent update, pheromone deposit, diffuse-and-decay,
+and render.
+
+## Interaction
+
+Move the cursor and pheromone is painted there. The whole network grows
+toward the cursor. Requires WebGL2 and floating-point render targets.

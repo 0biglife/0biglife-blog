@@ -1,0 +1,32 @@
+---
+title: "Soundscape"
+summary: "Ambient music synthesized on the fly, with visuals that react to its sound — the cursor shapes the harmony"
+---
+
+## Idea
+
+Not a recorded file — **the browser synthesizes the sound right there**.
+Five voices form a chord, the chord slowly changes every 11 seconds, and
+melody notes fall intermittently on top. A delay feedback gives it space.
+
+At the same time an `AnalyserNode` runs an FFT on that sound — so the screen
+reacts to *exactly what you are hearing*. Bass becomes a large pulse, treble
+becomes scattered stars.
+
+## Core technique
+
+A Web Audio API node graph — oscillator → filter → delay → analyser.
+
+```js
+osc → voiceGain → lowpassFilter → master → analyser → output
+                              ↘ delay → feedback ↺
+```
+
+## Interaction
+
+- **Cursor left/right** — the lowpass filter cutoff. Left is dark and round,
+  right is bright and clear.
+- **Cursor up/down** — the density of falling melody notes. Higher is denser.
+
+Because of browser autoplay policy, you must click the screen once to start
+the sound.

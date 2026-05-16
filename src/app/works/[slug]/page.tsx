@@ -2,8 +2,13 @@ import "server-only";
 import { notFound } from "next/navigation";
 import { Box, Heading, HStack, Text, Wrap, WrapItem, Tag } from "@chakra-ui/react";
 import { getAllWorkSlugs, getWorkBySlug } from "@/lib/works";
-import { TableOfContents } from "@/components";
-import { DemoFrame, CodePanel, WorkActions } from "@/components/works";
+import {
+  DemoFrame,
+  CodePanel,
+  WorkActions,
+  WorkTitle,
+  WorkWriteup,
+} from "@/components/works";
 import { T } from "@/i18n/T";
 
 type Params = Promise<{ slug: string }>;
@@ -70,10 +75,8 @@ export default async function WorkDetailPage({ params }: { params: Params }) {
   return (
     <Box display="flex" justifyContent="center" width="full" py={10} px={4}>
       <Box width="100%" maxW="920px" minW="280px">
-        {/* Header */}
-        <Heading as="h1" fontSize="3xl">
-          {work.title}
-        </Heading>
+        {/* Header — 제목은 언어별로 전환 */}
+        <WorkTitle i18n={work.i18n} />
         <HStack mt={3} spacing={2}>
           <Text fontSize="smaller">{work.type}</Text>
         </HStack>
@@ -114,15 +117,8 @@ export default async function WorkDetailPage({ params }: { params: Params }) {
           <CodePanel files={work.files} />
         </Box>
 
-        {/* MDX write-up + TOC */}
-        <Box display="flex" flexDirection="row" mt={12}>
-          <Box className="prose lg:prose-lg" flex="1" minW="0">
-            {work.content}
-          </Box>
-          {work.toc && work.toc.length > 0 && (
-            <TableOfContents toc={work.toc} />
-          )}
-        </Box>
+        {/* MDX write-up + TOC — 본문·목차 모두 언어별로 전환 */}
+        <WorkWriteup localized={work.localized} />
       </Box>
     </Box>
   );

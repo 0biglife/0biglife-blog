@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import type { Lang } from "@/i18n/dictionary";
 
 export type Post = {
   slug: string;
@@ -35,23 +36,37 @@ export type WorkFile = {
   lang: string;        // syntax highlighter 언어 (html/css/javascript 등)
 };
 
+// work 한 건의 언어별 텍스트 메타 (제목·요약).
+export type WorkLocaleText = {
+  title: string;
+  summary: string;
+};
+
+// work 한 건의 언어별 본문 (컴파일된 MDX 설명글 + 목차).
+export type WorkLocaleContent = {
+  content: ReactNode;
+  toc: TOCItem[];
+};
+
 export type WorkMeta = {
   slug: string;
-  title: string;
+  title: string;        // 기본(ko) 제목 — 메타데이터/정렬용
   date: string;
   type: WorkType;
-  tags: string[];
-  summary: string;
+  tags: string[];       // 태그는 번역하지 않음 (필터 일관성 유지)
+  summary: string;      // 기본(ko) 요약
   github?: string;
-  aspectRatio: string; // "16/9" 등
+  aspectRatio: string;  // "16/9" 등
   autoplay: boolean;
-  cover: string;       // /works/<slug>/cover.png 경로
+  cover: string;        // /works/<slug>/cover.png 경로
+  i18n: Record<Lang, WorkLocaleText>; // 언어별 제목·요약 (ko/en/ja 모두 존재)
 };
 
 export type Work = WorkMeta & {
-  content: ReactNode;  // 컴파일된 MDX 설명글
+  content: ReactNode;  // 기본(ko) 컴파일 MDX
   files: WorkFile[];   // 코드 탭용
   zipPath: string;     // /works/<slug>/<slug>.zip
   demoPath: string;    // /works/<slug>/demo/index.html
-  toc?: TOCItem[];
+  toc?: TOCItem[];     // 기본(ko) 목차
+  localized: Record<Lang, WorkLocaleContent>; // 언어별 본문 (ko/en/ja 모두 존재)
 };
