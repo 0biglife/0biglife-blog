@@ -10,6 +10,8 @@
     "generate:rss": "ts-node scripts/generate-rss.js",
     "optimize:images": "ts-node scripts/optimize-images.js",
     "build": "yarn optimize:images && next build && yarn sitemap",
+    "build:works": "node scripts/build-works.mjs",
+    "prebuild": "node scripts/build-works.mjs",
     "sitemap": "next-sitemap"
   },
   "dependencies": {
@@ -66,6 +68,7 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@types/react-syntax-highlighter": "^15.5.13",
+    "archiver": "^8.0.0",
     "eslint": "^9",
     "eslint-config-next": "15.2.1",
     "eslint-plugin-react": "^7.37.5",

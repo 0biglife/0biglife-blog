@@ -11,6 +11,6 @@ test("langForExt maps extensions to highlighter languages", () => {
 
 test("walkFiles returns relative paths for nested files", () => {
   const files = walkFiles(new URL("./__fixtures__/demo", import.meta.url).pathname);
-  const paths = files.map((f) => f).sort();
+  const paths = [...files].sort();
   assert.deepEqual(paths, ["index.html", "js/app.js"]);
 });
