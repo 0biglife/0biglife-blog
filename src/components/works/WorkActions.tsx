@@ -1,0 +1,95 @@
+"use client";
+
+import { useCallback } from "react";
+import { Button, Wrap, WrapItem, useToast } from "@chakra-ui/react";
+import { FiDownload, FiGithub, FiShare2 } from "react-icons/fi";
+
+type WorkActionsProps = {
+  zipPath: string; // e.g. /works/<slug>/<slug>.zip
+  github?: string; // optional GitHub repo URL
+  shareUrl: string; // absolute URL of this work's detail page
+  title: string; // work title, used in share payload
+};
+
+export default function WorkActions({ zipPath, github, shareUrl, title }: WorkActionsProps) {
+  const toast = useToast();
+
+  const copyToClipboard = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "링크가 복사되었습니다",
+        status: "success",
+        duration: 2000,
+        isClosable: true,
+      });
+    } catch {
+      toast({
+        title: "공유에 실패했습니다",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  }, [shareUrl, toast]);
+
+  const handleShare = useCallback(async () => {
+    // Web Share API 는 SSR 시 undefined 이므로 클릭 시점에 feature-detect
+    const canShare =
+      typeof navigator !== "undefined" && typeof navigator.share === "function";
+
+    if (canShare) {
+      try {
+        await navigator.share({ title, url: shareUrl });
+      } catch (error) {
+        // 사용자가 공유 시트를 취소하면 AbortError 로 reject — 조용히 무시
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+        // 그 외 공유 실패 시 클립보드로 폴백
+        await copyToClipboard();
+      }
+      return;
+    }
+
+    await copyToClipboard();
+  }, [shareUrl, title, copyToClipboard]);
+
+  return (
+    <Wrap spacing={3} role="group" aria-label={`${title} 작업 메뉴`}>
+      <WrapItem>
+        <Button
+          as="a"
+          href={zipPath}
+          download
+          leftIcon={<FiDownload />}
+          colorScheme="blue"
+          variant="solid"
+        >
+          ZIP 다운로드
+        </Button>
+      </WrapItem>
+
+      {github && github.trim() !== "" && (
+        <WrapItem>
+          <Button
+            as="a"
+            href={github}
+            target="_blank"
+            rel="noopener noreferrer"
+            leftIcon={<FiGithub />}
+            variant="outline"
+          >
+            GitHub
+          </Button>
+        </WrapItem>
+      )}
+
+      <WrapItem>
+        <Button leftIcon={<FiShare2 />} variant="outline" onClick={handleShare}>
+          공유
+        </Button>
+      </WrapItem>
+    </Wrap>
+  );
+}
