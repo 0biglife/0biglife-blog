@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Box, Flex, HStack, IconButton, Text, useColorModeValue } from "@chakra-ui/react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark as DarkCodeStyle } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -22,6 +22,23 @@ export default function CodePanel({ files }: CodePanelProps) {
 
   const [selectedPath, setSelectedPath] = useState<string>(defaultPath);
   const [copied, setCopied] = useState<boolean>(false);
+  const copyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // files prop 이 교체되어 현재 선택 경로가 사라지면 기본값으로 복구
+  // (정상적인 사용자 선택은 files 안에 존재하므로 건드리지 않음)
+  useEffect(() => {
+    if (files.length === 0) return;
+    if (!files.some((f) => f.path === selectedPath)) {
+      setSelectedPath(defaultPath);
+    }
+  }, [files, selectedPath, defaultPath]);
+
+  // 언마운트 시 복사 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+    };
+  }, []);
 
   // 항상 hook 호출 순서를 지키기 위해 placeholder 색상은 위에서 계산
   const placeholderColor = useColorModeValue("gray.500", "gray.400");
@@ -30,7 +47,7 @@ export default function CodePanel({ files }: CodePanelProps) {
   const itemColor = useColorModeValue("gray.700", "gray.300");
   const itemHoverBg = useColorModeValue("gray.100", "whiteAlpha.100");
   const activeBg = useColorModeValue("blue.500", "blue.400");
-  const activeColor = useColorModeValue("white", "gray.900");
+  const activeColor = "white";
   const codeBg = "#282c34"; // oneDark 배경과 일치
   const copyBtnBg = useColorModeValue("whiteAlpha.300", "whiteAlpha.200");
 
@@ -62,7 +79,8 @@ export default function CodePanel({ files }: CodePanelProps) {
     try {
       await navigator.clipboard.writeText(selectedFile.content);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (copyTimerRef.current) clearTimeout(copyTimerRef.current);
+      copyTimerRef.current = setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       console.error("Failed to copy code: ", error);
     }
