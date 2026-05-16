@@ -14,32 +14,45 @@ import {
  *
  * The gallery home page renders many cards, each capable of running a live
  * demo inside an iframe. Running every iframe simultaneously tanks
- * performance, so we centralise a small amount of shared state:
+ * performance, so we centralise a small amount of shared state.
  *
- *   - `active`: the SET of slugs currently allowed to run their iframe.
- *   - `maxConcurrent`: the hard cap on the size of that set.
- *   - `reducedMotion`: when true, NO demo ever gets a slot.
+ * ## want vs granted
  *
- * Each card calls `useLiveSlot(slug, isVisible)`. The hook returns a boolean
- * telling the card whether it may mount/run its iframe right now. A card that
- * is denied stays as a static cover image and re-attempts whenever the active
- * set changes (e.g. another card frees a slot).
+ * The provider tracks ONE piece of state: `wanted` — the ordered set of slugs
+ * of cards that currently WANT a slot (visible and not reduced-motion).
+ *
+ *   - `request(slug)` / `unrequest(slug)` mutate `wanted` only.
+ *   - `active` is DERIVED: the first `maxConcurrent` slugs of `wanted` by
+ *     insertion order (empty when reduced motion is on).
+ *
+ * A card's `useLiveSlot` effect only ever calls `request`/`unrequest`, and
+ * that effect is keyed on `[slug, isVisible, reducedMotion, request,
+ * unrequest]` — crucially NOT on `active` or `wanted`. So a granted, visible
+ * card's effect runs exactly ONCE and never churns.
+ *
+ * Promotion of a waiting card is purely a derived-state re-render: when some
+ * other card unmounts/hides, `wanted` shrinks, the provider recomputes
+ * `active`, the context value changes, and EVERY consumer re-renders. A
+ * previously-denied card then simply observes `active.has(slug) === true`
+ * without its own effect re-running. No effect depends on `active`, so there
+ * is no release-then-reclaim churn and therefore no render loop.
  */
 
 type LiveDemoContextValue = {
-  /** Slugs currently granted a running slot. */
+  /** Slugs currently granted a running slot (the first `maxConcurrent` of `wanted`). */
   active: Set<string>;
-  /** Hard cap on concurrent running demos. */
-  maxConcurrent: number;
   /** True when the user prefers reduced motion — forces every slot denied. */
   reducedMotion: boolean;
   /**
-   * Attempt to claim a slot for `slug`. No-op if the slug already holds a
-   * slot, if the set is full, or if reduced motion is on. Stable identity.
+   * Declare that `slug` WANTS a slot. Adds it to `wanted` (insertion order
+   * preserved). No-op if already present. Stable identity.
    */
-  claim: (slug: string) => void;
-  /** Release the slot held by `slug` (no-op if it holds none). Stable identity. */
-  release: (slug: string) => void;
+  request: (slug: string) => void;
+  /**
+   * Declare that `slug` no longer wants a slot. Removes it from `wanted`.
+   * No-op if absent. Stable identity.
+   */
+  unrequest: (slug: string) => void;
 };
 
 const LiveDemoContext = createContext<LiveDemoContextValue | null>(null);
@@ -51,9 +64,10 @@ type LiveDemoProviderProps = {
 };
 
 export function LiveDemoProvider({ children, maxConcurrent = 6 }: LiveDemoProviderProps) {
-  // Set of slugs currently granted a running slot. We always create a NEW Set
-  // on every update so React detects the change and re-renders consumers.
-  const [active, setActive] = useState<Set<string>>(() => new Set<string>());
+  // The ONLY mutable slot state: the ordered set of slugs that WANT a slot.
+  // JS Set preserves insertion order, which we rely on to decide which cards
+  // win the first `maxConcurrent` slots.
+  const [wanted, setWanted] = useState<Set<string>>(() => new Set<string>());
 
   // Whether the user has requested reduced motion. Read on mount and kept in
   // sync via a matchMedia change listener.
@@ -74,31 +88,26 @@ export function LiveDemoProvider({ children, maxConcurrent = 6 }: LiveDemoProvid
     return () => mql.removeEventListener("change", handleChange);
   }, []);
 
-  // claim: add `slug` to the active set IFF there is room and it is not
-  // already present. Uses the functional setState form so the decision is
-  // made against the freshest state — this keeps `claim` referentially stable
-  // (no deps) and avoids stale-closure bugs when many cards claim at once.
-  const claim = useCallback(
-    (slug: string) => {
-      setActive((prev) => {
-        // Already running, or the cap is reached → no change. Returning the
-        // SAME Set reference means React skips a re-render.
-        if (prev.has(slug) || prev.size >= maxConcurrent) {
-          return prev;
-        }
-        const next = new Set(prev);
-        next.add(slug);
-        return next;
-      });
-    },
-    [maxConcurrent],
-  );
+  // request: add `slug` to `wanted`. Functional setState so the decision is
+  // made against the freshest state. If the slug is already present we return
+  // the SAME Set reference, so React skips the re-render. No deps → `request`
+  // is referentially stable for the lifetime of the provider.
+  const request = useCallback((slug: string) => {
+    setWanted((prev) => {
+      if (prev.has(slug)) {
+        return prev; // Already wants a slot → no change, no re-render.
+      }
+      const next = new Set(prev);
+      next.add(slug);
+      return next;
+    });
+  }, []);
 
-  // release: drop `slug` from the active set, freeing a slot for others.
-  const release = useCallback((slug: string) => {
-    setActive((prev) => {
+  // unrequest: drop `slug` from `wanted`. Same stability/no-op rules as above.
+  const unrequest = useCallback((slug: string) => {
+    setWanted((prev) => {
       if (!prev.has(slug)) {
-        return prev; // Held no slot → no change, no re-render.
+        return prev; // Did not want a slot → no change, no re-render.
       }
       const next = new Set(prev);
       next.delete(slug);
@@ -106,9 +115,19 @@ export function LiveDemoProvider({ children, maxConcurrent = 6 }: LiveDemoProvid
     });
   }, []);
 
+  // Derived `active`: the first `maxConcurrent` slugs of `wanted` by insertion
+  // order. Reduced motion forces this empty. Recomputed only when `wanted`,
+  // `maxConcurrent`, or `reducedMotion` change — never by a consumer's effect.
+  const active = useMemo<Set<string>>(() => {
+    if (reducedMotion) {
+      return new Set<string>();
+    }
+    return new Set([...wanted].slice(0, maxConcurrent));
+  }, [wanted, maxConcurrent, reducedMotion]);
+
   const value = useMemo<LiveDemoContextValue>(
-    () => ({ active, maxConcurrent, reducedMotion, claim, release }),
-    [active, maxConcurrent, reducedMotion, claim, release],
+    () => ({ active, reducedMotion, request, unrequest }),
+    [active, reducedMotion, request, unrequest],
   );
 
   return <LiveDemoContext.Provider value={value}>{children}</LiveDemoContext.Provider>;
@@ -123,19 +142,19 @@ export function LiveDemoProvider({ children, maxConcurrent = 6 }: LiveDemoProvid
  *                  IntersectionObserver in the card component).
  * @returns `granted` — true when the card is allowed to mount/run its iframe.
  *
- * Claim / release flow:
- *  - `granted` is derived purely from `active.has(slug)`, so it is always
- *    consistent with shared state and never gets stuck.
- *  - An effect keyed on `[slug, isVisible, ...]` claims a slot while visible
- *    and releases it when the card is hidden OR unmounts (the effect cleanup
- *    handles both — a card scrolled away frees its slot for others).
- *  - When the set is full a claim is a no-op. But the effect ALSO depends on
- *    `active`: when any other card releases a slot, `active` changes, every
- *    visible-but-ungranted card's effect re-runs, and it gets another chance
- *    to claim. This is how a denied card becomes granted later.
- *  - `claim` is a no-op once the card already holds a slot, so the repeated
- *    effect runs (one per `active` change) are cheap and cause no loop:
- *    claim → setActive returns the SAME Set → no re-render.
+ * want / granted flow:
+ *  - The effect below ONLY calls `request`/`unrequest`, and is keyed solely on
+ *    `[slug, isVisible, reducedMotion, request, unrequest]`. It does NOT
+ *    depend on `active` or `wanted`, so for a stable visible card it runs
+ *    exactly once (request) and cleans up once (unrequest on hide/unmount).
+ *    There is no release-then-reclaim churn.
+ *  - `granted` is derived directly from context: `active.has(slug)`. When
+ *    another card unmounts/hides, `wanted` shrinks, the provider recomputes
+ *    `active`, the context value changes, and this consumer re-renders — so a
+ *    previously-denied card observes `active.has(slug) === true` WITHOUT its
+ *    own effect re-running.
+ *  - Reduced motion: `active` is always empty, so `granted` is always false.
+ *    We also skip `request` entirely in that case.
  */
 export function useLiveSlot(slug: string, isVisible: boolean): boolean {
   const ctx = useContext(LiveDemoContext);
@@ -147,31 +166,31 @@ export function useLiveSlot(slug: string, isVisible: boolean): boolean {
     );
   }
 
-  const { active, reducedMotion, claim, release } = ctx;
+  const { active, reducedMotion, request, unrequest } = ctx;
 
   useEffect(() => {
-    // Reduced motion: never claim, and proactively release anything held.
+    // Reduced motion: never want a slot. Nothing to register or clean up.
     if (reducedMotion) {
-      release(slug);
       return;
     }
 
     if (isVisible) {
-      // Attempt to claim. No-op if already granted or the set is full; in the
-      // full case this effect re-runs when `active` changes (a slot frees),
-      // giving this card another chance.
-      claim(slug);
-      // Cleanup: when the card hides or unmounts, free its slot.
-      return () => release(slug);
+      // Declare intent: this card wants a slot. The provider decides whether
+      // it actually gets one via the derived `active` set.
+      request(slug);
+      // Cleanup: when the card hides or unmounts, withdraw the want — this
+      // shrinks `wanted` and lets a waiting card be promoted.
+      return () => unrequest(slug);
     }
 
-    // Not visible → ensure no slot is held.
-    release(slug);
+    // Not visible → make sure we are not registered as wanting a slot.
+    unrequest(slug);
     return undefined;
-    // `active` is intentionally a dependency: a change to the shared set
-    // (someone released) must re-trigger the claim attempt for denied cards.
-  }, [slug, isVisible, reducedMotion, active, claim, release]);
+    // NOTE: deliberately NOT depending on `active`/`wanted`. This effect must
+    // not re-run when the shared set changes — that is what kills the loop.
+  }, [slug, isVisible, reducedMotion, request, unrequest]);
 
-  // Reduced motion always denies. Otherwise the truth is the shared set.
-  return !reducedMotion && active.has(slug);
+  // Granted is the pure truth of the derived shared set. Reduced motion keeps
+  // `active` empty, so this is naturally false then.
+  return active.has(slug);
 }
