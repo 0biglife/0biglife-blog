@@ -43,7 +43,8 @@ export default function WorkActions({ zipPath, github, shareUrl, title }: WorkAc
         await navigator.share({ title, url: shareUrl });
       } catch (error) {
         // 사용자가 공유 시트를 취소하면 AbortError 로 reject — 조용히 무시
-        if (error instanceof DOMException && error.name === "AbortError") {
+        // 구형 Safari/WebKit 은 DOMException 이 아닌 plain Error 로 reject 하므로 이름만으로 판별
+        if (error && (error as { name?: string }).name === "AbortError") {
           return;
         }
         // 그 외 공유 실패 시 클립보드로 폴백
