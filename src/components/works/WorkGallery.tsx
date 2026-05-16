@@ -7,6 +7,7 @@ import {
   Heading,
   SimpleGrid,
   Text,
+  VisuallyHidden,
   Wrap,
   WrapItem,
   useColorModeValue,
@@ -44,13 +45,22 @@ export default function WorkGallery({ works }: WorkGalleryProps) {
     return [...seen];
   }, [works]);
 
+  // Effective selected tag — falls back to the ALL sentinel if the stored
+  // value is no longer a valid tag (defensive against stale state).
+  const effectiveTag = useMemo<string>(() => {
+    if (selectedTag === ALL_TAG || tags.includes(selectedTag)) {
+      return selectedTag;
+    }
+    return ALL_TAG;
+  }, [selectedTag, tags]);
+
   // Works matching the active filter.
   const filteredWorks = useMemo<WorkMeta[]>(() => {
-    if (selectedTag === ALL_TAG) {
+    if (effectiveTag === ALL_TAG) {
       return works;
     }
-    return works.filter((work) => work.tags.includes(selectedTag));
-  }, [works, selectedTag]);
+    return works.filter((work) => work.tags.includes(effectiveTag));
+  }, [works, effectiveTag]);
 
   const titleColor = useColorModeValue("gray.800", "gray.100");
   const subtitleColor = useColorModeValue("gray.500", "gray.400");
@@ -82,9 +92,14 @@ export default function WorkGallery({ works }: WorkGalleryProps) {
 
       {/* Tag filter — single-select chips, wraps on narrow screens. */}
       {hasWorks && (
-        <Wrap spacing={2} mb={{ base: 6, md: 8 }}>
+        <Wrap
+          spacing={2}
+          mb={{ base: 6, md: 8 }}
+          role="group"
+          aria-label="태그 필터"
+        >
           {chips.map((tag) => {
-            const isActive = tag === selectedTag;
+            const isActive = tag === effectiveTag;
             return (
               <WrapItem key={tag}>
                 <Box
@@ -92,6 +107,7 @@ export default function WorkGallery({ works }: WorkGalleryProps) {
                   type="button"
                   onClick={() => setSelectedTag(tag)}
                   aria-pressed={isActive}
+                  cursor="pointer"
                   px={4}
                   minH="36px"
                   display="inline-flex"
@@ -116,6 +132,11 @@ export default function WorkGallery({ works }: WorkGalleryProps) {
           })}
         </Wrap>
       )}
+
+      {/* Announce filter results to assistive tech. */}
+      <VisuallyHidden aria-live="polite">
+        {hasResults ? `${filteredWorks.length}개의 작업물` : "결과 없음"}
+      </VisuallyHidden>
 
       {/* Grid / empty states. */}
       {!hasWorks ? (
