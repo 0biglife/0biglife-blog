@@ -9,9 +9,8 @@
     "serve": "yarn serve out",
     "generate:rss": "ts-node scripts/generate-rss.js",
     "optimize:images": "ts-node scripts/optimize-images.js",
-    "build": "yarn optimize:images && next build && yarn sitemap",
+    "build": "yarn build:works && yarn optimize:images && next build && yarn sitemap",
     "build:works": "node scripts/build-works.mjs",
-    "prebuild": "node scripts/build-works.mjs",
     "sitemap": "next-sitemap"
   },
   "dependencies": {
