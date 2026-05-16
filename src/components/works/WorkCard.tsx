@@ -89,7 +89,8 @@ export default function WorkCard({ work }: WorkCardProps) {
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.300");
   const cardBg = useColorModeValue("white", "gray.800");
   const previewBg = useColorModeValue("gray.50", "gray.900");
-  const restShadow = useColorModeValue("md", "dark-md");
+  // 다크모드엔 'dark-md' 토큰이 없어 명시적 CSS 그림자 사용 (hover의 dark-lg보다 옅음)
+  const restShadow = useColorModeValue("md", "0 2px 8px rgba(0, 0, 0, 0.4)");
   const hoverShadow = useColorModeValue("lg", "dark-lg");
   const tagBg = useColorModeValue("gray.100", "whiteAlpha.200");
   const titleColor = useColorModeValue("gray.800", "gray.100");
