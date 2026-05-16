@@ -39,6 +39,16 @@ function resize() {
   canvas.width = Math.round(width * dpr);
   canvas.height = Math.round(height * dpr);
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  // On the first run only, center the target and seed the chain there so the
+  // trail starts from the middle. On later resizes the points keep their
+  // current positions — only the idle-drift center (derived from width/height)
+  // shifts, which driftTarget() already reads live, so nothing drifts off-canvas.
+  if (points.length === 0) {
+    target.x = width / 2;
+    target.y = height / 2;
+    seedPoints(target.x, target.y);
+  }
 }
 
 /** Place every point at a position (used for the initial layout). */
@@ -124,8 +134,6 @@ canvas.addEventListener("touchmove", onPointerMove, { passive: true });
 canvas.addEventListener("mouseleave", onPointerLeave);
 canvas.addEventListener("touchend", onPointerLeave);
 
+// resize() also seeds the points on its first call, so init is just these two.
 resize();
-target.x = width / 2;
-target.y = height / 2;
-seedPoints(target.x, target.y);
 requestAnimationFrame(render);
