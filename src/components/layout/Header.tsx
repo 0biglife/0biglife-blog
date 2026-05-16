@@ -9,6 +9,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
+import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components";
 import { SiLighthouse } from "react-icons/si";
 
@@ -24,6 +25,13 @@ const NAV_LINKS = [
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
+
+  const isLinkActive = (href: string) => {
+    if (href === "/") return pathname === "/";
+    if (href === "/log") return pathname.startsWith("/log");
+    return pathname === href;
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -81,19 +89,30 @@ export default function Header() {
             gap={{ base: "10px", sm: "18px" }}
             mr={{ base: "2px", sm: "8px" }}
           >
-            {NAV_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                as={NextLink}
-                href={link.href}
-                fontSize={{ base: "13px", sm: "15px" }}
-                fontWeight="medium"
-                color={iconColor}
-                _hover={{ textDecoration: "none", opacity: 0.5 }}
-              >
-                {link.label}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isActive = isLinkActive(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  as={NextLink}
+                  href={link.href}
+                  aria-current={isActive ? "page" : undefined}
+                  fontSize={{ base: "13px", sm: "15px" }}
+                  fontWeight={isActive ? "bold" : "medium"}
+                  color={iconColor}
+                  opacity={isActive ? 1 : 0.6}
+                  _hover={{ textDecoration: "none", opacity: isActive ? 1 : 0.5 }}
+                  _focusVisible={{
+                    outline: "2px solid",
+                    outlineColor: "teal.400",
+                    outlineOffset: "2px",
+                    borderRadius: "2px",
+                  }}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </Flex>
           <Tooltip
             label={LIGHER_HOUSE_NAME}

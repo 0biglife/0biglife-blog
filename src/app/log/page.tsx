@@ -1,12 +1,12 @@
 import { getAllDevLogs, getAllPosts } from "@/lib/posts";
-import PostContent from "../PageContent";
+import PageContent from "../PageContent";
 
-export default async function LogPage() {
-  const posts = await getAllPosts();
-  const devLogs = await getAllDevLogs();
+export default function LogPage() {
+  const posts = getAllPosts();
+  const devLogs = getAllDevLogs();
   const featuredPosts = posts.slice(0, 3);
 
   return (
-    <PostContent posts={posts} featuredPosts={featuredPosts} devLogs={devLogs} />
+    <PageContent posts={posts} featuredPosts={featuredPosts} devLogs={devLogs} />
   );
 }
