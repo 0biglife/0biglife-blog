@@ -19,3 +19,13 @@ headers:
     headers:
       - key: "Cache-Control"
         value: "public, max-age=3600, stale-while-revalidate=86400"
+
+  - source: "/works/*"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=3600, stale-while-revalidate=86400"
+
+  - source: "/dev-logs/*"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=3600, stale-while-revalidate=86400"
