@@ -4,6 +4,7 @@ import { Box, Heading, HStack, Text, Wrap, WrapItem, Tag } from "@chakra-ui/reac
 import { getAllWorkSlugs, getWorkBySlug } from "@/lib/works";
 import { TableOfContents } from "@/components";
 import { DemoFrame, CodePanel, WorkActions } from "@/components/works";
+import { T } from "@/i18n/T";
 
 type Params = Promise<{ slug: string }>;
 
@@ -75,9 +76,6 @@ export default async function WorkDetailPage({ params }: { params: Params }) {
         </Heading>
         <HStack mt={3} spacing={2}>
           <Text fontSize="smaller">{work.type}</Text>
-          <Text fontSize="smaller" opacity={0.8}>
-            · {work.date}
-          </Text>
         </HStack>
         {work.tags.length > 0 && (
           <Wrap mt={3} spacing={2}>
@@ -111,7 +109,7 @@ export default async function WorkDetailPage({ params }: { params: Params }) {
         {/* Code */}
         <Box mt={12}>
           <Heading as="h2" fontSize="2xl" mb={4}>
-            코드
+            <T k="code.heading" />
           </Heading>
           <CodePanel files={work.files} />
         </Box>

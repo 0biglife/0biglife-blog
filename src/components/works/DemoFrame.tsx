@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Box, HStack, IconButton, Skeleton, Text, useColorModeValue } from "@chakra-ui/react";
 import { FiMaximize, FiMinimize, FiRefreshCw } from "react-icons/fi";
+import { useLanguage } from "@/i18n/LanguageProvider";
 
 type DemoFrameProps = {
   src: string; // e.g. /works/<slug>/demo/index.html
@@ -11,6 +12,7 @@ type DemoFrameProps = {
 };
 
 export default function DemoFrame({ src, aspectRatio, title }: DemoFrameProps) {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
   const [reloadKey, setReloadKey] = useState<number>(0);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
@@ -125,7 +127,7 @@ export default function DemoFrame({ src, aspectRatio, title }: DemoFrameProps) {
           bg={bgColor}
         >
           <Text fontSize="sm" color={fallbackTextColor} textAlign="center">
-            데모를 불러올 수 없습니다
+            {t("demo.loadFailed")}
           </Text>
         </Box>
       )}

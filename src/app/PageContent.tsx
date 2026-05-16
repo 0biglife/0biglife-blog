@@ -1,11 +1,8 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import {
-  BLOG_LEFT_TOP_CATEGORY,
-  BLOG_RIGHT_TOP_CATEGORY,
-} from "@/lib/constant";
 import { Title } from "@/components";
+import { useLanguage } from "@/i18n/LanguageProvider";
 import { Box, Container } from "@chakra-ui/react";
 import { DevLog, Post } from "@/lib/types";
 import { useEffect, useState } from "react";
@@ -33,6 +30,7 @@ export default function PostContent({
   devLogs,
 }: PostContentProps) {
   const [views, setViews] = useState({ today: "0", total: "0" });
+  const { t } = useLanguage();
 
   useEffect(() => {
     fetchViews();
@@ -66,7 +64,7 @@ export default function PostContent({
           minHeight="300px"
           p={1}
         >
-          <Title label={BLOG_LEFT_TOP_CATEGORY} />
+          <Title label={t("home.featured")} />
           <SliderContainer posts={featuredPosts} />
         </Box>
         <Box
@@ -84,7 +82,7 @@ export default function PostContent({
           minHeight="300px"
           p={1}
         >
-          <Title label={BLOG_RIGHT_TOP_CATEGORY} />
+          <Title label={t("home.devLogs")} />
           <LogContainer
             logs={devLogs}
             todayViews={views.today}

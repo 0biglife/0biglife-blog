@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { Box, Heading, Link, Text } from "@chakra-ui/react";
 import Image from "next/image";
 import { Post } from "@/lib/types";
-import { THUMNAIL_DATE_TEXT } from "@/lib/constant";
+import { useLanguage } from "@/i18n/LanguageProvider";
 
 const SliderContainer = ({ posts }: { posts: Post[] }) => {
+  const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   // const currentIndex = 0;
   useEffect(() => {
@@ -78,7 +79,7 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
             mr="4px"
             alignSelf="flex-end"
           >
-            {THUMNAIL_DATE_TEXT} {posts[currentIndex].date}
+            {t("post.updated")} {posts[currentIndex].date}
           </Text>
           <Text fontSize="xs" color="gray.200" ml="4px" mr="4px" noOfLines={2}>
             {posts[currentIndex].description}

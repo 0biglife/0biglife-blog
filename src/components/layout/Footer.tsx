@@ -3,8 +3,11 @@
 import { Box, Text, HStack, Link, Icon, Tooltip } from "@chakra-ui/react";
 import { FaLinkedin, FaGoogle, FaGithub } from "react-icons/fa";
 import { SiTistory } from "react-icons/si";
+import { useLanguage } from "@/i18n/LanguageProvider";
 
 export default function Footer() {
+  const { t } = useLanguage();
+
   return (
     <Box
       as="footer"
@@ -84,7 +87,7 @@ export default function Footer() {
         </Tooltip>
       </HStack>
 
-      <Text fontSize="12px">© 2025. 0biglife all rights reserved.</Text>
+      <Text fontSize="12px">{t("footer.rights")}</Text>
     </Box>
   );
 }

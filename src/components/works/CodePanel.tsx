@@ -7,12 +7,15 @@ import { oneDark as DarkCodeStyle } from "react-syntax-highlighter/dist/esm/styl
 import { FaRegCopy } from "react-icons/fa";
 import { FaCheck } from "react-icons/fa6";
 import type { WorkFile } from "@/lib/types";
+import { useLanguage } from "@/i18n/LanguageProvider";
 
 type CodePanelProps = {
   files: WorkFile[];
 };
 
 export default function CodePanel({ files }: CodePanelProps) {
+  const { t } = useLanguage();
+
   // 기본 선택 파일: index.html 이 있으면 그것, 없으면 첫 파일
   const defaultPath = useMemo<string>(() => {
     if (files.length === 0) return "";
@@ -68,7 +71,7 @@ export default function CodePanel({ files }: CodePanelProps) {
         bg={listBg}
       >
         <Text color={placeholderColor} fontSize="sm">
-          코드 준비 중
+          {t("code.preparing")}
         </Text>
       </Flex>
     );

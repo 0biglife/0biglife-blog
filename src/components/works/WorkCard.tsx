@@ -14,6 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { useLiveSlot } from "./LiveDemoProvider";
 import type { WorkMeta } from "@/lib/types";
+import { useLanguage } from "@/i18n/LanguageProvider";
 
 type WorkCardProps = {
   work: WorkMeta;
@@ -34,6 +35,7 @@ const MAX_VISIBLE_TAGS = 3;
  * `pointerEvents: "none"` so clicks fall through to the card's LinkOverlay.
  */
 export default function WorkCard({ work }: WorkCardProps) {
+  const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
 
   // True once the card is at (or near) the viewport. Pre-arms slightly early
@@ -139,7 +141,7 @@ export default function WorkCard({ work }: WorkCardProps) {
           <iframe
             key={`demo-${work.slug}-${mountId}`}
             src={`/works/${work.slug}/demo/index.html`}
-            title={`${work.title} 미리보기`}
+            title={`${work.title}${t("workCard.previewSuffix")}`}
             loading="lazy"
             sandbox="allow-scripts"
             tabIndex={-1}

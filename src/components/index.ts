@@ -1,4 +1,4 @@
-import { Chakra, ThemeToggle } from "./chakra-ui";
+import { Chakra, ThemeToggle, LanguageSwitcher } from "./chakra-ui";
 import { Title, Footer, Header, CopyButton, ScrollToTopButton } from "./layout";
 import {
   PostList,
@@ -15,6 +15,7 @@ export {
   Header,
   CopyButton,
   ThemeToggle,
+  LanguageSwitcher,
   Chakra,
   PostList,
   LogContainer,

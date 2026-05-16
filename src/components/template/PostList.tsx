@@ -14,7 +14,7 @@ import {
 } from "@chakra-ui/react";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import Image from "next/image";
-import { EMPTY_POST } from "@/lib/constant";
+import { useLanguage } from "@/i18n/LanguageProvider";
 
 const PostList = ({
   posts,
@@ -23,6 +23,7 @@ const PostList = ({
   posts: Post[];
   viewMode: "list" | "grid";
 }) => {
+  const { t } = useLanguage();
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = viewMode === "list" ? 5 : 9;
 
@@ -80,7 +81,7 @@ const PostList = ({
   };
 
   if (!posts || posts.length === 0)
-    return <Text fontSize="md">{EMPTY_POST}</Text>;
+    return <Text fontSize="md">{t("posts.empty")}</Text>;
 
   return (
     <Box>
@@ -204,7 +205,7 @@ const PostList = ({
       {totalPages > 1 && (
         <HStack justifyContent="center" mt={6} spacing={2}>
           <IconButton
-            aria-label="이전 페이지"
+            aria-label={t("pagination.prev")}
             icon={<IoIosArrowBack />}
             onClick={handlePrevPage}
             isDisabled={currentPage === 1}
@@ -229,7 +230,7 @@ const PostList = ({
             )
           )}
           <IconButton
-            aria-label="다음 페이지"
+            aria-label={t("pagination.next")}
             icon={<IoIosArrowForward />}
             onClick={handleNextPage}
             isDisabled={currentPage === totalPages}

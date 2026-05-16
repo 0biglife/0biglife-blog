@@ -1,0 +1,37 @@
+---
+title: "잉크 유체"
+date: 2026-05-16
+type: webgl
+tags: [WebGL2, 유체시뮬레이션, GLSL]
+summary: "준-라그랑주 이류로 번지는 잉크 — 커서가 유속장을 휘저어 색을 흘린다"
+github: ""
+aspectRatio: "16/9"
+autoplay: true
+---
+
+## 아이디어
+
+두 개의 격자를 GPU에 둔다 — 하나는 **유속장**, 하나는 잉크 색을 담는
+**염료장**. 커서는 유속장을 휘젓고, 염료는 그 흐름에 실려 번진다.
+물 위에 떨어뜨린 잉크처럼.
+
+## 핵심 기법
+
+**준-라그랑주 이류(semi-Lagrangian advection)** — "이 픽셀의 색은
+한 프레임 전 어디서 흘러왔는가"를 거꾸로 추적해 그 지점을 샘플링한다.
+무조건 안정적이라 폭주하지 않는다.
+
+```glsl
+vec2 vel = texture(u_velocity, v_uv).xy;
+vec2 source = v_uv - vel;          // trace one step backward
+outColor = texture(u_src, source) * u_dissipation;
+```
+
+유속장도 자기 자신을 같은 방식으로 이류시키고, 커서 힘과 미세한
+컬-노이즈 드리프트가 더해진다. 네 번의 핑퐁 패스가 한 프레임을 이룬다.
+
+## 인터랙션
+
+커서를 끌면 그 방향으로 유속이 실리고 색이 주입된다. 가만히 두면
+보이지 않는 손이 천천히 잉크를 흘린다. WebGL2와 부동소수점 렌더
+타깃이 필요하다.

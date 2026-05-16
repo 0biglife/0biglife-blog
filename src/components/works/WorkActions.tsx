@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { Button, Wrap, WrapItem, useToast } from "@chakra-ui/react";
 import { FiDownload, FiGithub, FiShare2 } from "react-icons/fi";
+import { useLanguage } from "@/i18n/LanguageProvider";
 
 type WorkActionsProps = {
   zipPath: string; // e.g. /works/<slug>/<slug>.zip
@@ -13,25 +14,26 @@ type WorkActionsProps = {
 
 export default function WorkActions({ zipPath, github, shareUrl, title }: WorkActionsProps) {
   const toast = useToast();
+  const { t } = useLanguage();
 
   const copyToClipboard = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(shareUrl);
       toast({
-        title: "링크가 복사되었습니다",
+        title: t("workActions.shareCopied"),
         status: "success",
         duration: 2000,
         isClosable: true,
       });
     } catch {
       toast({
-        title: "공유에 실패했습니다",
+        title: t("workActions.shareFailed"),
         status: "error",
         duration: 3000,
         isClosable: true,
       });
     }
-  }, [shareUrl, toast]);
+  }, [shareUrl, toast, t]);
 
   const handleShare = useCallback(async () => {
     // Web Share API 는 SSR 시 undefined 이므로 클릭 시점에 feature-detect
@@ -67,7 +69,7 @@ export default function WorkActions({ zipPath, github, shareUrl, title }: WorkAc
           colorScheme="blue"
           variant="solid"
         >
-          ZIP 다운로드
+          {t("workActions.download")}
         </Button>
       </WrapItem>
 
@@ -88,7 +90,7 @@ export default function WorkActions({ zipPath, github, shareUrl, title }: WorkAc
 
       <WrapItem>
         <Button leftIcon={<FiShare2 />} variant="outline" onClick={handleShare}>
-          공유
+          {t("workActions.share")}
         </Button>
       </WrapItem>
     </Wrap>

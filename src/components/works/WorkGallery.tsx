@@ -15,6 +15,7 @@ import {
 import { LiveDemoProvider } from "./LiveDemoProvider";
 import WorkCard from "./WorkCard";
 import type { WorkMeta } from "@/lib/types";
+import { useLanguage } from "@/i18n/LanguageProvider";
 
 type WorkGalleryProps = {
   works: WorkMeta[];
@@ -32,6 +33,7 @@ const ALL_TAG = "전체";
  * cap applies across every card.
  */
 export default function WorkGallery({ works }: WorkGalleryProps) {
+  const { t } = useLanguage();
   const [selectedTag, setSelectedTag] = useState<string>(ALL_TAG);
 
   // All unique tags across every work, in first-seen order.
@@ -86,7 +88,7 @@ export default function WorkGallery({ works }: WorkGalleryProps) {
           Works
         </Heading>
         <Text mt={2} fontSize={{ base: "sm", md: "md" }} color={subtitleColor}>
-          직접 만든 인터랙티브 작업물을 라이브 데모로 둘러보세요.
+          {t("works.subtitle")}
         </Text>
       </Box>
 
@@ -125,7 +127,7 @@ export default function WorkGallery({ works }: WorkGalleryProps) {
                     outlineOffset: "2px",
                   }}
                 >
-                  {tag}
+                  {tag === ALL_TAG ? t("works.tagAll") : tag}
                 </Box>
               </WrapItem>
             );
@@ -135,20 +137,22 @@ export default function WorkGallery({ works }: WorkGalleryProps) {
 
       {/* Announce filter results to assistive tech. */}
       <VisuallyHidden aria-live="polite">
-        {hasResults ? `${filteredWorks.length}개의 작업물` : "결과 없음"}
+        {hasResults
+          ? `${filteredWorks.length}${t("works.countSuffix")}`
+          : t("works.noResults")}
       </VisuallyHidden>
 
       {/* Grid / empty states. */}
       {!hasWorks ? (
         <Box py={20} textAlign="center">
           <Text fontSize="md" color={emptyColor}>
-            아직 작업물이 없습니다.
+            {t("works.empty")}
           </Text>
         </Box>
       ) : !hasResults ? (
         <Box py={20} textAlign="center">
           <Text fontSize="md" color={emptyColor}>
-            해당 태그의 작업물이 없습니다.
+            {t("works.emptyTag")}
           </Text>
         </Box>
       ) : (

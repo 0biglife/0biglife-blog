@@ -1,6 +1,5 @@
 "use client";
 import { extendTheme, ThemeConfig } from "@chakra-ui/react";
-import { mode, StyleFunctionProps } from "@chakra-ui/theme-tools";
 
 const config: ThemeConfig = {
   initialColorMode: "light",
@@ -23,13 +22,19 @@ const colors = {
   },
 };
 
+// mode()는 렌더 시점에 한 값으로 확정되어 정적 빌드 시 다크 규칙이 누락된다.
+// Header/Footer의 _dark 와 동일하게 클래스 기반 셀렉터로 작성해 두 규칙을 모두 내보낸다.
 const styles = {
-  global: (props: StyleFunctionProps) => ({
+  global: {
     body: {
-      bg: mode("white", "gray.800")(props),
-      color: mode("black", "white")(props),
+      bg: "white",
+      color: "black",
     },
-  }),
+    "body.chakra-ui-dark": {
+      bg: "gray.800",
+      color: "white",
+    },
+  },
 };
 
 const theme = extendTheme({ config, colors, styles });

@@ -13,7 +13,7 @@ import {
 import { PostList } from "@/components";
 import { Post } from "@/lib/types";
 import { TbGridDots, TbList, TbTriangleInvertedFilled } from "react-icons/tb";
-import { CATEGORY_TITLE } from "@/lib/constant";
+import { useLanguage } from "@/i18n/LanguageProvider";
 import { GoDotFill } from "react-icons/go";
 import { motion } from "framer-motion";
 // import { IoMdBrowsers } from "react-icons/io";
@@ -38,6 +38,7 @@ const CATEGORY_ORDER = {
 // };
 
 export default function FilteredPostList({ posts }: { posts: Post[] }) {
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(
@@ -146,7 +147,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
               fontWeight="medium"
               _dark={{ color: "white" }}
             >
-              {selectedCategory ? selectedCategory : "전체보기"}
+              {selectedCategory ? selectedCategory : t("posts.all")}
               {selectedSubcategory ? ` / ${selectedSubcategory}` : ""}
             </Text>
             <Text fontSize="14px" color="red" ml={0} fontWeight="medium">
@@ -201,7 +202,7 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
           fontSize="18px"
           fontStyle="italic"
         >
-          {CATEGORY_TITLE}
+          {t("posts.category")}
         </Heading>
         <VStack align="start" spacing={4} ml={1}>
           {Object.entries(categories)

@@ -3,17 +3,20 @@ import { useEffect, useState } from "react";
 import { Box, Flex, Link, useColorModeValue } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
-import { ThemeToggle } from "@/components";
+import { ThemeToggle, LanguageSwitcher } from "@/components";
 import ProfilePopover from "./ProfilePopover";
+import { useLanguage } from "@/i18n/LanguageProvider";
+import type { TranslationKey } from "@/i18n/dictionary";
 
-const NAV_LINKS = [
-  { label: "Works", href: "/" },
-  { label: "Log", href: "/log" },
+const NAV_LINKS: { key: TranslationKey; href: string }[] = [
+  { key: "nav.works", href: "/" },
+  { key: "nav.log", href: "/log" },
 ];
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   const isLinkActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -97,12 +100,13 @@ export default function Header() {
                     borderRadius: "2px",
                   }}
                 >
-                  {link.label}
+                  {t(link.key)}
                 </Link>
               );
             })}
           </Flex>
           <ProfilePopover />
+          <LanguageSwitcher />
           <ThemeToggle />
         </Flex>
       </Flex>

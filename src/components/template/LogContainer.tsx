@@ -2,6 +2,7 @@
 // import { TESTING, TODAY_COUNT, TOTAL_COUNT } from "@/lib/constant";
 import { DevLog } from "@/lib/types";
 import { Box, Link, Text } from "@chakra-ui/react";
+import { useLanguage } from "@/i18n/LanguageProvider";
 
 interface LogContainerProps {
   logs: DevLog[];
@@ -12,6 +13,7 @@ interface LogContainerProps {
 const LogContainer = (props: LogContainerProps) => {
   // const { logs, todayViews, totalViews } = props;
   const { logs } = props;
+  const { t } = useLanguage();
 
   return (
     <Box
@@ -72,7 +74,7 @@ const LogContainer = (props: LogContainerProps) => {
               {log.title}
             </Text>
             <Text fontSize="12px" opacity={0.8}>
-              Last updated on {log.date}
+              {t("log.lastUpdated")} {log.date}
             </Text>
           </Box>
         ))}

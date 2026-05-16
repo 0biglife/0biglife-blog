@@ -1,11 +1,12 @@
 "use client";
 
-import { TABLE_OF_CONTENTS_TITLE } from "@/lib/constant";
+import { useLanguage } from "@/i18n/LanguageProvider";
 import { TOCItem } from "@/lib/types";
 import { Box, Link, VStack, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 export default function TableOfContents({ toc }: { toc: TOCItem[] }) {
+  const { t } = useLanguage();
   const [activeId, setActiveId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -68,7 +69,7 @@ export default function TableOfContents({ toc }: { toc: TOCItem[] }) {
           fontStyle="italic"
           userSelect="none"
         >
-          {TABLE_OF_CONTENTS_TITLE}
+          {t("post.toc")}
         </Text>
         <VStack align="start" spacing={2}>
           {toc.map((heading, index) => {
