@@ -1,0 +1,15 @@
+/* Fill the container with a dark stage for the trail. */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #0d0d12;
+  overflow: hidden;
+}
+
+#trail {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: none;
+}

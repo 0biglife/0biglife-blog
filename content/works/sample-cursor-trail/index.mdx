@@ -1,0 +1,18 @@
+---
+title: "커서 트레일"
+date: 2026-05-16
+type: vanilla
+tags: [CSS, 마우스인터랙션]
+summary: "마우스를 따라다니는 잔상 효과"
+github: ""
+aspectRatio: "16/9"
+autoplay: true
+---
+
+## 아이디어
+
+마우스 좌표를 따라 점들이 부드럽게 따라오는 트레일 효과.
+
+## 핵심 코드
+
+`requestAnimationFrame` 루프에서 보간(lerp)으로 잔상을 만든다.
