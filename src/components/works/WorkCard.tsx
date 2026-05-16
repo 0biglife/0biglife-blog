@@ -41,6 +41,11 @@ export default function WorkCard({ work }: WorkCardProps) {
   const [nearViewport, setNearViewport] = useState<boolean>(false);
   // True once the live iframe has finished loading — used to fade it in.
   const [iframeLoaded, setIframeLoaded] = useState<boolean>(false);
+  // Monotonic counter bumped each time a slot is granted. Used as part of the
+  // iframe's `key` so every grant produces a unique key, forcing React to
+  // create a fresh DOM node. This guarantees `onLoad` fires again even if
+  // `granted` toggles rapidly and avoids a stale `iframeLoaded` flag.
+  const [mountId, setMountId] = useState<number>(0);
 
   // Only ever request a slot when autoplay is enabled for this work.
   const granted = useLiveSlot(work.slug, nearViewport && work.autoplay);
@@ -71,18 +76,20 @@ export default function WorkCard({ work }: WorkCardProps) {
     return () => observer.disconnect();
   }, []);
 
-  // When the slot is lost, reset the loaded flag so a future remount fades in
-  // again instead of flashing instantly.
+  // On every grant transition, reset the loaded flag so the next mount fades
+  // in instead of flashing instantly. When the slot is (re)granted, bump the
+  // mount id so the iframe gets a brand-new `key` and a fresh DOM node.
   useEffect(() => {
-    if (!granted) {
-      setIframeLoaded(false);
+    setIframeLoaded(false);
+    if (granted) {
+      setMountId((id) => id + 1);
     }
   }, [granted]);
 
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.300");
   const cardBg = useColorModeValue("white", "gray.800");
   const previewBg = useColorModeValue("gray.50", "gray.900");
-  const restShadow = useColorModeValue("sm", "dark-lg");
+  const restShadow = useColorModeValue("md", "dark-md");
   const hoverShadow = useColorModeValue("lg", "dark-lg");
   const tagBg = useColorModeValue("gray.100", "whiteAlpha.200");
   const titleColor = useColorModeValue("gray.800", "gray.100");
@@ -120,7 +127,7 @@ export default function WorkCard({ work }: WorkCardProps) {
         {/* Cover image — shown instantly, beneath any live preview. */}
         <Image
           src={work.cover}
-          alt={work.title}
+          alt=""
           fill
           sizes="(max-width: 768px) 100vw, 33vw"
           style={{ objectFit: "cover" }}
@@ -129,10 +136,11 @@ export default function WorkCard({ work }: WorkCardProps) {
         {/* Live preview iframe — only mounted when a slot is granted. */}
         {granted && (
           <iframe
+            key={`demo-${work.slug}-${mountId}`}
             src={`/works/${work.slug}/demo/index.html`}
             title={`${work.title} 미리보기`}
             loading="lazy"
-            sandbox="allow-scripts allow-pointer-lock"
+            sandbox="allow-scripts"
             tabIndex={-1}
             aria-hidden="true"
             onLoad={() => setIframeLoaded(true)}
