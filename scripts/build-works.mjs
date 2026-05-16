@@ -24,13 +24,6 @@ export function walkFiles(dir, base = dir) {
   return out;
 }
 
-// manifest에서 제외할 바이너리/미디어 확장자 (소문자 비교)
-const BINARY_EXTS = new Set([
-  ".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg",
-  ".mp4", ".mov", ".webm", ".ico",
-  ".woff", ".woff2", ".ttf",
-]);
-
 const CONTENT_WORKS_DIR = path.join(process.cwd(), "content", "works");
 const PUBLIC_WORKS_DIR = path.join(process.cwd(), "public", "works");
 
@@ -38,8 +31,10 @@ const PUBLIC_WORKS_DIR = path.join(process.cwd(), "public", "works");
 function buildManifest(demoDir) {
   const files = [];
   for (const rel of walkFiles(demoDir)) {
-    const ext = path.extname(rel);
-    if (BINARY_EXTS.has(ext.toLowerCase())) continue; // 바이너리는 manifest 제외
+    const ext = path.extname(rel).toLowerCase();
+    // 허용목록(allowlist): LANG 에 등록된 알려진 텍스트 확장자만 manifest 포함.
+    // 예상치 못한 바이너리 확장자가 UTF-8 로 강제 인코딩되어 manifest 가 깨지는 것을 방지.
+    if (!Object.prototype.hasOwnProperty.call(LANG, ext)) continue;
     const content = fs.readFileSync(path.join(demoDir, rel), "utf8");
     files.push({ path: rel, content, lang: langForExt(ext) });
   }
@@ -53,7 +48,13 @@ function createZip(demoDir, zipPath) {
     const archive = new ZipArchive({ zlib: { level: 9 } });
 
     output.on("close", resolve);
-    archive.on("error", reject);
+    // output 스트림 자체 오류(디스크 풀/권한 거부 등)도 처리해야 프로세스 크래시 방지
+    output.on("error", reject);
+    // archive 오류 시 output 스트림을 정리한 뒤 reject
+    archive.on("error", (err) => {
+      output.destroy();
+      reject(err);
+    });
 
     archive.pipe(output);
     // false → demo/ 중첩 없이 demo 내용이 zip 루트에 위치
@@ -75,44 +76,59 @@ export async function buildAll() {
     .map((e) => e.name);
 
   let processed = 0;
+  let skipped = 0;
+  let failed = 0;
 
   for (const slug of slugs) {
-    const workDir = path.join(CONTENT_WORKS_DIR, slug);
-    const demoDir = path.join(workDir, "demo");
+    // slug 단위 try/catch: 하나의 work 실패가 전체 빌드를 중단시키지 않도록 격리
+    try {
+      const workDir = path.join(CONTENT_WORKS_DIR, slug);
+      const demoDir = path.join(workDir, "demo");
 
-    // 1. demo 폴더 없으면 스킵 + 경고
-    if (!fs.existsSync(demoDir) || !fs.statSync(demoDir).isDirectory()) {
-      console.warn(`build-works: skipping "${slug}" — no demo/ folder`);
-      continue;
+      // 1. demo 폴더 없으면 스킵 + 경고
+      if (!fs.existsSync(demoDir) || !fs.statSync(demoDir).isDirectory()) {
+        console.warn(`build-works: skipping "${slug}" — no demo/ folder`);
+        skipped += 1;
+        continue;
+      }
+
+      // 2. public/works/<slug>/ 초기화 후 demo 복사
+      const outDir = path.join(PUBLIC_WORKS_DIR, slug);
+      fs.rmSync(outDir, { recursive: true, force: true });
+      fs.mkdirSync(outDir, { recursive: true });
+      fs.cpSync(demoDir, path.join(outDir, "demo"), { recursive: true });
+
+      // 3. cover.png 있으면 복사
+      const coverSrc = path.join(workDir, "cover.png");
+      if (fs.existsSync(coverSrc)) {
+        fs.copyFileSync(coverSrc, path.join(outDir, "cover.png"));
+      }
+
+      // 4. manifest.json 생성
+      const manifest = buildManifest(demoDir);
+      fs.writeFileSync(
+        path.join(outDir, "manifest.json"),
+        JSON.stringify(manifest, null, 2),
+      );
+
+      // 5. <slug>.zip 생성 (demo 내용이 zip 루트)
+      await createZip(demoDir, path.join(outDir, `${slug}.zip`));
+
+      processed += 1;
+    } catch (err) {
+      // 실패한 work 는 기록만 하고 다음 slug 로 계속 진행
+      console.error(`build-works: failed "${slug}" — ${err.message}`);
+      failed += 1;
     }
-
-    // 2. public/works/<slug>/ 초기화 후 demo 복사
-    const outDir = path.join(PUBLIC_WORKS_DIR, slug);
-    fs.rmSync(outDir, { recursive: true, force: true });
-    fs.mkdirSync(outDir, { recursive: true });
-    fs.cpSync(demoDir, path.join(outDir, "demo"), { recursive: true });
-
-    // 3. cover.png 있으면 복사
-    const coverSrc = path.join(workDir, "cover.png");
-    if (fs.existsSync(coverSrc)) {
-      fs.copyFileSync(coverSrc, path.join(outDir, "cover.png"));
-    }
-
-    // 4. manifest.json 생성
-    const manifest = buildManifest(demoDir);
-    fs.writeFileSync(
-      path.join(outDir, "manifest.json"),
-      JSON.stringify(manifest, null, 2),
-    );
-
-    // 5. <slug>.zip 생성 (demo 내용이 zip 루트)
-    await createZip(demoDir, path.join(outDir, `${slug}.zip`));
-
-    processed += 1;
   }
 
   // 6. 요약 출력
-  console.log(`build-works: ${processed} work(s) processed`);
+  console.log(
+    `build-works: ${processed} processed, ${skipped} skipped, ${failed} failed`,
+  );
+
+  // 실패가 하나라도 있으면 CI 가 인지하도록 exit code 1
+  if (failed > 0) process.exitCode = 1;
 }
 
 // 7. 직접 실행될 때만 buildAll() 호출 (테스트 import 시에는 실행 안 함)
