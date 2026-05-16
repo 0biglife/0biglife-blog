@@ -1,0 +1,142 @@
+import "server-only";
+import { notFound } from "next/navigation";
+import { Box, Heading, HStack, Text, Wrap, WrapItem, Tag } from "@chakra-ui/react";
+import { getAllWorkSlugs, getWorkBySlug } from "@/lib/works";
+import { TableOfContents } from "@/components";
+import { DemoFrame, CodePanel, WorkActions } from "@/components/works";
+
+type Params = Promise<{ slug: string }>;
+
+// 정적 사이트 생성(SSG)을 위한 모든 경로(slug) 미리 받아오기
+export async function generateStaticParams() {
+  const slugs = getAllWorkSlugs();
+  if (!slugs || slugs.length === 0) {
+    console.error("⚠️ No works found! Check your content/works directory.");
+    return [];
+  }
+  return slugs.map((slug) => ({ slug }));
+}
+
+// SEO 최적화를 위한 메타 데이터 설정
+export async function generateMetadata({ params }: { params: Params }) {
+  const { slug } = await params;
+  if (!slug) return notFound();
+
+  const decodedSlug = decodeURIComponent(slug ?? "");
+  const work = await getWorkBySlug(decodedSlug);
+  if (!work) {
+    console.error(`[generateMetadata] Work not found for slug: ${slug}`);
+    return notFound();
+  }
+
+  const url = `https://0biglife.com/works/${work.slug}`;
+  const rawDate: unknown = work.date;
+  const publishedTime =
+    rawDate instanceof Date
+      ? rawDate.toISOString()
+      : String(rawDate ?? "");
+
+  return {
+    title: work.title,
+    description: work.summary,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title: work.title,
+      description: work.summary,
+      images: [{ url: work.cover, alt: work.title }],
+      type: "article",
+      url: url,
+      publishedTime: publishedTime,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: work.title,
+      description: work.summary,
+      images: [work.cover],
+    },
+  };
+}
+
+export default async function WorkDetailPage({ params }: { params: Params }) {
+  const resolvedParams = await params;
+  const { slug } = resolvedParams;
+
+  if (!slug) return notFound();
+
+  const decodedSlug = decodeURIComponent(slug ?? "");
+  const work = await getWorkBySlug(decodedSlug);
+  if (!work) return notFound();
+
+  const shareUrl = `https://0biglife.com/works/${work.slug}`;
+  // gray-matter가 따옴표 없는 YAML date를 Date 객체로 파싱하므로 렌더 전 문자열로 정규화
+  const rawDate: unknown = work.date;
+  const displayDate =
+    rawDate instanceof Date
+      ? rawDate.toISOString().slice(0, 10)
+      : String(rawDate ?? "");
+
+  return (
+    <Box display="flex" justifyContent="center" width="full" py={10} px={4}>
+      <Box width="100%" maxW="920px" minW="280px">
+        {/* Header */}
+        <Heading as="h1" fontSize="3xl">
+          {work.title}
+        </Heading>
+        <HStack mt={3} spacing={2}>
+          <Text fontSize="smaller">{work.type}</Text>
+          <Text fontSize="smaller" opacity={0.8}>
+            · {displayDate}
+          </Text>
+        </HStack>
+        {work.tags.length > 0 && (
+          <Wrap mt={3} spacing={2}>
+            {work.tags.map((tag) => (
+              <WrapItem key={tag}>
+                <Tag size="sm">{tag}</Tag>
+              </WrapItem>
+            ))}
+          </Wrap>
+        )}
+
+        {/* Live Preview */}
+        <Box mt={8}>
+          <DemoFrame
+            src={work.demoPath}
+            aspectRatio={work.aspectRatio}
+            title={work.title}
+          />
+        </Box>
+
+        {/* Actions: download / share / github */}
+        <Box mt={6}>
+          <WorkActions
+            zipPath={work.zipPath}
+            github={work.github}
+            shareUrl={shareUrl}
+            title={work.title}
+          />
+        </Box>
+
+        {/* Code */}
+        <Box mt={12}>
+          <Heading as="h2" fontSize="2xl" mb={4}>
+            코드
+          </Heading>
+          <CodePanel files={work.files} />
+        </Box>
+
+        {/* MDX write-up + TOC */}
+        <Box display="flex" flexDirection="row" mt={12}>
+          <Box className="prose lg:prose-lg" flex="1" minW="0">
+            {work.content}
+          </Box>
+          {work.toc && work.toc.length > 0 && (
+            <TableOfContents toc={work.toc} />
+          )}
+        </Box>
+      </Box>
+    </Box>
+  );
+}
