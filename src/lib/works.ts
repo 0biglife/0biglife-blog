@@ -13,9 +13,9 @@ const contentWorksDir = path.join(process.cwd(), "content/works");
 const publicWorksDir = path.join(process.cwd(), "public/works");
 
 // 폴더가 유효한 work 인지 검사 (index.mdx + demo/ 둘 다 존재)
-const isValidWork = (folder: string): boolean => {
-  const indexPath = path.join(contentWorksDir, folder, "index.mdx");
-  const demoPath = path.join(contentWorksDir, folder, "demo");
+const isValidWork = (slug: string): boolean => {
+  const indexPath = path.join(contentWorksDir, slug, "index.mdx");
+  const demoPath = path.join(contentWorksDir, slug, "demo");
   return (
     fs.existsSync(indexPath) &&
     fs.existsSync(demoPath) &&
@@ -55,6 +55,8 @@ const buildWorkMeta = (
 };
 
 export const getAllWorks = (): WorkMeta[] => {
+  if (!fs.existsSync(contentWorksDir)) return [];
+
   const folders = fs.readdirSync(contentWorksDir);
 
   const works = folders
@@ -64,6 +66,8 @@ export const getAllWorks = (): WorkMeta[] => {
       const filePath = path.join(contentWorksDir, folder, "index.mdx");
       const fileContents = fs.readFileSync(filePath, "utf-8");
       const { data } = matter(fileContents);
+
+      if (!data.title || !data.date) return null;
 
       return buildWorkMeta(data, folder);
     })
@@ -92,6 +96,11 @@ export const getWorkBySlug = async (slug: string): Promise<Work | null> => {
   const fileContents = fs.readFileSync(filePath, "utf-8");
   const { data, content } = matter(fileContents);
 
+  if (!data.title || !data.date) {
+    errorLog("[getWorkBySlug] Missing required fields in frontmatter:", slug);
+    return null;
+  }
+
   const mdxSource = await compileMDX({
     source: content,
     components: MarkdownRenderer,
@@ -110,7 +119,7 @@ export const getWorkBySlug = async (slug: string): Promise<Work | null> => {
   if (fs.existsSync(manifestPath)) {
     try {
       const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-      files = manifest.files ?? [];
+      files = Array.isArray(manifest.files) ? manifest.files : [];
     } catch (error) {
       errorLog("[getWorkBySlug] Failed to parse manifest.json:", error);
     }
