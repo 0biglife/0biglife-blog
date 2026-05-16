@@ -411,11 +411,13 @@ git commit -m "feat: add WorkActions download/github/share bar"
 - `generateStaticParams` — `getAllWorkSlugs()` 사용.
 - `generateMetadata` — title/summary, `openGraph.images`에 `work.cover`, `twitter card summary_large_image`. canonical `https://0biglife.com/works/<slug>`.
 - 페이지 본문 레이아웃 (설계 §4):
-  1. `<DemoFrame src={work.demoPath} aspectRatio={work.aspectRatio} />`
-  2. Chakra `Tabs`: **Preview**(DemoFrame 재사용 또는 동일) / **Code**(`<CodePanel files={work.files} />`)
+  1. Header — `<Heading as="h1">` 제목 + type/date + 태그 `Tag`
+  2. `<DemoFrame src={work.demoPath} aspectRatio={work.aspectRatio} title={work.title} />`
   3. `<WorkActions zipPath={work.zipPath} github={work.github} shareUrl={...} title={work.title} />`
-  4. MDX 설명글 `{work.content}` + `<TableOfContents toc={work.toc} />`
-- 탭은 한 번에 하나만 — Preview 탭일 때만 iframe 마운트(불필요한 실행 방지).
+  4. `<Heading as="h2">코드</Heading>` + `<CodePanel files={work.files} />`
+  5. MDX 설명글 `{work.content}` + `<TableOfContents toc={work.toc} />`
+
+> **결정 (2026-05-16):** 원안의 `Tabs` [Preview | Code]를 제거함. 상단 `DemoFrame`이 이미 상시 라이브 프리뷰이므로 Preview 탭은 iframe 이중 마운트를 유발함. 상세 페이지는 데모가 1개뿐이라 always-mount가 정상이고, 동시 실행 제어(LiveDemoProvider, Task 10)는 갤러리 전용이라 무관함. → DemoFrame 1개 + "코드" 섹션으로 단순화.
 
 **Step 2: 검증**
 
