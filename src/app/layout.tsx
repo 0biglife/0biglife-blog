@@ -3,31 +3,49 @@ import "../styles/globals.css";
 
 const GOOGLE_ANALYTICS_ID = process.env.GA_ID;
 
+const SITE_DESCRIPTION =
+  "직접 만든 인터랙티브 웹 작업물을 데모로 살펴보고, 코드를 열람하거나 내려받을 수 있는 0biglife의 작업물 갤러리입니다.";
+
 export const metadata = {
-  title: "0biglife", // 페이지 제목
-  description: "프론트엔드 엔지니어 김민석입니다.",
+  title: {
+    default: "0biglife — 인터랙티브 작업물", // 페이지 제목
+    template: "%s | 0biglife", // 하위 페이지 제목 패턴
+  },
+  description: SITE_DESCRIPTION,
   icons: {
     icon: "/favicon.png", // 기본 아이콘
   },
   metadataBase: new URL("https://0biglife.com"),
-  keywords: ["0biglife", "김민석", "React", "웹 개발", "기술 블로그"],
+  keywords: [
+    "0biglife",
+    "김민석",
+    "인터랙티브 웹",
+    "웹 디자인",
+    "프론트엔드",
+    "작업물 갤러리",
+  ],
   authors: [{ name: "0biglife", url: "https://0biglife.com" }],
   creator: "0biglife",
   openGraph: {
-    title: "0biglife 기술 블로그",
-    description: "프론트엔드 엔지니어 김민석입니다.",
+    title: "0biglife — 인터랙티브 작업물",
+    description: SITE_DESCRIPTION,
     url: "https://0biglife.com",
-    siteName: "0biglife blog",
+    siteName: "0biglife",
     images: [
       {
         url: "/favicon.png",
         width: 1200,
         height: 630,
-        alt: "0biglife 블로그 대표 이미지",
+        alt: "0biglife 인터랙티브 작업물 갤러리",
       },
     ],
     locale: "ko_KR",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "0biglife — 인터랙티브 작업물",
+    description: SITE_DESCRIPTION,
   },
   alternates: {
     canonical: "https://0biglife.com", // Canonical URL, 원본 페이지 인식하여 SEO 점수 향상
