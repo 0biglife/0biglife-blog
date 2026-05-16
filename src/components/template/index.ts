@@ -6,7 +6,6 @@ import { MarkdownRenderer } from "./MarkdownRenderer";
 import TableOfContents from "./TableOfContents";
 import Giscus from "./Giscus";
 import { DualMedia } from "./DualMedio";
-import ProfileCard from "./ProfileCard";
 
 export {
   Giscus,
@@ -17,5 +16,4 @@ export {
   FilteredPostList,
   TableOfContents,
   MarkdownRenderer,
-  ProfileCard,
 };

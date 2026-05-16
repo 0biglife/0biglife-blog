@@ -4,6 +4,7 @@ import { Box, Flex, Link, useColorModeValue } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components";
+import ProfilePopover from "./ProfilePopover";
 
 const NAV_LINKS = [
   { label: "Works", href: "/" },
@@ -101,6 +102,7 @@ export default function Header() {
               );
             })}
           </Flex>
+          <ProfilePopover />
           <ThemeToggle />
         </Flex>
       </Flex>
