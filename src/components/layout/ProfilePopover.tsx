@@ -21,7 +21,8 @@ import { PROFILE } from "@/lib/constant";
  * 데이터는 constant.ts의 PROFILE 상수.
  */
 export default function ProfilePopover() {
-  const triggerRing = useColorModeValue("gray.200", "whiteAlpha.300");
+  // 헤더의 ThemeToggle과 동일한 hover 배경 — 두 컨트롤의 인터랙션을 일치시킴
+  const triggerHoverBg = useColorModeValue("gray.200", "gray.700");
   const cardBg = useColorModeValue("white", "gray.800");
   const cardBorder = useColorModeValue("gray.200", "whiteAlpha.300");
   const nameColor = useColorModeValue("gray.900", "gray.50");
@@ -58,13 +59,14 @@ export default function ProfilePopover() {
           as="button"
           type="button"
           aria-label="프로필 보기"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          boxSize="40px"
           borderRadius="full"
-          lineHeight={0}
-          borderWidth="2px"
-          borderColor={triggerRing}
-          transition="transform 0.15s ease, border-color 0.15s ease"
-          _hover={{ transform: "scale(1.05)" }}
-          _active={{ transform: "scale(0.96)" }}
+          transition="background 0.15s ease, transform 0.1s ease"
+          _hover={{ bg: triggerHoverBg }}
+          _active={{ transform: "scale(0.9)" }}
           _focusVisible={{
             outline: "2px solid",
             outlineColor: "teal.400",
@@ -79,7 +81,7 @@ export default function ProfilePopover() {
         w="248px"
         bg={cardBg}
         borderColor={cardBorder}
-        borderRadius="2xl"
+        borderRadius="xl"
         boxShadow="xl"
         _focusVisible={{ outline: "none" }}
       >
