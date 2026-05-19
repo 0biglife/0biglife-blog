@@ -1,0 +1,43 @@
+---
+title: "천 시뮬레이션"
+date: 2026-05-19
+type: canvas
+tags: [Canvas, 물리 시뮬레이션, Verlet, 인터랙션]
+summary: "베를레 적분으로 짠 천 — 잡아당기고, 세게 당기면 찢어진다. 바람에 흔들리는 점-제약 격자"
+github: ""
+aspectRatio: "16/9"
+autoplay: true
+---
+
+## 아이디어
+
+천은 점(질량)과 그 사이를 잇는 제약(constraint)의 격자다. 각 점은
+**베를레 적분**으로 움직이고, 제약은 매 프레임 길이를 원래대로 되돌리려
+한다. 한계 이상으로 늘어난 제약은 끊어진다 — 그것이 '찢김'이다.
+
+## 핵심 코드
+
+베를레 적분은 속도를 저장하지 않는다. 현재 위치와 이전 위치의 차이가
+곧 속도다.
+
+```js
+const vx = (p.x - p.px) * friction;
+const vy = (p.y - p.py) * friction;
+p.px = p.x;
+p.py = p.y;
+p.x += vx;
+p.y += vy + gravity * dt * dt;
+```
+
+제약 이완은 두 점을 원래 길이로 끌어당기고, 너무 늘어났으면 끊는다.
+
+```js
+const d = Math.hypot(dx, dy);
+if (d > rest * TEAR) removeConstraint();
+else applyCorrection((rest - d) / d);
+```
+
+## 인터랙션
+
+드래그로 천의 한 점을 잡아 끈다. 세게 당기면 제약이 한계를 넘어
+찢어진다. 바람이 천을 흔든다. 더블클릭으로 리셋.

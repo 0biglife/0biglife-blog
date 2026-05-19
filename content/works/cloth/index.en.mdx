@@ -1,0 +1,40 @@
+---
+title: "Cloth Simulation"
+summary: "Cloth woven from Verlet integration — grab it, pull hard and it tears. A point-and-constraint grid swaying in the wind"
+---
+
+## Idea
+
+Cloth is a grid of points (masses) and the constraints that link them.
+Each point moves by **Verlet integration**, and every frame the
+constraints try to pull themselves back to their rest length. A
+constraint stretched past its limit snaps — that is the tearing.
+
+## Core code
+
+Verlet integration stores no velocity. The difference between the
+current and previous position *is* the velocity.
+
+```js
+const vx = (p.x - p.px) * friction;
+const vy = (p.y - p.py) * friction;
+p.px = p.x;
+p.py = p.y;
+p.x += vx;
+p.y += vy + gravity * dt * dt;
+```
+
+Constraint relaxation pulls the two points toward their rest length,
+and cuts the link if it has stretched too far.
+
+```js
+const d = Math.hypot(dx, dy);
+if (d > rest * TEAR) removeConstraint();
+else applyCorrection((rest - d) / d);
+```
+
+## Interaction
+
+Drag to grab a point of the cloth and pull. Pull hard enough and the
+constraints exceed their limit and tear. Wind sways the cloth.
+Double-click to reset.
