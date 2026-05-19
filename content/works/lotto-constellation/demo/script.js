@@ -7,6 +7,7 @@ const ctx = canvas.getContext("2d");
 
 const COUNT = 45;
 const DRAWS = LOTTO_DRAWS.length;
+const TOTAL_COMBOS = 8145060; // C(45, 6)
 
 // --- 데이터 집계 -----------------------------------------------------------
 const freq = new Array(COUNT + 1).fill(0);
@@ -74,8 +75,11 @@ for (let a = 1; a <= COUNT; a++) {
   }
 }
 
-// 다섯 밴드 색상 — 번호 아홉 개씩.
-const BAND_HUE = [350, 32, 152, 196, 270];
+// --- 팔레트 ----------------------------------------------------------------
+// 번호 아홉 개씩 다섯 밴드 — 청록→파랑→남보라→보라→자홍의 응집된 한 줄기.
+const BAND_HUE = [186, 214, 250, 288, 322];
+const GOLD = 45; // 내가 고른 별·조합선의 금빛 강조
+
 function bandOf(num) {
   return Math.min(4, Math.floor((num - 1) / 9));
 }
@@ -93,6 +97,8 @@ for (let n = 1; n <= COUNT; n++) {
     vx: 0,
     vy: 0,
     radius: 8 + t * 11,
+    dim: 1, // 현재 밝기 (목표값으로 부드럽게 수렴)
+    twk: Math.random() * Math.PI * 2, // 반짝임 위상
   });
 }
 
@@ -106,8 +112,13 @@ restEdges.sort((p, q) => Math.abs(q.dev) - Math.abs(p.dev));
 const REST = restEdges.slice(0, 150);
 
 const dust = [];
-for (let i = 0; i < 90; i++) {
-  dust.push({ x: Math.random(), y: Math.random(), s: Math.random() });
+for (let i = 0; i < 110; i++) {
+  dust.push({
+    x: Math.random(),
+    y: Math.random(),
+    s: Math.random(),
+    twk: Math.random() * Math.PI * 2,
+  });
 }
 
 // --- 상태 ------------------------------------------------------------------
@@ -122,10 +133,16 @@ let hover = -1;
 const selected = []; // 선택한 노드 인덱스 (최대 6)
 const pointer = { x: 0, y: 0, inside: false };
 
+// 인트로 — 별이 중심에서 피어나며 안내문이 떠올랐다 사라진다.
+const startTime = performance.now();
+let titleShown = true;
+let titleA = 0;
+let revealA = 0; // 여섯 개 완성 시 메시지 리빌
+
 // 잔잔한 회차 재생 (아무 선택도 없을 때).
 let ambientIdx = -1;
 let ambientStart = -99999;
-let nextAmbient = 2600;
+let nextAmbient = 3400;
 
 function resize() {
   const dpr = window.devicePixelRatio || 1;
@@ -138,15 +155,23 @@ function resize() {
   cy = H / 2;
   ring = Math.min(W, H) * 0.33;
   if (!seeded) {
+    // 중심 가까이에 모았다가 — 힘 시뮬레이션이 바깥 고리로 피워낸다.
     for (const nd of nodes) {
-      nd.x = cx + Math.cos(nd.anchorAngle) * ring;
-      nd.y = cy + Math.sin(nd.anchorAngle) * ring;
+      nd.x = cx + Math.cos(nd.anchorAngle) * ring * 0.12;
+      nd.y = cy + Math.sin(nd.anchorAngle) * ring * 0.12;
     }
     seeded = true;
   }
 }
 
 // --- 헬퍼 ------------------------------------------------------------------
+function clampN(v, lo, hi) {
+  return v < lo ? lo : v > hi ? hi : v;
+}
+function ease(t) {
+  return 1 - Math.pow(1 - t, 3);
+}
+
 function nodeAt(mx, my) {
   let best = -1;
   let bestD = Infinity;
@@ -177,7 +202,6 @@ function roundRect(x, y, w, h, r) {
   }
 }
 
-// 선택한 번호들의 형태 통계.
 function signature(nums) {
   const s = nums.slice().sort((a, b) => a - b);
   let sum = 0;
@@ -228,7 +252,7 @@ function step() {
 // --- 패널 ------------------------------------------------------------------
 function numberChip(num, x, y, r) {
   const hue = BAND_HUE[bandOf(num)];
-  ctx.fillStyle = `hsl(${hue}, 88%, 60%)`;
+  ctx.fillStyle = `hsl(${hue}, 70%, 64%)`;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fill();
@@ -245,7 +269,7 @@ function statRow(label, value, x, y, w) {
   ctx.fillStyle = "rgba(255,255,255,0.45)";
   ctx.textAlign = "left";
   ctx.fillText(label, x, y);
-  ctx.fillStyle = "#e8ebff";
+  ctx.fillStyle = "#eef0ff";
   ctx.textAlign = "right";
   ctx.fillText(value, x + w, y);
 }
@@ -255,23 +279,23 @@ function drawPanel(now) {
   const py = 22;
   const pw = 256;
   const pad = 16;
-  const ambientOn = now - ambientStart < 5000 && ambientIdx >= 0;
+  const ambientOn =
+    now - ambientStart < 5000 && ambientIdx >= 0 && selected.length === 0;
 
-  // --- 선택 모드 ---
   if (selected.length > 0) {
     const nums = selected.map((i) => nodes[i].num);
     const sig = signature(nums);
     const full = nums.length === 6;
     const ph = full ? 274 : 200;
     roundRect(px, py, pw, ph, 13);
-    ctx.fillStyle = "rgba(12,14,28,0.88)";
+    ctx.fillStyle = "rgba(12,14,28,0.9)";
     ctx.fill();
     ctx.strokeStyle = "rgba(255,255,255,0.12)";
     ctx.lineWidth = 1;
     ctx.stroke();
 
     let y = py + pad + 6;
-    ctx.fillStyle = "#e8ebff";
+    ctx.fillStyle = "#eef0ff";
     ctx.font = "12px monospace";
     ctx.textAlign = "left";
     ctx.textBaseline = "alphabetic";
@@ -306,7 +330,6 @@ function drawPanel(now) {
     statRow("연속수", `${sig.consec}쌍`, px + pad, y, rw);
 
     if (full) {
-      // 합계가 분포상 어디쯤인지.
       let below = 0;
       for (const d of drawStats) if (d.sum <= sig.sum) below++;
       const pct = Math.round((below / DRAWS) * 100);
@@ -317,21 +340,19 @@ function drawPanel(now) {
       ctx.lineTo(px + pw - pad, y);
       ctx.stroke();
 
-      // 합계 게이지.
       y += 16;
       const gx = px + pad;
       const gw = rw;
       ctx.fillStyle = "rgba(255,255,255,0.1)";
       ctx.fillRect(gx, y, gw, 4);
       const mk = gx + clampN((sig.sum - sumMin) / (sumMax - sumMin), 0, 1) * gw;
-      ctx.fillStyle = "hsl(280,95%,78%)";
+      ctx.fillStyle = `hsl(${GOLD}, 95%, 72%)`;
       ctx.fillRect(mk - 1.5, y - 3, 3, 10);
       ctx.fillStyle = "rgba(255,255,255,0.5)";
       ctx.font = "10px monospace";
       ctx.textAlign = "left";
-      ctx.fillText(`합계 분포상 ${pct}%` , gx, y + 18);
+      ctx.fillText(`합계 분포상 ${pct}%`, gx, y + 18);
 
-      // 같은 형태 / 정확히 같은 조합.
       let sameShape = 0;
       let exact = 0;
       const key = sig.s.join(",");
@@ -359,12 +380,11 @@ function drawPanel(now) {
     return;
   }
 
-  // --- 잔잔한 회차 재생 ---
   if (ambientOn) {
     const d = drawStats[ambientIdx];
     const ph = 132;
     roundRect(px, py, pw, ph, 13);
-    ctx.fillStyle = "rgba(12,14,28,0.86)";
+    ctx.fillStyle = "rgba(12,14,28,0.88)";
     ctx.fill();
     ctx.strokeStyle = "rgba(255,255,255,0.1)";
     ctx.lineWidth = 1;
@@ -382,48 +402,32 @@ function drawPanel(now) {
     });
 
     y += 32;
-    ctx.fillStyle = "#e8ebff";
+    ctx.fillStyle = "#eef0ff";
     ctx.font = "11px monospace";
     ctx.fillText(
       `합 ${d.sum}  ·  홀 ${d.odd}:${6 - d.odd}  ·  연속 ${d.consec}쌍`,
       px + pad,
       y
     );
-    return;
   }
-
-  // --- 안내 ---
-  const ph = 86;
-  roundRect(px, py, pw, ph, 13);
-  ctx.fillStyle = "rgba(12,14,28,0.8)";
-  ctx.fill();
-  ctx.strokeStyle = "rgba(255,255,255,0.1)";
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  ctx.fillStyle = "#e8ebff";
-  ctx.font = "12px monospace";
-  ctx.textAlign = "left";
-  ctx.fillText("별을 클릭해 여섯 개를 골라보세요", px + pad, py + pad + 12);
-  ctx.fillStyle = "rgba(255,255,255,0.4)";
-  ctx.font = "10px monospace";
-  ctx.fillText("커서를 올리면 동반 출현 별자리가 보입니다", px + pad, py + pad + 34);
 }
 
-function clampN(v, lo, hi) {
-  return v < lo ? lo : v > hi ? hi : v;
-}
-
-// --- 렌더링 ----------------------------------------------------------------
+// --- 메인 루프 -------------------------------------------------------------
 function draw(now) {
   step();
+
+  const elapsed = now - startTime;
+  const introGate = clampN(elapsed / 1300, 0, 1); // 별 피어남
+  if (titleShown && elapsed > 6500) titleShown = false;
+  titleA += ((titleShown ? introGate : 0) - titleA) * 0.08;
+  revealA += ((selected.length === 6 ? 1 : 0) - revealA) * 0.1;
 
   if (pointer.inside) hover = nodeAt(pointer.x, pointer.y);
   else hover = -1;
 
-  // 잔잔한 회차 재생 스케줄 (선택 중에는 멈춤).
   const ambientOn =
     now - ambientStart < 5000 && ambientIdx >= 0 && selected.length === 0;
-  if (selected.length === 0 && hover < 0) {
+  if (selected.length === 0 && hover < 0 && elapsed > 3000) {
     if (now > nextAmbient) {
       ambientIdx = Math.floor(Math.random() * DRAWS);
       ambientStart = now;
@@ -431,11 +435,17 @@ function draw(now) {
     }
   }
 
-  ctx.fillStyle = "#070812";
+  // 배경 — 중심이 살짝 밝은 깊은 남색.
+  const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(W, H) * 0.7);
+  bg.addColorStop(0, "#0c0e1f");
+  bg.addColorStop(1, "#06070f");
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
+  // 별먼지 — 잔잔히 반짝인다.
   for (const d of dust) {
-    ctx.globalAlpha = 0.1 + d.s * 0.22;
+    const tw = 0.55 + 0.45 * Math.sin(now * 0.0013 + d.twk);
+    ctx.globalAlpha = (0.07 + d.s * 0.2) * tw * introGate;
     ctx.fillStyle = "#aab2d5";
     const sz = d.s < 0.5 ? 1 : 1.6;
     ctx.fillRect(d.x * W, d.y * H, sz, sz);
@@ -456,8 +466,8 @@ function draw(now) {
       if (k === hover) continue;
       const dev = co[hovered.num][nodes[k].num] - expCo;
       const mag = Math.min(1, Math.abs(dev) / coSpan);
-      const hue = dev >= 0 ? 28 : 205;
-      ctx.strokeStyle = `hsla(${hue}, 95%, 66%, ${0.12 + mag * 0.7})`;
+      const hue = dev >= 0 ? 30 : 205;
+      ctx.strokeStyle = `hsla(${hue}, 95%, 68%, ${(0.12 + mag * 0.7) * introGate})`;
       ctx.lineWidth = 0.6 + mag * 2.4;
       ctx.beginPath();
       ctx.moveTo(hovered.x, hovered.y);
@@ -467,8 +477,8 @@ function draw(now) {
   } else {
     for (const e of REST) {
       const mag = Math.min(1, Math.abs(e.dev) / coSpan);
-      const hue = e.dev >= 0 ? 28 : 205;
-      ctx.strokeStyle = `hsla(${hue}, 90%, 62%, ${0.04 + mag * 0.12})`;
+      const hue = e.dev >= 0 ? 30 : 205;
+      ctx.strokeStyle = `hsla(${hue}, 90%, 64%, ${(0.04 + mag * 0.12) * introGate})`;
       ctx.lineWidth = 0.5 + mag;
       ctx.beginPath();
       ctx.moveTo(nodes[e.a].x, nodes[e.a].y);
@@ -479,10 +489,10 @@ function draw(now) {
 
   // --- 잔잔한 회차의 당첨 별자리 ---
   if (ambientOn) {
-    const pulse = Math.sin((now - ambientStart) / 5000 * Math.PI); // 0→1→0
+    const pulse = Math.sin(((now - ambientStart) / 5000) * Math.PI);
     const lit = nodes.filter((nd) => ambientSet.has(nd.num));
     lit.sort((a, b) => a.num - b.num);
-    ctx.strokeStyle = `hsla(48, 95%, 72%, ${0.5 * pulse})`;
+    ctx.strokeStyle = `hsla(48, 95%, 74%, ${0.45 * pulse})`;
     ctx.lineWidth = 1.4;
     ctx.beginPath();
     lit.forEach((nd, i) => {
@@ -492,14 +502,16 @@ function draw(now) {
     ctx.stroke();
   }
 
-  // --- 내 조합의 별자리 ---
+  // --- 내 조합의 별자리 (금빛) ---
   if (selected.length > 1) {
     const chain = selected
       .map((i) => nodes[i])
       .slice()
       .sort((a, b) => a.num - b.num);
-    ctx.strokeStyle = "hsla(190, 95%, 72%, 0.85)";
-    ctx.lineWidth = 2;
+    const full = selected.length === 6;
+    const glowPulse = full ? 0.75 + 0.25 * Math.sin(now * 0.004) : 1;
+    ctx.strokeStyle = `hsla(${GOLD}, 95%, 76%, ${(full ? 0.95 : 0.7) * glowPulse})`;
+    ctx.lineWidth = full ? 2.6 : 2;
     ctx.beginPath();
     chain.forEach((nd, i) => {
       if (i === 0) ctx.moveTo(nd.x, nd.y);
@@ -517,34 +529,40 @@ function draw(now) {
     const hue = BAND_HUE[nd.band];
     const isSel = selSet.has(i);
     const isAmbient = ambientSet.has(nd.num);
-    let dim = 1;
-    if (hovered) dim = i === hover ? 1 : 0.28;
-    else if (selected.length > 0) dim = isSel ? 1 : 0.4;
+
+    // 목표 밝기 — 부드럽게 수렴.
+    let target = 1;
+    if (hovered) target = i === hover ? 1 : 0.26;
+    else if (selected.length > 0) target = isSel ? 1 : 0.4;
+    nd.dim += (target - nd.dim) * 0.16;
+    let dim = nd.dim * introGate;
 
     let r = nd.radius;
     if (isAmbient) {
-      const pulse = Math.sin((now - ambientStart) / 5000 * Math.PI);
+      const pulse = Math.sin(((now - ambientStart) / 5000) * Math.PI);
       r *= 1 + 0.35 * pulse;
-      dim = Math.max(dim, 0.55 + 0.45 * pulse);
+      dim = Math.max(dim, (0.55 + 0.45 * pulse) * introGate);
     }
+    const twinkle = 0.86 + 0.14 * Math.sin(now * 0.002 + nd.twk);
 
-    const glow = ctx.createRadialGradient(nd.x, nd.y, 0, nd.x, nd.y, r * 2.5);
-    glow.addColorStop(0, `hsla(${hue}, 90%, 72%, ${0.95 * dim})`);
-    glow.addColorStop(0.4, `hsla(${hue}, 88%, 60%, ${0.5 * dim})`);
-    glow.addColorStop(1, `hsla(${hue}, 88%, 55%, 0)`);
+    const glow = ctx.createRadialGradient(nd.x, nd.y, 0, nd.x, nd.y, r * 2.6);
+    glow.addColorStop(0, `hsla(${hue}, 85%, 76%, ${0.92 * dim})`);
+    glow.addColorStop(0.42, `hsla(${hue}, 82%, 62%, ${0.45 * dim})`);
+    glow.addColorStop(1, `hsla(${hue}, 82%, 58%, 0)`);
     ctx.fillStyle = glow;
     ctx.beginPath();
-    ctx.arc(nd.x, nd.y, r * 2.5, 0, Math.PI * 2);
+    ctx.arc(nd.x, nd.y, r * 2.6, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = `hsla(${hue}, 96%, ${i === hover ? 93 : 80}%, ${dim})`;
+    // 코어 — 거의 흰빛, 살짝 색온도.
+    ctx.fillStyle = `hsla(${hue}, 90%, ${i === hover ? 96 : 88}%, ${dim * twinkle})`;
     ctx.beginPath();
-    ctx.arc(nd.x, nd.y, nd.radius * 0.52, 0, Math.PI * 2);
+    ctx.arc(nd.x, nd.y, nd.radius * 0.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // 선택한 별에는 밝은 고리.
+    // 내가 고른 별엔 금빛 고리.
     if (isSel) {
-      ctx.strokeStyle = "rgba(255,255,255,0.95)";
+      ctx.strokeStyle = `hsla(${GOLD}, 96%, 80%, ${0.95 * introGate})`;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(nd.x, nd.y, nd.radius * 0.95, 0, Math.PI * 2);
@@ -552,7 +570,7 @@ function draw(now) {
     }
 
     ctx.fillStyle = `rgba(255, 255, 255, ${0.92 * dim})`;
-    ctx.font = `${Math.round(nd.radius * 0.82)}px monospace`;
+    ctx.font = `${Math.round(nd.radius * 0.8)}px monospace`;
     ctx.fillText(String(nd.num), nd.x, nd.y);
   }
 
@@ -575,11 +593,51 @@ function draw(now) {
     ctx.fillRect(tx, ty - 12, tw + 14, 24);
     ctx.strokeStyle = "rgba(255,255,255,0.16)";
     ctx.strokeRect(tx, ty - 12, tw + 14, 24);
-    ctx.fillStyle = "#e8ebff";
+    ctx.fillStyle = "#eef0ff";
     ctx.fillText(line, tx + 7, ty);
   }
 
   drawPanel(now);
+
+  // --- 인트로 안내문 ---
+  if (titleA > 0.01) {
+    ctx.globalAlpha = titleA;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#eef0ff";
+    ctx.font = "15px monospace";
+    ctx.fillText("별을 이어, 당신의 조합을 그려보세요", cx, cy);
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.font = "11px monospace";
+    ctx.fillText("로또 6/45 · 1,216회차 실제 당첨 데이터", cx, cy + 24);
+    ctx.globalAlpha = 1;
+  }
+
+  // --- 여섯 개 완성 시 메시지 리빌 ---
+  if (revealA > 0.01 && selected.length === 6) {
+    const sig = signature(selected.map((i) => nodes[i].num));
+    const key = sig.s.join(",");
+    let exact = 0;
+    for (const d of drawStats) if (d.nums.join(",") === key) exact++;
+
+    const head =
+      exact > 0
+        ? `이 여섯, 실제로 ${exact}번 당첨된 조합입니다`
+        : "이 여섯이 함께 나온 적 — 24년간 0회";
+    const sub = `${TOTAL_COMBOS.toLocaleString()}가지 중 하나. 어떤 조합도 두 번 나오지 않았다.`;
+
+    const by = H - 52;
+    ctx.globalAlpha = revealA;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = `hsla(${GOLD}, 96%, 82%, 1)`;
+    ctx.font = "16px monospace";
+    ctx.fillText(head, cx, by);
+    ctx.fillStyle = "rgba(255,255,255,0.55)";
+    ctx.font = "11px monospace";
+    ctx.fillText(sub, cx, by + 22);
+    ctx.globalAlpha = 1;
+  }
 
   requestAnimationFrame(draw);
 }
@@ -590,9 +648,11 @@ function trackPointer(clientX, clientY) {
   pointer.x = clientX - rect.left;
   pointer.y = clientY - rect.top;
   pointer.inside = true;
+  if (nodeAt(pointer.x, pointer.y) >= 0) titleShown = false;
 }
 
 function onClick(clientX, clientY) {
+  titleShown = false;
   const rect = canvas.getBoundingClientRect();
   const mx = clientX - rect.left;
   const my = clientY - rect.top;
