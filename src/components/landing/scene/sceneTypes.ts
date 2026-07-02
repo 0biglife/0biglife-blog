@@ -85,17 +85,30 @@ export const LANE_W = 3.6;
 export const LANE_COUNT = 3;
 /** lane center x for lane index 0..LANE_COUNT-1 */
 export const laneCenter = (i: number): number => (i - (LANE_COUNT - 1) / 2) * LANE_W;
-export const ROAD_HALF = (LANE_COUNT / 2) * LANE_W; // outer edge x
-export const RANGE_FRONT = 78; // meters simulated ahead
+export const ROAD_HALF = (LANE_COUNT / 2) * LANE_W; // driving-lane outer edge
+export const RANGE_FRONT = 82; // meters simulated ahead
 export const RANGE_BACK = 34; // meters simulated behind
 
+// Urban cross-section (meters, x = lateral, 0 = road centerline). Everything
+// keeps to its own space: cars in lanes, cyclists in the bike lane, pedestrians
+// on the sidewalks, crossing only at crosswalks.
+export const BIKE_X = ROAD_HALF + 0.95; // right-side bike-lane center
+export const BIKE_HALF = 0.7;
+export const CURB_R = ROAD_HALF + 1.9; // right curb (outer edge of bike lane)
+export const CURB_L = -ROAD_HALF - 0.4; // left curb
+export const SIDEWALK_R = ROAD_HALF + 3.7; // right sidewalk center
+export const SIDEWALK_L = -ROAD_HALF - 3.1; // left sidewalk center
+export const SIDEWALK_HALF = 1.75;
+export const CROSSWALK_SPACING = 54; // meters between crosswalks
+
 export const CLASS_COLOR: Record<AgentType, string> = {
-  car: "#5ec8ff",
-  truck: "#ffcf5e",
-  pedestrian: "#ff5ea8",
-  cyclist: "#7cff9e",
+  car: "#63b3ff", // cool blue
+  truck: "#ffb95e", // amber
+  pedestrian: "#ff6fa5", // pink
+  cyclist: "#5ce0c0", // teal-green
 };
 
-export const ACCENT = "#c8ff5e"; // ego / planned path / CTA
-export const STATUS = "#7cff9e";
-export const BG = "#05070a";
+// Restrained, instrument-cluster palette — one warm accent, mono readouts.
+export const ACCENT = "#c9ff4d"; // ego / planned path / primary
+export const STATUS = "#8affc1"; // status / ok
+export const BG = "#04060a";

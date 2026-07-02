@@ -135,12 +135,6 @@ export default function HeroScene() {
     setMode((m) => (m === "drive" ? "replay" : "drive"));
   }, []);
 
-  const scrollToWorks = useCallback(() => {
-    document
-      .getElementById("works")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
-
   const container = {
     hidden: {},
     show: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
@@ -222,40 +216,10 @@ export default function HeroScene() {
         inset={0}
         pointerEvents="none"
         zIndex={2}
-        opacity={0.045}
+        opacity={0.028}
         sx={{ mixBlendMode: "overlay" }}
         backgroundImage={`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`}
       />
-
-      {/* eyebrow — top-left */}
-      <Flex
-        position="absolute"
-        top={{ base: 4, md: 6 }}
-        left={{ base: 5, md: 12, lg: 16 }}
-        align="center"
-        gap={2.5}
-        zIndex={3}
-        pointerEvents="none"
-      >
-        <MotionBox
-          w="7px"
-          h="7px"
-          borderRadius="full"
-          bg={STATUS}
-          boxShadow={`0 0 12px ${STATUS}`}
-          animate={{ opacity: [1, 0.3, 1] }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <Text
-          fontFamily={MONO}
-          fontSize={{ base: "10.5px", md: "12px" }}
-          letterSpacing="0.24em"
-          textTransform="uppercase"
-          color={STATUS}
-        >
-          {t("scene.eyebrow")}
-        </Text>
-      </Flex>
 
       {/* telemetry panel — top-right (self-updating, isolated re-render) */}
       <TelemetryPanel listeners={telemetryListeners} mode={mode} />
@@ -304,71 +268,48 @@ export default function HeroScene() {
         <MotionBox variants={item}>
           <Flex
             align="center"
-            gap={{ base: 3, md: 5 }}
-            mt={{ base: 6, md: 7 }}
+            gap={{ base: 3, md: 4 }}
+            mt={{ base: 6, md: 8 }}
             pointerEvents="auto"
             flexWrap="wrap"
           >
-            <Box
-              as="button"
-              type="button"
-              onClick={scrollToWorks}
-              display="inline-flex"
-              alignItems="center"
-              gap={2}
-              px={5}
-              h="44px"
-              borderRadius="full"
-              bg={ACCENT}
-              color="#06140a"
-              fontWeight={700}
-              fontSize="14px"
-              transition="transform 0.15s ease, box-shadow 0.2s ease"
-              _hover={{
-                transform: "translateY(-2px)",
-                boxShadow: "0 10px 30px rgba(200,255,94,0.28)",
-              }}
-              _focusVisible={{
-                outline: "2px solid",
-                outlineColor: STATUS,
-                outlineOffset: "3px",
-              }}
-            >
-              {t("scene.ctaWorks")}
-              <Box as="span" aria-hidden>
-                ↓
+            {[
+              { label: "LinkedIn", href: PROFILE.links.linkedin },
+              { label: "GitHub", href: PROFILE.links.github },
+            ].map((c) => (
+              <Box
+                key={c.label}
+                as="a"
+                href={c.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                display="inline-flex"
+                alignItems="center"
+                gap={2}
+                px={{ base: 4, md: 5 }}
+                h="42px"
+                borderRadius="4px"
+                border="1px solid"
+                borderColor="whiteAlpha.250"
+                color="whiteAlpha.900"
+                fontFamily={MONO}
+                fontSize="13px"
+                fontWeight={500}
+                letterSpacing="0.02em"
+                transition="border-color 0.2s ease, color 0.2s ease, background 0.2s ease"
+                _hover={{ borderColor: ACCENT, color: "white", bg: "whiteAlpha.50" }}
+                _focusVisible={{
+                  outline: "2px solid",
+                  outlineColor: ACCENT,
+                  outlineOffset: "3px",
+                }}
+              >
+                {c.label}
+                <Box as="span" aria-hidden fontSize="11px" opacity={0.7}>
+                  ↗
+                </Box>
               </Box>
-            </Box>
-
-            <Box
-              as="a"
-              href={PROFILE.links.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              display="inline-flex"
-              alignItems="center"
-              gap={2}
-              px={4}
-              h="44px"
-              borderRadius="full"
-              border="1px solid"
-              borderColor="whiteAlpha.300"
-              color="whiteAlpha.900"
-              fontWeight={600}
-              fontSize="14px"
-              transition="border-color 0.2s ease, background 0.2s ease"
-              _hover={{ borderColor: STATUS, bg: "whiteAlpha.100" }}
-              _focusVisible={{
-                outline: "2px solid",
-                outlineColor: STATUS,
-                outlineOffset: "3px",
-              }}
-            >
-              {t("scene.ctaLinkedin")}
-              <Box as="span" aria-hidden fontSize="12px">
-                ↗
-              </Box>
-            </Box>
+            ))}
           </Flex>
         </MotionBox>
       </MotionBox>

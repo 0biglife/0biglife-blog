@@ -9,7 +9,6 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import type { TranslationKey } from "@/i18n/dictionary";
 
 const NAV_LINKS: { key: TranslationKey; href: string }[] = [
-  { key: "nav.works", href: "/" },
   { key: "nav.log", href: "/log" },
 ];
 

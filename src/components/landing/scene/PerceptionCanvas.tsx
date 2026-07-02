@@ -15,12 +15,18 @@ import {
   AgentType,
   BG,
   CLASS_COLOR,
+  CROSSWALK_SPACING,
+  CURB_L,
+  CURB_R,
   DriveInput,
   LANE_W,
   RANGE_BACK,
   RANGE_FRONT,
   ROAD_HALF,
   SceneQuality,
+  SIDEWALK_HALF,
+  SIDEWALK_L,
+  SIDEWALK_R,
   Telemetry,
 } from "./sceneTypes";
 
@@ -107,54 +113,62 @@ function PerceptionCanvas({
     rim.position.set(-18, 8, -22);
     scene.add(rim);
 
-    /* ---- ground + road ------------------------------------------------ */
-    const groundMat = track(
-      new THREE.MeshStandardMaterial({ color: 0x04060a, roughness: 0.95, metalness: 0 })
-    );
-    const ground = new THREE.Mesh(track(new THREE.PlaneGeometry(240, 260)), groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.position.y = -0.02;
-    scene.add(ground);
-
-    const roadMat = track(
-      new THREE.MeshStandardMaterial({ color: 0x0b1016, roughness: 0.85, metalness: 0.05 })
-    );
-    const road = new THREE.Mesh(
-      track(new THREE.PlaneGeometry(ROAD_HALF * 2 + 3, RANGE_FRONT + RANGE_BACK + 40)),
-      roadMat
-    );
-    road.rotation.x = -Math.PI / 2;
-    road.position.set(0, -0.01, (RANGE_FRONT - RANGE_BACK) / 2);
-    scene.add(road);
-
-    // solid edge lines
-    const edgeMat = track(
-      new THREE.MeshBasicMaterial({ color: 0x9fb2c4, transparent: true, opacity: 0.4 })
-    );
-    const edgeGeo = track(new THREE.BoxGeometry(0.16, 0.02, RANGE_FRONT + RANGE_BACK + 40));
-    for (const sx of [-ROAD_HALF, ROAD_HALF]) {
-      const m = new THREE.Mesh(edgeGeo, edgeMat);
-      m.position.set(sx, 0.01, (RANGE_FRONT - RANGE_BACK) / 2);
+    /* ---- ground, carriageway, bike lane, sidewalks -------------------- */
+    const ROAD_LEN = RANGE_FRONT + RANGE_BACK + 60;
+    const ROAD_Z = (RANGE_FRONT - RANGE_BACK) / 2;
+    const flat = (w: number, l: number, color: number, y: number, x: number, rough = 0.9) => {
+      const mat = track(new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0 }));
+      const m = new THREE.Mesh(track(new THREE.PlaneGeometry(w, l)), mat);
+      m.rotation.x = -Math.PI / 2;
+      m.position.set(x, y, ROAD_Z);
       scene.add(m);
-    }
+      return m;
+    };
 
-    // dashed lane boundary markings (scroll with roadS)
+    flat(260, ROAD_LEN + 120, 0x03050a, -0.05, 0); // ground
+    flat(CURB_R - CURB_L, ROAD_LEN, 0x0a0f15, -0.01, (CURB_L + CURB_R) / 2, 0.82); // asphalt
+    flat(CURB_R - ROAD_HALF, ROAD_LEN, 0x0c141b, 0.0, (ROAD_HALF + CURB_R) / 2, 0.8); // bike lane tint
+    // raised sidewalks (lighter so the road / walk boundary reads)
+    flat(SIDEWALK_HALF * 2 + 1.4, ROAD_LEN, 0x171f29, 0.12, SIDEWALK_L, 0.95);
+    flat(SIDEWALK_HALF * 2 + 1.4, ROAD_LEN, 0x171f29, 0.12, SIDEWALK_R, 0.95);
+
+    // curbs + painted lines (thin long boxes along z)
+    const longLine = (x: number, w: number, color: number, opacity: number, y = 0.02) => {
+      const mat = track(
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity })
+      );
+      const m = new THREE.Mesh(track(new THREE.BoxGeometry(w, 0.02, ROAD_LEN)), mat);
+      m.position.set(x, y, ROAD_Z);
+      scene.add(m);
+    };
+    const curbMat = track(new THREE.MeshStandardMaterial({ color: 0x232f39, roughness: 0.9 }));
+    for (const cx of [CURB_L, CURB_R]) {
+      const curb = new THREE.Mesh(track(new THREE.BoxGeometry(0.3, 0.18, ROAD_LEN)), curbMat);
+      curb.position.set(cx, 0.07, ROAD_Z);
+      scene.add(curb);
+    }
+    // bright curb-top edge so the sidewalk boundary is legible
+    longLine(CURB_L, 0.1, 0x4a5d6b, 0.55, 0.17);
+    longLine(CURB_R, 0.1, 0x4a5d6b, 0.55, 0.17);
+    longLine(-ROAD_HALF, 0.14, 0x8899a8, 0.32); // left road edge
+    longLine(ROAD_HALF, 0.12, 0xbfae66, 0.26); // bike-lane divider (muted)
+
+    // dashed lane-boundary markings (scroll with roadS)
     const DASH_PITCH = 6;
-    const DASH_LEN = 3;
     const dashZ0 = -RANGE_BACK - 6;
     const dashZ1 = RANGE_FRONT + 6;
     const perLine = Math.ceil((dashZ1 - dashZ0) / DASH_PITCH);
     const dashLines = [-LANE_W / 2, LANE_W / 2];
     const dashCount = dashLines.length * perLine;
     const dashMat = track(
-      new THREE.MeshBasicMaterial({ color: 0xdfe8ef, transparent: true, opacity: 0.5 })
+      new THREE.MeshBasicMaterial({ color: 0xdfe8ef, transparent: true, opacity: 0.42 })
     );
-    const dashGeo = track(new THREE.BoxGeometry(0.16, 0.02, DASH_LEN));
+    const dashGeo = track(new THREE.BoxGeometry(0.16, 0.02, 3));
     const dashMesh = new THREE.InstancedMesh(dashGeo, dashMat, dashCount);
     dashMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     dashMesh.frustumCulled = false;
     scene.add(dashMesh);
-    disposables.push(dashMesh); // InstancedMesh.dispose() frees the instance buffers
+    disposables.push(dashMesh);
     const dashBaseZ = new Float32Array(dashCount);
     const dashX = new Float32Array(dashCount);
     {
@@ -168,11 +182,30 @@ function PerceptionCanvas({
       }
     }
 
+    // crosswalks — zebra bars spanning the carriageway, scrolling with roadS
+    const XW_BARS = 11;
+    const XW_MAX = 3;
+    const xwBarX = new Float32Array(XW_BARS);
+    const xwL = CURB_L + 0.4;
+    const xwR = CURB_R - 0.4;
+    for (let k = 0; k < XW_BARS; k++) {
+      xwBarX[k] = xwL + (k * (xwR - xwL)) / (XW_BARS - 1);
+    }
+    const xwMat = track(
+      new THREE.MeshBasicMaterial({ color: 0xeef3f8, transparent: true, opacity: 0.78 })
+    );
+    const xwGeo = track(new THREE.BoxGeometry(0.55, 0.02, 3.0));
+    const xwMesh = new THREE.InstancedMesh(xwGeo, xwMat, XW_BARS * XW_MAX);
+    xwMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    xwMesh.frustumCulled = false;
+    scene.add(xwMesh);
+    disposables.push(xwMesh);
+
     /* ---- sensor range rings (centered on ego) ------------------------- */
     const ringGroup = new THREE.Group();
     scene.add(ringGroup);
     const ringMat = track(
-      new THREE.LineBasicMaterial({ color: 0x2f6f63, transparent: true, opacity: 0.32 })
+      new THREE.LineBasicMaterial({ color: 0x274c52, transparent: true, opacity: 0.16 })
     );
     for (const r of [10, 20, 30, 40]) {
       const pts: THREE.Vector3[] = [];
@@ -346,7 +379,7 @@ function PerceptionCanvas({
         uniforms: {
           uSweep: { value: 0 },
           uEgoX: { value: 0 },
-          uSize: { value: 2.1 },
+          uSize: { value: 1.5 },
           uDpr: { value: dpr },
         },
         transparent: true,
@@ -360,21 +393,21 @@ function PerceptionCanvas({
             gl_Position = projectionMatrix * mv;
             float ang = atan(position.x - uEgoX, position.z);
             float d = abs(mod(ang - uSweep + 3.14159265, 6.2831853) - 3.14159265);
-            float beam = smoothstep(0.6, 0.0, d);
-            float trail = smoothstep(2.4, 0.0, mod(uSweep - ang + 6.2831853, 6.2831853));
-            float b = 0.42 + 1.5*beam + 0.22*trail;
+            float beam = smoothstep(0.55, 0.0, d);
+            float trail = smoothstep(2.2, 0.0, mod(uSweep - ang + 6.2831853, 6.2831853));
+            float b = 0.55 + 1.05*beam + 0.18*trail;
             float dist = length(vec2(position.x - uEgoX, position.z));
-            float fade = 1.0 - smoothstep(30.0, 52.0, dist);
+            float fade = 1.0 - smoothstep(34.0, 55.0, dist);
             vColor = aColor * b * fade;
-            gl_PointSize = uSize * uDpr * (1.0 + 1.6*beam) * (62.0 / max(1.0, -mv.z));
+            gl_PointSize = uSize * uDpr * (1.0 + 0.8*beam) * (58.0 / max(1.0, -mv.z));
           }`,
         fragmentShader: `
           varying vec3 vColor;
           void main(){
             vec2 c = gl_PointCoord - 0.5;
             float r = dot(c,c);
-            if(r > 0.25) discard;
-            float a = smoothstep(0.25, 0.0, r);
+            if(r > 0.2) discard;
+            float a = smoothstep(0.2, 0.02, r);
             gl_FragColor = vec4(vColor, a);
           }`,
       })
@@ -467,57 +500,80 @@ function PerceptionCanvas({
     };
     const tmpC: [number, number, number] = [0, 0, 0];
 
-    // The lidar cloud's ground scan + roadside returns are generated ONCE in
-    // ego-local space. The whole Points object is translated to the ego each
-    // frame, so the ground is stable (no shimmer) and free to render; only the
-    // agent-surface points are rewritten per frame. uEgoX stays 0 because the
-    // geometry is already ego-local.
-    const BASE_COUNT = Math.min(MAXP - 400, Math.floor(MAXP * 0.72));
+    // The cloud is generated in ego-LOCAL space and the whole Points object is
+    // slid to the ego each frame. Ground return = the signature spinning-lidar
+    // pattern: concentric rings that space out with distance, generated once.
+    // uEgoX stays 0 because the geometry is already ego-local.
+    const setP = (p: number, x: number, y: number, z: number) => {
+      lidarPos[p * 3] = x;
+      lidarPos[p * 3 + 1] = y;
+      lidarPos[p * 3 + 2] = z;
+      heightColor(y, tmpC);
+      lidarCol[p * 3] = tmpC[0];
+      lidarCol[p * 3 + 1] = tmpC[1];
+      lidarCol[p * 3 + 2] = tmpC[2];
+    };
+    const BASE_COUNT = Math.floor(MAXP * 0.6);
     {
       let i = 0;
-      const nGround = Math.floor(BASE_COUNT * 0.85);
-      for (; i < nGround; i++) {
-        const r = Math.sqrt(Math.random()) * 48;
-        const a = Math.random() * Math.PI * 2;
-        lidarPos[i * 3] = Math.sin(a) * r;
-        lidarPos[i * 3 + 1] = Math.random() * 0.05;
-        lidarPos[i * 3 + 2] = Math.cos(a) * r;
+      let r = 3.4;
+      let gap = 0.5;
+      while (r < 54 && i < BASE_COUNT) {
+        const nPts = Math.max(28, Math.floor((2 * Math.PI * r) / 0.32));
+        for (let k = 0; k < nPts && i < BASE_COUNT; k++) {
+          const a = (k / nPts) * Math.PI * 2 + (Math.random() - 0.5) * 0.015;
+          const rr = r + (Math.random() - 0.5) * 0.09;
+          setP(i, Math.sin(a) * rr, (Math.random() - 0.5) * 0.035, Math.cos(a) * rr);
+          i++;
+        }
+        r += gap;
+        gap *= 1.075; // rings spread out with range, like a real sensor
       }
-      for (; i < BASE_COUNT; i++) {
-        const side = Math.random() < 0.5 ? -1 : 1;
-        lidarPos[i * 3] = side * (ROAD_HALF + 1.5 + Math.random() * 4);
-        lidarPos[i * 3 + 1] = Math.random() * 4.2;
-        lidarPos[i * 3 + 2] = -RANGE_BACK + Math.random() * (RANGE_FRONT + RANGE_BACK);
-      }
-      for (let j = 0; j < BASE_COUNT; j++) {
-        heightColor(lidarPos[j * 3 + 1], tmpC);
-        lidarCol[j * 3] = tmpC[0];
-        lidarCol[j * 3 + 1] = tmpC[1];
-        lidarCol[j * 3 + 2] = tmpC[2];
-      }
+      for (; i < BASE_COUNT; i++) setP(i, 0, -50, 0); // park any remainder
       lidarGeo.attributes.position.needsUpdate = true;
       (lidarGeo.attributes.aColor as THREE.BufferAttribute).needsUpdate = true;
     }
     lidarMat.uniforms.uEgoX.value = 0;
 
-    // rewrite only agent-surface points; returns the live total point count
-    const updateLidarAgents = (): number => {
+    // object-surface returns: horizontal scan lines wrapping the ego-facing
+    // faces of each tracked object (dense near, sparse far) — reads as a laser
+    // hitting a car/person, not random sparkle.
+    const updateLidarObjects = (): number => {
       const egoX = sim.ego.x;
       let p = BASE_COUNT;
       for (const ag of sim.agents) {
         if (p >= MAXP) break;
-        const area = ag.w * ag.l;
-        const n = Math.min(46, Math.max(6, Math.floor(area * 2.2)));
-        for (let i = 0; i < n && p < MAXP; i++) {
-          const y = Math.random() * ag.h;
-          lidarPos[p * 3] = ag.x - egoX + (Math.random() - 0.5) * ag.w;
-          lidarPos[p * 3 + 1] = y;
-          lidarPos[p * 3 + 2] = ag.z + (Math.random() - 0.5) * ag.l;
-          heightColor(y, tmpC);
-          lidarCol[p * 3] = tmpC[0];
-          lidarCol[p * 3 + 1] = tmpC[1];
-          lidarCol[p * 3 + 2] = tmpC[2];
-          p++;
+        const cx = ag.x - egoX;
+        const cz = ag.z;
+        const dist = Math.hypot(cx, cz);
+        if (dist > 56) continue;
+        const density = clamp(1 - dist / 56, 0.18, 1);
+        const hw = ag.w / 2;
+        const hl = ag.l / 2;
+        const nearX = cx >= 0 ? -hw : hw; // face toward the sensor on x
+        const nearZ = cz >= 0 ? -hl : hl; // face toward the sensor on z
+        const dy = ag.type === "pedestrian" ? 0.2 : 0.32;
+        for (let y = 0.06; y < ag.h && p < MAXP; y += dy) {
+          const across = Math.max(2, Math.floor((ag.w / 0.3) * density));
+          for (let k = 0; k <= across && p < MAXP; k++) {
+            setP(
+              p,
+              cx - hw + (k / across) * ag.w + (Math.random() - 0.5) * 0.05,
+              y + (Math.random() - 0.5) * 0.03,
+              cz + nearZ + (Math.random() - 0.5) * 0.04
+            );
+            p++;
+          }
+          const along = Math.max(2, Math.floor((ag.l / 0.34) * density));
+          for (let k = 0; k <= along && p < MAXP; k++) {
+            setP(
+              p,
+              cx + nearX + (Math.random() - 0.5) * 0.04,
+              y + (Math.random() - 0.5) * 0.03,
+              cz - hl + (k / along) * ag.l + (Math.random() - 0.5) * 0.05
+            );
+            p++;
+          }
         }
       }
       return p;
@@ -562,6 +618,35 @@ function PerceptionCanvas({
         dashMesh.setMatrixAt(i, dummy.matrix);
       }
       dashMesh.instanceMatrix.needsUpdate = true;
+
+      // crosswalks scroll (world-fixed; aligned with crossing pedestrians)
+      {
+        let ci = 0;
+        const S = CROSSWALK_SPACING;
+        const mStart = Math.ceil((sim.roadS - RANGE_BACK) / S);
+        for (let m = mStart; ci < XW_MAX && m * S - sim.roadS <= RANGE_FRONT + 3; m++) {
+          const relZ = m * S - sim.roadS;
+          if (relZ < -RANGE_BACK - 3) continue;
+          for (let k = 0; k < XW_BARS; k++) {
+            dummy.position.set(xwBarX[k], 0.02, relZ);
+            dummy.rotation.set(0, 0, 0);
+            dummy.scale.set(1, 1, 1);
+            dummy.updateMatrix();
+            xwMesh.setMatrixAt(ci * XW_BARS + k, dummy.matrix);
+          }
+          ci++;
+        }
+        for (; ci < XW_MAX; ci++) {
+          for (let k = 0; k < XW_BARS; k++) {
+            dummy.position.set(0, -60, 0);
+            dummy.rotation.set(0, 0, 0);
+            dummy.scale.set(1, 1, 1);
+            dummy.updateMatrix();
+            xwMesh.setMatrixAt(ci * XW_BARS + k, dummy.matrix);
+          }
+        }
+        xwMesh.instanceMatrix.needsUpdate = true;
+      }
 
       // lidar sweep angle (drives the beam of brightness in the point shader)
       if (!reduceMotion) sweepAng = (sweepAng + dt * 5.0) % (Math.PI * 2);
@@ -642,7 +727,7 @@ function PerceptionCanvas({
       // lidar — only the agent-surface slice is rewritten (throttled by stride),
       // and only that slice is re-uploaded to the GPU (the ground base is static)
       if (lidarFrame % quality.lidarStride === 0) {
-        lidarCountLive = updateLidarAgents();
+        lidarCountLive = updateLidarObjects();
         lidarGeo.setDrawRange(0, lidarCountLive);
         const agentFloats = (lidarCountLive - BASE_COUNT) * 3;
         if (agentFloats > 0) {
