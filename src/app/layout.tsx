@@ -4,11 +4,11 @@ import "../styles/globals.css";
 const GOOGLE_ANALYTICS_ID = process.env.GA_ID;
 
 const SITE_DESCRIPTION =
-  "브라우저에서 바로 실행되는 인터랙티브 웹 실험들. 라이브 데모로 보고, 코드를 열람하거나 내려받을 수 있는 0biglife의 작업 갤러리입니다.";
+  "라이다·레이더·카메라 센서 데이터를 자율주행 인지 파이프라인으로 잇는 데이터 엔지니어 0biglife(김민석). 방문 즉시 실시간 3D 퍼셉션 씬을 게임처럼 둘러볼 수 있습니다.";
 
 export const metadata = {
   title: {
-    default: "0biglife — 인터랙티브 작업물", // 페이지 제목
+    default: "0biglife — 자율주행 · 데이터 엔지니어링", // 페이지 제목
     template: "%s | 0biglife", // 하위 페이지 제목 패턴
   },
   description: SITE_DESCRIPTION,
@@ -19,15 +19,23 @@ export const metadata = {
   keywords: [
     "0biglife",
     "김민석",
-    "인터랙티브 웹",
-    "웹 디자인",
-    "프론트엔드",
-    "작업물 갤러리",
+    "MINSEOK KIM",
+    "자율주행",
+    "autonomous driving",
+    "퍼셉션",
+    "perception",
+    "센서 데이터",
+    "scene data",
+    "라이다",
+    "LiDAR",
+    "데이터 엔지니어",
+    "data engineer",
+    "3D 시각화",
   ],
   authors: [{ name: "0biglife", url: "https://0biglife.com" }],
   creator: "0biglife",
   openGraph: {
-    title: "0biglife — 인터랙티브 작업물",
+    title: "0biglife — 자율주행 · 데이터 엔지니어링",
     description: SITE_DESCRIPTION,
     url: "https://0biglife.com",
     siteName: "0biglife",
@@ -36,7 +44,7 @@ export const metadata = {
         url: "/favicon.png",
         width: 1200,
         height: 630,
-        alt: "0biglife 인터랙티브 작업물 갤러리",
+        alt: "0biglife — 자율주행 퍼셉션 씬 · 데이터 엔지니어링",
       },
     ],
     locale: "ko_KR",
@@ -44,7 +52,7 @@ export const metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "0biglife — 인터랙티브 작업물",
+    title: "0biglife — 자율주행 · 데이터 엔지니어링",
     description: SITE_DESCRIPTION,
   },
   alternates: {

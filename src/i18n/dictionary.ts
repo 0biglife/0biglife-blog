@@ -46,6 +46,37 @@ const ko = {
   "demo.loadFailed": "데모를 불러올 수 없습니다",
   "code.heading": "코드",
   "code.preparing": "코드 준비 중",
+  // 랜딩 히어로 — 커밋 스카이라인
+  "hero.eyebrow": "0biglife · 커밋 스카이라인",
+  "hero.title": "보이지 않는 것들의 형태",
+  "hero.lead":
+    "기둥 하나가 무언가를 출시한 하루입니다. 대부분은 당신이 열어볼 수 없는 저장소 안에 있고, 여기엔 그 부피만 남았습니다.",
+  "hero.statContrib": "지난 1년 기여",
+  "hero.statPrivate": "그중 비공개",
+  "hero.commits": "커밋",
+  "hero.hover": "하루를 가리켜 보세요",
+  "hero.scroll": "스크롤해서 둘러보기",
+  "hero.ctaWorks": "인터랙티브 작업 보기",
+  // 랜딩 히어로 — 자율주행 퍼셉션 씬
+  "scene.eyebrow": "자율주행 인지 · LIVE",
+  "scene.title": "자율주행이 세상을 보는 방식을 만듭니다",
+  "scene.sub":
+    "라이다·레이더·카메라의 원천 센서 데이터를 실시간 인지 파이프라인으로 잇습니다. 위 화면의 씬은 시뮬레이션이 매 프레임 생성하는 실데이터입니다 — 드래그해 둘러보거나, 직접 운전해 보세요.",
+  "scene.ctaWorks": "작업 보기",
+  "scene.ctaLinkedin": "LinkedIn",
+  "scene.hintOrbit": "드래그 · 궤도   /   스크롤 · 확대",
+  "scene.driveHint": "방향키 또는 WASD로 주행",
+  "scene.take": "직접 운전하기",
+  "scene.exit": "리플레이로 복귀",
+  "scene.hudTitle": "인지 스택",
+  "scene.modeReplay": "리플레이",
+  "scene.modeDrive": "수동 주행",
+  "scene.legendCar": "차량",
+  "scene.legendTruck": "트럭",
+  "scene.legendPed": "보행자",
+  "scene.legendCyc": "자전거",
+  "scene.a11y":
+    "자율주행 인지 씬의 실시간 시각화입니다. 자차를 중심으로 추적된 차량·트럭·보행자·자전거가 3D 바운딩 박스로 표시되고, 계획 경로와 라이다 포인트 클라우드가 함께 렌더링됩니다. 마우스로 시점을 돌리거나 직접 주행할 수 있습니다.",
 } as const;
 
 // ko의 키 집합이 곧 전체 번역 키. en/ja는 이 타입으로 누락/오타가 컴파일 타임에 차단됨.
@@ -84,6 +115,35 @@ const en: Record<TranslationKey, string> = {
   "demo.loadFailed": "Failed to load the demo",
   "code.heading": "Code",
   "code.preparing": "Code coming soon",
+  "hero.eyebrow": "0biglife · commit skyline",
+  "hero.title": "The shape of unseen work",
+  "hero.lead":
+    "Each pillar is a day I shipped something. Most of it lives in repos you'll never open — what's left here is its volume.",
+  "hero.statContrib": "contributions · last year",
+  "hero.statPrivate": "of them private",
+  "hero.commits": "commits",
+  "hero.hover": "point at a day",
+  "hero.scroll": "scroll to explore",
+  "hero.ctaWorks": "See interactive works",
+  "scene.eyebrow": "AUTONOMOUS PERCEPTION · LIVE",
+  "scene.title": "I build the way autonomous machines see the world.",
+  "scene.sub":
+    "Connecting raw lidar, radar and camera data into the perception pipeline behind self-driving. The scene above is live data generated every frame by a simulation — drag to look around, or take the wheel.",
+  "scene.ctaWorks": "See works",
+  "scene.ctaLinkedin": "LinkedIn",
+  "scene.hintOrbit": "drag · orbit   /   scroll · zoom",
+  "scene.driveHint": "drive with arrow keys or WASD",
+  "scene.take": "Take control",
+  "scene.exit": "Back to replay",
+  "scene.hudTitle": "perception stack",
+  "scene.modeReplay": "replay",
+  "scene.modeDrive": "manual",
+  "scene.legendCar": "car",
+  "scene.legendTruck": "truck",
+  "scene.legendPed": "pedestrian",
+  "scene.legendCyc": "cyclist",
+  "scene.a11y":
+    "A live visualization of an autonomous-driving perception scene. Around the ego vehicle, tracked cars, trucks, pedestrians and cyclists are shown as 3D bounding boxes, alongside a planned trajectory and a lidar point cloud. You can orbit the camera or drive the car yourself.",
 };
 
 const ja: Record<TranslationKey, string> = {
@@ -119,6 +179,35 @@ const ja: Record<TranslationKey, string> = {
   "demo.loadFailed": "デモを読み込めませんでした",
   "code.heading": "コード",
   "code.preparing": "コード準備中",
+  "hero.eyebrow": "0biglife · コミットスカイライン",
+  "hero.title": "見えない仕事のかたち",
+  "hero.lead":
+    "柱の一本一本が、何かを世に出した一日です。その多くはあなたが開くことのない非公開リポジトリの中にあり、ここに残るのはその総量だけです。",
+  "hero.statContrib": "直近1年の貢献",
+  "hero.statPrivate": "うち非公開",
+  "hero.commits": "コミット",
+  "hero.hover": "ある日を指してみて",
+  "hero.scroll": "スクロールして見る",
+  "hero.ctaWorks": "インタラクティブ作品を見る",
+  "scene.eyebrow": "自動運転パーセプション · LIVE",
+  "scene.title": "自動運転が世界を見る方法をつくる。",
+  "scene.sub":
+    "ライダー・レーダー・カメラの生データを、リアルタイム認識パイプラインへとつなぐ。上のシーンはシミュレーションが毎フレーム生成するライブデータです — ドラッグして見回すか、自分で運転してみてください。",
+  "scene.ctaWorks": "作品を見る",
+  "scene.ctaLinkedin": "LinkedIn",
+  "scene.hintOrbit": "ドラッグ · 回転   /   スクロール · ズーム",
+  "scene.driveHint": "矢印キーまたはWASDで走行",
+  "scene.take": "自分で運転",
+  "scene.exit": "リプレイに戻る",
+  "scene.hudTitle": "認識スタック",
+  "scene.modeReplay": "リプレイ",
+  "scene.modeDrive": "手動走行",
+  "scene.legendCar": "車両",
+  "scene.legendTruck": "トラック",
+  "scene.legendPed": "歩行者",
+  "scene.legendCyc": "自転車",
+  "scene.a11y":
+    "自動運転の認識シーンをリアルタイムに可視化しています。自車を中心に、追跡された車両・トラック・歩行者・自転車が3Dバウンディングボックスで表示され、計画経路とライダー点群も描画されます。視点を回転させたり、自分で運転したりできます。",
 };
 
 export const dictionary: Record<Lang, Record<TranslationKey, string>> = {
