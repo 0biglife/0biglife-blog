@@ -135,6 +135,12 @@ export default function HeroScene() {
     setMode((m) => (m === "drive" ? "replay" : "drive"));
   }, []);
 
+  const scrollToExperiments = useCallback(() => {
+    document
+      .getElementById("experiments")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
   const container = {
     hidden: {},
     show: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
@@ -273,6 +279,31 @@ export default function HeroScene() {
             pointerEvents="auto"
             flexWrap="wrap"
           >
+            <Box
+              as="button"
+              type="button"
+              onClick={scrollToExperiments}
+              display="inline-flex"
+              alignItems="center"
+              gap={2}
+              px={{ base: 4, md: 5 }}
+              h="42px"
+              borderRadius="4px"
+              bg={ACCENT}
+              color="#06140a"
+              fontFamily={MONO}
+              fontSize="13px"
+              fontWeight={700}
+              letterSpacing="0.02em"
+              transition="transform 0.15s ease, box-shadow 0.2s ease"
+              _hover={{ transform: "translateY(-2px)", boxShadow: "0 10px 30px rgba(201,255,77,0.25)" }}
+              _focusVisible={{ outline: "2px solid", outlineColor: STATUS, outlineOffset: "3px" }}
+            >
+              {t("scene.scrollCue")}
+              <Box as="span" aria-hidden>
+                ↓
+              </Box>
+            </Box>
             {[
               { label: "LinkedIn", href: PROFILE.links.linkedin },
               { label: "GitHub", href: PROFILE.links.github },

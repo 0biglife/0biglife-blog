@@ -77,6 +77,13 @@ const ko = {
   "scene.legendCyc": "자전거",
   "scene.a11y":
     "자율주행 인지 씬의 실시간 시각화입니다. 자차를 중심으로 추적된 차량·트럭·보행자·자전거가 3D 바운딩 박스로 표시되고, 계획 경로와 라이다 포인트 클라우드가 함께 렌더링됩니다. 마우스로 시점을 돌리거나 직접 주행할 수 있습니다.",
+  "scene.scrollCue": "실험 보기",
+  // 실험 섹션
+  "experiments.eyebrow": "실험 · EXPERIMENTS",
+  "experiments.title": "작게 만들어보는 자율주행 실험들",
+  "experiments.subtitle":
+    "인지·센서·계획을 작은 인터랙티브 실험으로 하나씩 풀어봅니다. 카드를 누르면 크게 볼 수 있어요.",
+  "experiments.close": "닫기",
 } as const;
 
 // ko의 키 집합이 곧 전체 번역 키. en/ja는 이 타입으로 누락/오타가 컴파일 타임에 차단됨.
@@ -144,6 +151,12 @@ const en: Record<TranslationKey, string> = {
   "scene.legendCyc": "cyclist",
   "scene.a11y":
     "A live visualization of an autonomous-driving perception scene. Around the ego vehicle, tracked cars, trucks, pedestrians and cyclists are shown as 3D bounding boxes, alongside a planned trajectory and a lidar point cloud. You can orbit the camera or drive the car yourself.",
+  "scene.scrollCue": "experiments",
+  "experiments.eyebrow": "EXPERIMENTS",
+  "experiments.title": "Autonomous-driving experiments, in miniature",
+  "experiments.subtitle":
+    "Perception, sensors and planning, taken apart into small interactive experiments. Click a card to open it larger.",
+  "experiments.close": "Close",
 };
 
 const ja: Record<TranslationKey, string> = {
@@ -208,6 +221,12 @@ const ja: Record<TranslationKey, string> = {
   "scene.legendCyc": "自転車",
   "scene.a11y":
     "自動運転の認識シーンをリアルタイムに可視化しています。自車を中心に、追跡された車両・トラック・歩行者・自転車が3Dバウンディングボックスで表示され、計画経路とライダー点群も描画されます。視点を回転させたり、自分で運転したりできます。",
+  "scene.scrollCue": "実験を見る",
+  "experiments.eyebrow": "実験 · EXPERIMENTS",
+  "experiments.title": "小さくつくる自動運転の実験",
+  "experiments.subtitle":
+    "認識・センサー・計画を、小さなインタラクティブ実験として一つずつ解いてみます。カードを押すと大きく見られます。",
+  "experiments.close": "閉じる",
 };
 
 export const dictionary: Record<Lang, Record<TranslationKey, string>> = {
