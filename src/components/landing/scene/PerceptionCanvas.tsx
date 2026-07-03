@@ -6,14 +6,17 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { SceneQuality } from "./sceneTypes";
 
+export type SceneStats = { fps: number; points: number; frame: number; tracks: number };
+
 type Props = {
   quality: SceneQuality;
-  /** absolute overlay the renderer fills with a few floating object labels */
+  /** absolute overlay the renderer fills with floating object labels */
   labelLayerRef?: RefObject<HTMLDivElement | null>;
+  onStats?: (s: SceneStats) => void;
 };
 
 const BG = 0x01030a;
-const BOX = "#e8a53a"; // orange bounding boxes
+const BOX = "#f0a63a"; // orange bounding boxes
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
 /** classic jet colormap (blue→cyan→green→yellow→red), t in [0,1] */
@@ -21,27 +24,25 @@ function jet(t: number, out: Float32Array, i: number) {
   const r = clamp(1.5 - Math.abs(4 * t - 3), 0, 1);
   const g = clamp(1.5 - Math.abs(4 * t - 2), 0, 1);
   const b = clamp(1.5 - Math.abs(4 * t - 1), 0, 1);
-  // lift the low end so the near-field reads as deep indigo, not black
   out[i] = r * 0.95 + 0.02;
   out[i + 1] = g * 0.95 + 0.02;
   out[i + 2] = b * 0.95 + 0.06;
 }
 
-const MAX_RANGE = 58; // color/normalize range
+const MAX_RANGE = 58;
+const LABELS = 9;
 
-function PerceptionCanvas({ quality, labelLayerRef }: Props) {
+function PerceptionCanvas({ quality, labelLayerRef, onStats }: Props) {
   const mountRef = useRef<HTMLDivElement>(null);
+  const onStatsRef = useRef(onStats);
+  onStatsRef.current = onStats;
 
   useEffect(() => {
     const mount = mountRef.current;
     if (!mount) return;
 
-    const reduceMotion =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const coarse =
-      typeof window !== "undefined" &&
-      window.matchMedia("(pointer: coarse)").matches;
+    const reduceMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
 
     let renderer: THREE.WebGLRenderer;
     try {
@@ -70,7 +71,7 @@ function PerceptionCanvas({ quality, labelLayerRef }: Props) {
       return o;
     };
 
-    /* ---- object boxes (parked cars) — orange wireframe + surface returns -- */
+    /* ---- objects (parked cars) — class, confidence, box ---------------- */
     interface Obj {
       x: number;
       z: number;
@@ -78,86 +79,96 @@ function PerceptionCanvas({ quality, labelLayerRef }: Props) {
       l: number;
       h: number;
       yaw: number;
+      cls: string;
+      conf: number;
     }
     const objs: Obj[] = [];
-    // rows of parked cars on the left (like the reference)
     for (let row = 0; row < 3; row++) {
       const bx = -8 - row * 4.2;
       for (let k = 0; k < 5; k++) {
-        objs.push({ x: bx + (Math.random() - 0.5) * 0.4, z: -12 + k * 6.5 + (Math.random() - 0.5) * 0.6, w: 1.9, l: 4.5, h: 1.5, yaw: (Math.random() - 0.5) * 0.05 });
+        objs.push({ x: bx + (Math.random() - 0.5) * 0.4, z: -12 + k * 6.5 + (Math.random() - 0.5) * 0.6, w: 1.9, l: 4.5, h: 1.5, yaw: (Math.random() - 0.5) * 0.05, cls: "car", conf: 0.9 + Math.random() * 0.09 });
       }
     }
-    // a few scattered vehicles elsewhere
-    const scatter: Obj[] = [
-      { x: 9, z: -6, w: 1.9, l: 4.6, h: 1.5, yaw: 0.02 },
-      { x: 12.5, z: 8, w: 2.4, l: 8.5, h: 3.1, yaw: -0.03 }, // truck
-      { x: 6.5, z: 20, w: 1.9, l: 4.5, h: 1.5, yaw: 0.0 },
-      { x: -4, z: 26, w: 1.9, l: 4.5, h: 1.5, yaw: 0.4 },
+    const scatter: Omit<Obj, "conf">[] = [
+      { x: 9, z: -6, w: 1.9, l: 4.6, h: 1.5, yaw: 0.02, cls: "car" },
+      { x: 12.5, z: 8, w: 2.4, l: 8.5, h: 3.1, yaw: -0.03, cls: "truck" },
+      { x: 6.5, z: 20, w: 1.9, l: 4.5, h: 1.5, yaw: 0.0, cls: "car" },
+      { x: -4, z: 26, w: 1.9, l: 4.5, h: 1.5, yaw: 0.4, cls: "car" },
     ];
-    for (const s of scatter) objs.push(s);
-    const nBoxes = objs.length;
+    for (const s of scatter) objs.push({ ...s, conf: 0.85 + Math.random() * 0.13 });
 
-    // one merged LineSegments for all box edges
-    const edgeCorners = (o: Obj): THREE.Vector3[] => {
+    // merged box edges + heading ticks
+    const boxPts: THREE.Vector3[] = [];
+    for (const o of objs) {
       const hw = o.w / 2;
       const hl = o.l / 2;
       const c = Math.cos(o.yaw);
       const s = Math.sin(o.yaw);
-      const pts: [number, number, number][] = [];
-      const corner = (sx: number, sz: number, y: number): [number, number, number] => {
+      const P = (sx: number, sz: number, y: number) => {
         const lx = sx * hw;
         const lz = sz * hl;
-        return [o.x + lx * c - lz * s, y, o.z + lx * s + lz * c];
+        return new THREE.Vector3(o.x + lx * c - lz * s, y, o.z + lx * s + lz * c);
       };
-      const b = [corner(-1, -1, 0), corner(1, -1, 0), corner(1, 1, 0), corner(-1, 1, 0)];
-      const t = [corner(-1, -1, o.h), corner(1, -1, o.h), corner(1, 1, o.h), corner(-1, 1, o.h)];
-      const seg = (a: [number, number, number], d: [number, number, number]) => {
-        pts.push(a as unknown as [number, number, number]);
-        pts.push(d as unknown as [number, number, number]);
-      };
+      const b = [P(-1, -1, 0), P(1, -1, 0), P(1, 1, 0), P(-1, 1, 0)];
+      const tp = [P(-1, -1, o.h), P(1, -1, o.h), P(1, 1, o.h), P(-1, 1, o.h)];
       for (let i = 0; i < 4; i++) {
-        seg(b[i], b[(i + 1) % 4]);
-        seg(t[i], t[(i + 1) % 4]);
-        seg(b[i], t[i]);
+        boxPts.push(b[i], b[(i + 1) % 4], tp[i], tp[(i + 1) % 4], b[i], tp[i]);
       }
-      return pts.map((p) => new THREE.Vector3(p[0], p[1], p[2]));
-    };
-    const boxPts: THREE.Vector3[] = [];
-    for (let i = 0; i < nBoxes; i++) boxPts.push(...edgeCorners(objs[i]));
+      // heading tick — center to front face
+      boxPts.push(P(0, 0, o.h * 0.5), P(0, 1.4, o.h * 0.5));
+    }
     const boxGeo = track(new THREE.BufferGeometry().setFromPoints(boxPts));
-    const boxMat = track(new THREE.LineBasicMaterial({ color: new THREE.Color(BOX), transparent: true, opacity: 0.9 }));
+    const boxMat = track(new THREE.LineBasicMaterial({ color: new THREE.Color(BOX), transparent: true, opacity: 0.92 }));
     scene.add(new THREE.LineSegments(boxGeo, boxMat));
 
-    /* ---- the lidar point cloud (static, ego-local) ---------------------- */
+    /* ---- range reference rings (like RViz) ----------------------------- */
+    const ringMat = track(new THREE.LineBasicMaterial({ color: 0x2b4a63, transparent: true, opacity: 0.22 }));
+    for (const r of [10, 20, 30, 40, 50]) {
+      const pts: THREE.Vector3[] = [];
+      for (let i = 0; i <= 100; i++) {
+        const a = (i / 100) * Math.PI * 2;
+        pts.push(new THREE.Vector3(Math.cos(a) * r, 0.02, Math.sin(a) * r));
+      }
+      scene.add(new THREE.Line(track(new THREE.BufferGeometry().setFromPoints(pts)), ringMat));
+    }
+
+    /* ---- axes gizmo at the origin -------------------------------------- */
+    const axLen = 2.4;
+    const axPts = [
+      new THREE.Vector3(0, 0.05, 0), new THREE.Vector3(axLen, 0.05, 0),
+      new THREE.Vector3(0, 0.05, 0), new THREE.Vector3(0, axLen, 0),
+      new THREE.Vector3(0, 0.05, 0), new THREE.Vector3(0, 0.05, axLen),
+    ];
+    const axCol = [1, 0.25, 0.25, 1, 0.25, 0.25, 0.35, 1, 0.4, 0.35, 1, 0.4, 0.4, 0.6, 1, 0.4, 0.6, 1];
+    const axGeo = track(new THREE.BufferGeometry());
+    axGeo.setAttribute("position", new THREE.Float32BufferAttribute(axPts.flatMap((p) => [p.x, p.y, p.z]), 3));
+    axGeo.setAttribute("color", new THREE.Float32BufferAttribute(axCol, 3));
+    scene.add(new THREE.LineSegments(axGeo, track(new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.8 }))));
+
+    /* ---- the lidar point cloud (static, ego-local) --------------------- */
     const MAXP = quality.lidarPoints;
     const pos = new Float32Array(MAXP * 3);
     const col = new Float32Array(MAXP * 3);
-    const pha = new Float32Array(MAXP); // per-point twinkle phase
+    const pha = new Float32Array(MAXP);
     let p = 0;
     const push = (x: number, y: number, z: number) => {
-      if (p >= MAXP) return false;
+      if (p >= MAXP) return;
       pos[p * 3] = x;
       pos[p * 3 + 1] = y;
       pos[p * 3 + 2] = z;
       const rng = Math.sqrt(x * x + z * z);
-      // range drives the color; a little height mixed in so verticals pop warm
       const t = clamp((rng * 0.9 + y * 1.15) / MAX_RANGE, 0, 1);
       jet(t, col, p * 3);
       pha[p] = Math.random() * 6.283;
       p++;
-      return true;
     };
-
-    // shadow wedge behind the ego (lidar occlusion), like image #2
-    const shadowDir = -Math.PI / 2; // -z
+    const shadowDir = -Math.PI / 2;
     const inShadow = (x: number, z: number) => {
       const a = Math.atan2(x, z);
       const d = Math.abs(((a - shadowDir + Math.PI) % (2 * Math.PI)) - Math.PI);
       const rng = Math.hypot(x, z);
       return d < 0.28 && rng > 3 && rng < 16;
     };
-
-    // 1) concentric ground rings — dense near, spreading out with range
     const groundBudget = Math.floor(MAXP * 0.6);
     {
       let r = 2.4;
@@ -173,19 +184,16 @@ function PerceptionCanvas({ quality, labelLayerRef }: Props) {
           push(x, (Math.random() - 0.5) * 0.06, z);
         }
         r += step;
-        step *= 1.045; // rings spread with distance
+        step *= 1.045;
       }
     }
-
-    // 2) background structures — buildings (point walls) + trees (far → warm)
     const structBudget = Math.floor(MAXP * 0.82);
     {
-      // building faces along the back and sides
       const walls = [
-        { x0: -34, z0: 26, x1: 30, z1: 34, h: 12 }, // back row
-        { x0: -40, z0: -22, x1: -40, z1: 30, h: 9 }, // left
-        { x0: 40, z0: -18, x1: 42, z1: 34, h: 10 }, // right
-        { x0: -24, z0: -30, x1: 22, z1: -30, h: 7 }, // front-ish
+        { x0: -34, z0: 26, x1: 30, z1: 34, h: 12 },
+        { x0: -40, z0: -22, x1: -40, z1: 30, h: 9 },
+        { x0: 40, z0: -18, x1: 42, z1: 34, h: 10 },
+        { x0: -24, z0: -30, x1: 22, z1: -30, h: 7 },
       ];
       for (const w of walls) {
         const len = Math.hypot(w.x1 - w.x0, w.z1 - w.z0);
@@ -195,12 +203,9 @@ function PerceptionCanvas({ quality, labelLayerRef }: Props) {
           const bx = w.x0 + (w.x1 - w.x0) * f + (Math.random() - 0.5) * 1.2;
           const bz = w.z0 + (w.z1 - w.z0) * f + (Math.random() - 0.5) * 1.2;
           const rows = 10 + Math.floor(Math.random() * 8);
-          for (let j = 0; j < rows && p < structBudget; j++) {
-            push(bx, 0.2 + (j / rows) * w.h * (0.6 + Math.random() * 0.5), bz);
-          }
+          for (let j = 0; j < rows && p < structBudget; j++) push(bx, 0.2 + (j / rows) * w.h * (0.6 + Math.random() * 0.5), bz);
         }
       }
-      // scattered trees / poles
       for (let i = 0; i < 60 && p < structBudget; i++) {
         const a = Math.random() * Math.PI * 2;
         const rr = 18 + Math.random() * 30;
@@ -208,54 +213,41 @@ function PerceptionCanvas({ quality, labelLayerRef }: Props) {
         const bz = Math.cos(a) * rr;
         const clump = 20 + Math.floor(Math.random() * 40);
         const th = 2 + Math.random() * 5;
-        for (let j = 0; j < clump && p < structBudget; j++) {
-          push(bx + (Math.random() - 0.5) * 1.6, Math.random() * th, bz + (Math.random() - 0.5) * 1.6);
+        for (let j = 0; j < clump && p < structBudget; j++) push(bx + (Math.random() - 0.5) * 1.6, Math.random() * th, bz + (Math.random() - 0.5) * 1.6);
+      }
+    }
+    for (const o of objs) {
+      if (p >= MAXP) break;
+      const rng = Math.hypot(o.x, o.z);
+      const density = clamp(1 - rng / MAX_RANGE, 0.25, 1);
+      const c = Math.cos(o.yaw);
+      const s = Math.sin(o.yaw);
+      const nx = o.x >= 0 ? -1 : 1;
+      const nz = o.z >= 0 ? -1 : 1;
+      for (let y = 0.05; y < o.h && p < MAXP; y += 0.16) {
+        const across = Math.max(3, Math.floor((o.w / 0.14) * density));
+        for (let k = 0; k <= across && p < MAXP; k++) {
+          const lx = (-0.5 + k / across) * o.w;
+          const lz = nz * (o.l / 2);
+          push(o.x + lx * c - lz * s + (Math.random() - 0.5) * 0.04, y, o.z + lx * s + lz * c + (Math.random() - 0.5) * 0.04);
+        }
+        const along = Math.max(4, Math.floor((o.l / 0.16) * density));
+        for (let k = 0; k <= along && p < MAXP; k++) {
+          const lx = nx * (o.w / 2);
+          const lz = (-0.5 + k / along) * o.l;
+          push(o.x + lx * c - lz * s + (Math.random() - 0.5) * 0.04, y, o.z + lx * s + lz * c + (Math.random() - 0.5) * 0.04);
         }
       }
     }
-
-    // 3) object-surface returns (points on the parked cars) — fills to MAXP
-    {
-      for (const o of objs) {
-        if (p >= MAXP) break;
-        const rng = Math.hypot(o.x, o.z);
-        const density = clamp(1 - rng / MAX_RANGE, 0.25, 1);
-        const c = Math.cos(o.yaw);
-        const s = Math.sin(o.yaw);
-        const nx = o.x >= 0 ? -1 : 1;
-        const nz = o.z >= 0 ? -1 : 1;
-        for (let y = 0.05; y < o.h && p < MAXP; y += 0.16) {
-          const across = Math.max(3, Math.floor((o.w / 0.14) * density));
-          for (let k = 0; k <= across && p < MAXP; k++) {
-            const lx = (-0.5 + k / across) * o.w;
-            const lz = nz * (o.l / 2);
-            push(o.x + lx * c - lz * s + (Math.random() - 0.5) * 0.04, y, o.z + lx * s + lz * c + (Math.random() - 0.5) * 0.04);
-          }
-          const along = Math.max(4, Math.floor((o.l / 0.16) * density));
-          for (let k = 0; k <= along && p < MAXP; k++) {
-            const lx = nx * (o.w / 2);
-            const lz = (-0.5 + k / along) * o.l;
-            push(o.x + lx * c - lz * s + (Math.random() - 0.5) * 0.04, y, o.z + lx * s + lz * c + (Math.random() - 0.5) * 0.04);
-          }
-        }
-      }
-    }
-
     const pointCount = p;
     const lidarGeo = track(new THREE.BufferGeometry());
     lidarGeo.setAttribute("position", new THREE.BufferAttribute(pos.subarray(0, pointCount * 3), 3));
     lidarGeo.setAttribute("aColor", new THREE.BufferAttribute(col.subarray(0, pointCount * 3), 3));
     lidarGeo.setAttribute("aPhase", new THREE.BufferAttribute(pha.subarray(0, pointCount), 1));
     lidarGeo.boundingSphere = new THREE.Sphere(new THREE.Vector3(), MAX_RANGE * 1.6);
-
     const lidarMat = track(
       new THREE.ShaderMaterial({
-        uniforms: {
-          uSweep: { value: 0 },
-          uTime: { value: 0 },
-          uSize: { value: 1.75 },
-          uDpr: { value: dpr },
-        },
+        uniforms: { uSweep: { value: 0 }, uTime: { value: 0 }, uSize: { value: 1.75 }, uDpr: { value: dpr } },
         depthTest: true,
         depthWrite: true,
         vertexShader: `
@@ -266,8 +258,7 @@ function PerceptionCanvas({ quality, labelLayerRef }: Props) {
             vec4 mv = modelViewMatrix * vec4(position, 1.0);
             gl_Position = projectionMatrix * mv;
             float ang = atan(position.x, position.z);
-            // fresh-scan beam + fading trail behind it (spinning lidar)
-            float behind = mod(uSweep - ang, 6.2831853) / 6.2831853; // 0 just-scanned .. 1 about-to-scan
+            float behind = mod(uSweep - ang, 6.2831853) / 6.2831853;
             float beam = smoothstep(0.45, 0.0, min(behind, 1.0 - behind) * 6.2831853);
             float trail = pow(1.0 - behind, 2.5);
             float tw = 0.05 * sin(uTime * 2.5 + aPhase);
@@ -309,9 +300,9 @@ function PerceptionCanvas({ quality, labelLayerRef }: Props) {
       ego.add(w);
     }
     scene.add(new THREE.AmbientLight(0x8899bb, 0.9));
-    const key = new THREE.DirectionalLight(0xffffff, 1.1);
-    key.position.set(6, 14, 8);
-    scene.add(key);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.1);
+    keyLight.position.set(6, 14, 8);
+    scene.add(keyLight);
 
     /* ---- controls ------------------------------------------------------- */
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -320,7 +311,7 @@ function PerceptionCanvas({ quality, labelLayerRef }: Props) {
     controls.enablePan = false;
     controls.minDistance = 10;
     controls.maxDistance = 70;
-    controls.minPolarAngle = 0.05; // allow near-top-down (image #2)
+    controls.minPolarAngle = 0.05;
     controls.maxPolarAngle = 1.42;
     controls.autoRotate = !reduceMotion;
     controls.autoRotateSpeed = 0.4;
@@ -331,22 +322,85 @@ function PerceptionCanvas({ quality, labelLayerRef }: Props) {
       renderer.domElement.style.touchAction = "pan-y";
     }
 
+    /* ---- floating object labels (DOM) ---------------------------------- */
+    const labelLayer = labelLayerRef?.current ?? null;
+    const labelEls: HTMLDivElement[] = [];
+    if (labelLayer) {
+      for (let i = 0; i < LABELS; i++) {
+        const el = document.createElement("div");
+        el.style.cssText =
+          "position:absolute;left:0;top:0;transform:translate(-9999px,-9999px);" +
+          "font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;letter-spacing:0.02em;" +
+          "white-space:nowrap;pointer-events:none;opacity:0;padding:1px 5px;border-radius:3px;" +
+          "background:rgba(4,7,12,0.72);border:1px solid rgba(240,166,58,0.5);color:#f0a63a;" +
+          "transition:opacity 0.15s ease;will-change:transform;";
+        labelLayer.appendChild(el);
+        labelEls.push(el);
+      }
+    }
+    const proj = new THREE.Vector3();
+    const nearList: { o: Obj; d: number }[] = [];
+
     /* ---- run loop ------------------------------------------------------- */
     let raf = 0;
     let running = true;
     let last = -1;
     let sweep = 0;
+    let frameId = 0;
+    let fpsAcc = 0;
+    let fpsFrames = 0;
+    let statAcc = 0;
     const frame = (now: number) => {
       if (!running) return;
       raf = requestAnimationFrame(frame);
       if (last < 0) last = now;
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
+      frameId++;
       if (!reduceMotion) sweep = (sweep + dt * 2.6) % (Math.PI * 2);
       lidarMat.uniforms.uSweep.value = sweep;
       lidarMat.uniforms.uTime.value = (now / 1000) % 10000;
       controls.update();
       renderer.render(scene, camera);
+
+      // object labels — nearest N
+      if (labelEls.length) {
+        const W = mount.clientWidth;
+        const H = mount.clientHeight;
+        nearList.length = 0;
+        for (const o of objs) nearList.push({ o, d: Math.hypot(o.x, o.z) });
+        nearList.sort((a, b) => a.d - b.d);
+        for (let i = 0; i < labelEls.length; i++) {
+          const el = labelEls[i];
+          const item = nearList[i];
+          if (!item) {
+            el.style.opacity = "0";
+            continue;
+          }
+          proj.set(item.o.x, item.o.h + 0.5, item.o.z).project(camera);
+          if (proj.z > 1) {
+            el.style.opacity = "0";
+            continue;
+          }
+          const sx = (proj.x * 0.5 + 0.5) * W;
+          const sy = (-proj.y * 0.5 + 0.5) * H;
+          el.style.transform = `translate(${sx.toFixed(1)}px, ${sy.toFixed(1)}px) translate(-50%, -100%)`;
+          el.textContent = `${item.o.cls} · ${item.d.toFixed(1)}m · ${item.o.conf.toFixed(2)}`;
+          el.style.opacity = "0.92";
+        }
+      }
+
+      // stats ~3Hz
+      fpsAcc += dt;
+      fpsFrames++;
+      statAcc += dt;
+      if (statAcc > 0.33) {
+        const fps = fpsFrames / fpsAcc;
+        fpsAcc = 0;
+        fpsFrames = 0;
+        statAcc = 0;
+        onStatsRef.current?.({ fps: Math.round(fps), points: pointCount, frame: frameId, tracks: objs.length });
+      }
     };
     raf = requestAnimationFrame(frame);
 
@@ -359,7 +413,6 @@ function PerceptionCanvas({ quality, labelLayerRef }: Props) {
     };
     const ro = new ResizeObserver(resize);
     ro.observe(mount);
-
     const setRunning = (n: boolean) => {
       if (n === running) return;
       running = n;
@@ -380,15 +433,12 @@ function PerceptionCanvas({ quality, labelLayerRef }: Props) {
       io.disconnect();
       document.removeEventListener("visibilitychange", onVis);
       controls.dispose();
+      for (const el of labelEls) el.remove();
       for (const d of disposables) d.dispose();
       renderer.dispose();
       if (renderer.domElement.parentNode === mount) mount.removeChild(renderer.domElement);
     };
-    // labelLayerRef reserved for future object labels
-  }, [quality]);
-
-  // keep the prop referenced without affecting the effect
-  void labelLayerRef;
+  }, [quality, labelLayerRef]);
 
   return <div ref={mountRef} aria-hidden="true" style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />;
 }

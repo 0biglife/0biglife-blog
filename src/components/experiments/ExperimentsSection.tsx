@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState, type MouseEvent as ReactMouseEvent } from "react";
 import { Box, Flex, Grid, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
-import { useLanguage } from "@/i18n/LanguageProvider";
 import ExperimentCanvas from "./ExperimentCanvas";
 import { EXPERIMENTS, type Experiment } from "./data";
 
@@ -93,7 +92,6 @@ function Card({ exp, onOpen }: { exp: Experiment; onOpen: (e: Experiment) => voi
 }
 
 function Modal({ exp, onClose }: { exp: Experiment; onClose: () => void }) {
-  const { t } = useLanguage();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -137,7 +135,7 @@ function Modal({ exp, onClose }: { exp: Experiment; onClose: () => void }) {
             as="button"
             type="button"
             onClick={onClose}
-            aria-label={t("experiments.close")}
+            aria-label="Close"
             position="absolute"
             top={3}
             right={3}
@@ -178,7 +176,6 @@ function Modal({ exp, onClose }: { exp: Experiment; onClose: () => void }) {
 }
 
 export default function ExperimentsSection() {
-  const { t } = useLanguage();
   const [open, setOpen] = useState<Experiment | null>(null);
   const onOpen = useCallback((e: Experiment) => setOpen(e), []);
   const onClose = useCallback(() => setOpen(null), []);
@@ -215,7 +212,7 @@ export default function ExperimentsSection() {
             textTransform="uppercase"
             color="whiteAlpha.500"
           >
-            {t("experiments.eyebrow")}
+            Experiments
           </Text>
           <Text
             as="h2"
@@ -227,10 +224,10 @@ export default function ExperimentsSection() {
             fontSize={{ base: "1.9rem", md: "2.6rem" }}
             sx={{ wordBreak: "keep-all" }}
           >
-            {t("experiments.title")}
+            Autonomous-driving experiments, in miniature
           </Text>
           <Text mt={4} fontSize={{ base: "14px", md: "15.5px" }} lineHeight={1.7} color="whiteAlpha.650" sx={{ wordBreak: "keep-all" }}>
-            {t("experiments.subtitle")}
+            Perception, sensors and planning, taken apart into small interactive experiments. Click a card to open it larger.
           </Text>
         </MotionBox>
 
