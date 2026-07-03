@@ -13,7 +13,6 @@ export const LANGS: ReadonlyArray<{ code: Lang; label: string }> = [
 ];
 
 const ko = {
-  "nav.works": "Works",
   "nav.log": "Log",
   "home.featured": "Recently Featured",
   "home.devLogs": "Dev Logs",
@@ -31,21 +30,7 @@ const ko = {
   "notFound.helpAfter": "로 이메일로 요청해주세요.",
   "notFound.home": "홈으로 돌아가기",
   "footer.rights": "© 2025. 0biglife all rights reserved.",
-  // works 갤러리 / 상세
-  "works.tagAll": "전체",
-  "works.subtitle": "브라우저에서 바로 실행되는 인터랙티브 실험들.",
-  "works.countSuffix": "개의 작업물", // `${n}${suffix}` 형태로 사용
-  "works.noResults": "결과 없음",
-  "works.empty": "아직 작업물이 없습니다.",
-  "works.emptyTag": "해당 태그의 작업물이 없습니다.",
-  "workActions.download": "ZIP 다운로드",
-  "workActions.share": "공유",
-  "workActions.shareCopied": "링크가 복사되었습니다",
-  "workActions.shareFailed": "공유에 실패했습니다",
-  "workCard.previewSuffix": " 미리보기", // `${title}${suffix}` 형태로 사용
-  "demo.loadFailed": "데모를 불러올 수 없습니다",
   "code.heading": "코드",
-  "code.preparing": "코드 준비 중",
   // 랜딩 히어로 — 커밋 스카이라인
   "hero.eyebrow": "0biglife · 커밋 스카이라인",
   "hero.title": "보이지 않는 것들의 형태",
@@ -90,7 +75,6 @@ const ko = {
 export type TranslationKey = keyof typeof ko;
 
 const en: Record<TranslationKey, string> = {
-  "nav.works": "Works",
   "nav.log": "Log",
   "home.featured": "Recently Featured",
   "home.devLogs": "Dev Logs",
@@ -108,20 +92,7 @@ const en: Record<TranslationKey, string> = {
   "notFound.helpAfter": "and let me know.",
   "notFound.home": "Back to home",
   "footer.rights": "© 2025. 0biglife all rights reserved.",
-  "works.tagAll": "All",
-  "works.subtitle": "Interactive experiments that run right in the browser.",
-  "works.countSuffix": " works",
-  "works.noResults": "No results",
-  "works.empty": "No works yet.",
-  "works.emptyTag": "No works for this tag.",
-  "workActions.download": "Download ZIP",
-  "workActions.share": "Share",
-  "workActions.shareCopied": "Link copied",
-  "workActions.shareFailed": "Sharing failed",
-  "workCard.previewSuffix": " preview",
-  "demo.loadFailed": "Failed to load the demo",
   "code.heading": "Code",
-  "code.preparing": "Code coming soon",
   "hero.eyebrow": "0biglife · commit skyline",
   "hero.title": "The shape of unseen work",
   "hero.lead":
@@ -160,7 +131,6 @@ const en: Record<TranslationKey, string> = {
 };
 
 const ja: Record<TranslationKey, string> = {
-  "nav.works": "Works",
   "nav.log": "Log",
   "home.featured": "最近のおすすめ",
   "home.devLogs": "開発ログ",
@@ -178,20 +148,7 @@ const ja: Record<TranslationKey, string> = {
   "notFound.helpAfter": "までメールでお知らせください。",
   "notFound.home": "ホームに戻る",
   "footer.rights": "© 2025. 0biglife all rights reserved.",
-  "works.tagAll": "すべて",
-  "works.subtitle": "ブラウザ上でそのまま動くインタラクティブな実験。",
-  "works.countSuffix": "件の作品",
-  "works.noResults": "結果なし",
-  "works.empty": "作品がまだありません。",
-  "works.emptyTag": "このタグの作品はありません。",
-  "workActions.download": "ZIPをダウンロード",
-  "workActions.share": "共有",
-  "workActions.shareCopied": "リンクをコピーしました",
-  "workActions.shareFailed": "共有に失敗しました",
-  "workCard.previewSuffix": " プレビュー",
-  "demo.loadFailed": "デモを読み込めませんでした",
   "code.heading": "コード",
-  "code.preparing": "コード準備中",
   "hero.eyebrow": "0biglife · コミットスカイライン",
   "hero.title": "見えない仕事のかたち",
   "hero.lead":

@@ -430,8 +430,8 @@ function PerceptionCanvas({
     controls.target.set(0, 1.2, 9);
 
     // On touch devices OrbitControls forces `touch-action: none`, which traps
-    // one-finger vertical swipes and stops visitors scrolling down to the works
-    // gallery. Give the page its scroll back: drop touch rotate/zoom (the scene
+    // one-finger vertical swipes and stops visitors scrolling down to the
+    // experiments section. Give the page its scroll back: drop touch rotate/zoom (the scene
     // still auto-rotates, and "take control" still drives), keep mouse orbit.
     const coarsePointer =
       typeof window !== "undefined" &&
