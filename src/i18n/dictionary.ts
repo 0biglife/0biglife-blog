@@ -44,9 +44,9 @@ const ko = {
   "hero.ctaWorks": "인터랙티브 작업 보기",
   // 랜딩 히어로 — 자율주행 퍼셉션 씬
   "scene.eyebrow": "자율주행 인지 · LIVE",
-  "scene.title": "자율주행이 세상을 보는 방식을 만듭니다",
+  "scene.title": "자율주행의 데이터를 다룹니다",
   "scene.sub":
-    "라이다·레이더·카메라의 원천 센서 데이터를 실시간 인지 파이프라인으로 잇습니다. 위 화면의 씬은 시뮬레이션이 매 프레임 생성하는 실데이터입니다 — 드래그해 둘러보거나, 직접 운전해 보세요.",
+    "센서·주행 로그를 쓸 만한 데이터로 만들고, 사람들이 들여다보는 화면을 짓는 데이터 엔지니어예요. 위 화면은 그 데이터를 눈으로 본 모습이고요 — 드래그해서 돌려볼 수 있어요.",
   "scene.ctaWorks": "작업 보기",
   "scene.ctaLinkedin": "LinkedIn",
   "scene.hintOrbit": "드래그 · 궤도   /   스크롤 · 확대",
@@ -61,7 +61,7 @@ const ko = {
   "scene.legendPed": "보행자",
   "scene.legendCyc": "자전거",
   "scene.a11y":
-    "자율주행 인지 씬의 실시간 시각화입니다. 자차를 중심으로 추적된 차량·트럭·보행자·자전거가 3D 바운딩 박스로 표시되고, 계획 경로와 라이다 포인트 클라우드가 함께 렌더링됩니다. 마우스로 시점을 돌리거나 직접 주행할 수 있습니다.",
+    "자율주행 라이다 포인트 클라우드 뷰어입니다. 자차를 중심으로 스캔 링과 주변 물체(주황 바운딩 박스)가 실시간으로 표시되고, 오른쪽에는 속도·조향·가속도·인지 지연 같은 차량 텔레메트리 그래프가 실시간으로 그려집니다. 드래그로 시점을 돌릴 수 있습니다.",
   "scene.scrollCue": "실험 보기",
   // 실험 섹션
   "experiments.eyebrow": "실험 · EXPERIMENTS",
@@ -104,9 +104,9 @@ const en: Record<TranslationKey, string> = {
   "hero.scroll": "scroll to explore",
   "hero.ctaWorks": "See interactive works",
   "scene.eyebrow": "AUTONOMOUS PERCEPTION · LIVE",
-  "scene.title": "I build the way autonomous machines see the world.",
+  "scene.title": "I work with autonomous-driving data.",
   "scene.sub":
-    "Connecting raw lidar, radar and camera data into the perception pipeline behind self-driving. The scene above is live data generated every frame by a simulation — drag to look around, or take the wheel.",
+    "A data engineer turning sensor and driving logs into usable data — and building the screens people look at. Above is what that data looks like. Drag to look around.",
   "scene.ctaWorks": "See works",
   "scene.ctaLinkedin": "LinkedIn",
   "scene.hintOrbit": "drag · orbit   /   scroll · zoom",
@@ -121,7 +121,7 @@ const en: Record<TranslationKey, string> = {
   "scene.legendPed": "pedestrian",
   "scene.legendCyc": "cyclist",
   "scene.a11y":
-    "A live visualization of an autonomous-driving perception scene. Around the ego vehicle, tracked cars, trucks, pedestrians and cyclists are shown as 3D bounding boxes, alongside a planned trajectory and a lidar point cloud. You can orbit the camera or drive the car yourself.",
+    "An autonomous-driving lidar point-cloud viewer. Concentric scan rings and surrounding objects (orange bounding boxes) render live around the ego vehicle, with real-time vehicle telemetry — velocity, steering, acceleration and perception latency — graphed on the right. Drag to orbit the view.",
   "scene.scrollCue": "experiments",
   "experiments.eyebrow": "EXPERIMENTS",
   "experiments.title": "Autonomous-driving experiments, in miniature",
@@ -160,9 +160,9 @@ const ja: Record<TranslationKey, string> = {
   "hero.scroll": "スクロールして見る",
   "hero.ctaWorks": "インタラクティブ作品を見る",
   "scene.eyebrow": "自動運転パーセプション · LIVE",
-  "scene.title": "自動運転が世界を見る方法をつくる。",
+  "scene.title": "自動運転のデータを扱います。",
   "scene.sub":
-    "ライダー・レーダー・カメラの生データを、リアルタイム認識パイプラインへとつなぐ。上のシーンはシミュレーションが毎フレーム生成するライブデータです — ドラッグして見回すか、自分で運転してみてください。",
+    "センサーや走行ログを使えるデータに整え、人が見る画面をつくるデータエンジニアです。上はそのデータを可視化したもの — ドラッグして見回せます。",
   "scene.ctaWorks": "作品を見る",
   "scene.ctaLinkedin": "LinkedIn",
   "scene.hintOrbit": "ドラッグ · 回転   /   スクロール · ズーム",
@@ -177,7 +177,7 @@ const ja: Record<TranslationKey, string> = {
   "scene.legendPed": "歩行者",
   "scene.legendCyc": "自転車",
   "scene.a11y":
-    "自動運転の認識シーンをリアルタイムに可視化しています。自車を中心に、追跡された車両・トラック・歩行者・自転車が3Dバウンディングボックスで表示され、計画経路とライダー点群も描画されます。視点を回転させたり、自分で運転したりできます。",
+    "自動運転のライダー点群ビューアです。自車を中心にスキャンリングと周囲の物体（オレンジのバウンディングボックス）がリアルタイムに表示され、右側には速度・操舵・加速度・認識遅延などの車両テレメトリがリアルタイムに描画されます。ドラッグで視点を回転できます。",
   "scene.scrollCue": "実験を見る",
   "experiments.eyebrow": "実験 · EXPERIMENTS",
   "experiments.title": "小さくつくる自動運転の実験",
