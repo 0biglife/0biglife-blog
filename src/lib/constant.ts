@@ -7,7 +7,7 @@ export const BLOG_URL = "https://0biglife.com";
 // Profile (Log 페이지 프로필 카드)
 export const PROFILE = {
   name: "MINSEOK (Daniel) KIM",
-  title: "AI Data Engineer",
+  title: "Autonomous-Driving Data Engineer",
   avatar: "/assets/profile.webp",
   links: {
     linkedin: "https://www.linkedin.com/in/0biglife/",

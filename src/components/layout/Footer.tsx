@@ -4,6 +4,7 @@ import { Box, Text, HStack, Link, Icon, Tooltip } from "@chakra-ui/react";
 import { FaLinkedin, FaGoogle, FaGithub } from "react-icons/fa";
 import { SiTistory } from "react-icons/si";
 import { useLanguage } from "@/i18n/LanguageProvider";
+import { BLOG_EMAIL } from "@/lib/constant";
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -46,7 +47,7 @@ export default function Footer() {
         >
           <Link
             aria-label="gmail"
-            href="mailto:your-email@example.com?subject=Hello&body=..."
+            href={`mailto:${BLOG_EMAIL}`}
             _hover={{ color: "red.500" }}
           >
             <Icon as={FaGoogle} boxSize={5} />
@@ -87,7 +88,9 @@ export default function Footer() {
         </Tooltip>
       </HStack>
 
-      <Text fontSize="12px">{t("footer.rights")}</Text>
+      <Text fontSize="12px">
+        © {new Date().getFullYear()} {t("footer.rights")}
+      </Text>
     </Box>
   );
 }

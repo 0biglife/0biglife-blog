@@ -41,7 +41,7 @@ export const metadata = {
     siteName: "0biglife",
     images: [
       {
-        url: "/favicon.png",
+        url: "/og.png",
         width: 1200,
         height: 630,
         alt: "0biglife — 자율주행 퍼셉션 씬 · 데이터 엔지니어링",
