@@ -18,11 +18,11 @@ const BG = "#01030a";
 const JET = "linear-gradient(to top,#0808c8,#0090ff,#00e6c0,#38ff5a,#d6ff00,#ff9800,#ff2a00)";
 
 function pickQuality(): SceneQuality {
-  if (typeof window === "undefined") return { maxAgents: 16, lidarPoints: 48000, lidarStride: 1, bloom: false };
+  if (typeof window === "undefined") return { maxAgents: 16, lidarPoints: 300000, lidarStride: 1, bloom: false };
   const w = window.innerWidth;
   const weak = (navigator.hardwareConcurrency || 4) <= 4;
-  if (w < 820) return { maxAgents: 12, lidarPoints: 15000, lidarStride: 1, bloom: false };
-  return { maxAgents: 16, lidarPoints: weak ? 32000 : 56000, lidarStride: 1, bloom: false };
+  if (w < 820) return { maxAgents: 12, lidarPoints: 72000, lidarStride: 1, bloom: false };
+  return { maxAgents: 16, lidarPoints: weak ? 170000 : 360000, lidarStride: 1, bloom: false };
 }
 
 const VAL_STYLE = {
@@ -97,7 +97,7 @@ export default function HeroScene() {
         </Flex>
         <Flex align="center" gap={{ md: 3, lg: 5 }}>
           <Stat label="FPS" spanRef={fpsRef} seed="60" />
-          <Stat label="POINTS" spanRef={ptsRef} seed="56.0k" />
+          <Stat label="POINTS" spanRef={ptsRef} seed="220.0k" />
           <Stat label="TRACKS" spanRef={trkRef} seed="19" />
           <Stat label="FRAME" spanRef={frameRef} seed="#000000" />
           <span ref={tcRef} style={{ fontFamily: MONO, fontSize: "11px", fontWeight: 600, color: STATUS, fontVariantNumeric: "tabular-nums" }}>00:00.000</span>
