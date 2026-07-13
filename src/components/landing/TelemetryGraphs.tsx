@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Box, Flex, Text } from "@chakra-ui/react";
 
 const MONO = "'JetBrains Mono', monospace";
@@ -82,6 +82,10 @@ function makeModel() {
 }
 
 export default function TelemetryGraphs() {
+  // On phones, show only the three most legible channels so the panel stays a
+  // supporting detail instead of a wall of graphs that buries the headline.
+  const [isMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 768);
+  const shown = isMobile ? SIGNALS.slice(0, 3) : SIGNALS;
   const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
   const valueRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const trendRefs = useRef<(HTMLSpanElement | null)[]>([]);
@@ -329,7 +333,7 @@ export default function TelemetryGraphs() {
       </Text>
 
       <Flex direction="column" gap={{ base: 2, md: "10px" }} flex="1">
-        {SIGNALS.map((sig, i) => (
+        {shown.map((sig, i) => (
           <Box key={sig.key} flex="1" minH={{ base: "50px", md: "0" }}>
             <Flex align="baseline" justify="space-between" mb="2px">
               <Flex align="baseline" gap={1.5}>

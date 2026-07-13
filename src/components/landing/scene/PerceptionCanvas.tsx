@@ -19,14 +19,32 @@ const BG = 0x01030a;
 const BOX = "#f0a63a"; // orange bounding boxes
 const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
 
-/** classic jet colormap (blue→cyan→green→yellow→red), t in [0,1] */
-function jet(t: number, out: Float32Array, i: number) {
-  const r = clamp(1.5 - Math.abs(4 * t - 3), 0, 1);
-  const g = clamp(1.5 - Math.abs(4 * t - 2), 0, 1);
-  const b = clamp(1.5 - Math.abs(4 * t - 1), 0, 1);
-  out[i] = r * 0.95 + 0.02;
-  out[i + 1] = g * 0.95 + 0.02;
-  out[i + 2] = b * 0.95 + 0.06;
+// Designed range ramp — deep blue → cyan → brand lime, luminance-increasing.
+// Replaces a rainbow "jet" map (which reads as a matplotlib default) with a
+// restrained, single-family gradient that ties to the site accent (#c9ff4d).
+const RAMP: readonly [number, number, number, number][] = [
+  [0.0, 0.05, 0.18, 0.4], // deep blue (near ground)
+  [0.3, 0.06, 0.42, 0.78], // blue
+  [0.58, 0.13, 0.72, 0.8], // cyan-teal
+  [0.8, 0.42, 0.92, 0.62], // spring green
+  [1.0, 0.82, 1.0, 0.3], // lime accent (far / tall)
+];
+/** map t in [0,1] to the brand ramp, writing rgb into out[i..i+2] */
+function rampColor(t: number, out: Float32Array, i: number) {
+  const x = clamp(t, 0, 1);
+  let a = RAMP[0];
+  let b = RAMP[RAMP.length - 1];
+  for (let k = 0; k < RAMP.length - 1; k++) {
+    if (x >= RAMP[k][0] && x <= RAMP[k + 1][0]) {
+      a = RAMP[k];
+      b = RAMP[k + 1];
+      break;
+    }
+  }
+  const f = (x - a[0]) / (b[0] - a[0] || 1);
+  out[i] = a[1] + (b[1] - a[1]) * f;
+  out[i + 1] = a[2] + (b[2] - a[2]) * f;
+  out[i + 2] = a[3] + (b[3] - a[3]) * f;
 }
 
 const MAX_RANGE = 58;
@@ -158,7 +176,7 @@ function PerceptionCanvas({ quality, labelLayerRef, onStats }: Props) {
       pos[p * 3 + 2] = z;
       const rng = Math.sqrt(x * x + z * z);
       const t = clamp((rng * 0.9 + y * 1.15) / MAX_RANGE, 0, 1);
-      jet(t, col, p * 3);
+      rampColor(t, col, p * 3);
       pha[p] = Math.random() * 6.283;
       p++;
     };

@@ -14,8 +14,6 @@ const TelemetryGraphs = dynamic(() => import("./TelemetryGraphs"), { ssr: false 
 const MotionBox = motion(Box);
 const MONO = "'JetBrains Mono', monospace";
 const BG = "#01030a";
-// jet colormap as a CSS gradient (for the range colorbar)
-const JET = "linear-gradient(to top,#0808c8,#0090ff,#00e6c0,#38ff5a,#d6ff00,#ff9800,#ff2a00)";
 
 function pickQuality(): SceneQuality {
   if (typeof window === "undefined") return { maxAgents: 16, lidarPoints: 300000, lidarStride: 1, bloom: false };
@@ -46,15 +44,11 @@ export default function HeroScene() {
   const labelLayerRef = useRef<HTMLDivElement>(null);
   const fpsRef = useRef<HTMLSpanElement>(null);
   const ptsRef = useRef<HTMLSpanElement>(null);
-  const frameRef = useRef<HTMLSpanElement>(null);
-  const trkRef = useRef<HTMLSpanElement>(null);
   const tcRef = useRef<HTMLSpanElement>(null);
 
   const onStats = useCallback((s: SceneStats) => {
     if (fpsRef.current) fpsRef.current.textContent = String(s.fps);
     if (ptsRef.current) ptsRef.current.textContent = (s.points / 1000).toFixed(1) + "k";
-    if (frameRef.current) frameRef.current.textContent = "#" + String(s.frame).padStart(6, "0");
-    if (trkRef.current) trkRef.current.textContent = String(s.tracks);
     if (tcRef.current) {
       const sec = s.frame / 60;
       const mm = Math.floor(sec / 60);
@@ -82,8 +76,8 @@ export default function HeroScene() {
       <Box position="absolute" inset={0} pointerEvents="none" zIndex={2} bgGradient={`linear(to-t, ${BG} 2%, rgba(1,3,10,0.32) 24%, transparent 52%)`} />
       <Box position="absolute" inset={0} pointerEvents="none" zIndex={2} bgGradient="linear(to-r, rgba(1,3,10,0.66), rgba(1,3,10,0.12) 40%, transparent 64%)" />
 
-      {/* ── top tool bar (desktop) ── */}
-      <Flex position="absolute" top={0} left={0} right={0} h="38px" px={{ md: 5, lg: 8 }} align="center" justify="space-between" zIndex={4} display={{ base: "none", md: "flex" }} bg="rgba(2,4,9,0.55)" borderBottom="1px solid" borderColor="whiteAlpha.100" sx={{ backdropFilter: "blur(6px)" }}>
+      {/* ── top tool bar (desktop) — a soft top scrim, not a second solid bar ── */}
+      <Flex position="absolute" top={0} left={0} right={0} h="52px" pt="12px" px={{ md: 5, lg: 8 }} align="center" justify="space-between" zIndex={4} display={{ base: "none", md: "flex" }} pointerEvents="none" bgGradient="linear(to-b, rgba(1,3,10,0.82) 0%, rgba(1,3,10,0.34) 58%, transparent)">
         <Flex align="center" gap={4}>
           <Flex align="center" gap={2}>
             <MotionBox w="6px" h="6px" borderRadius="full" bg={STATUS} boxShadow={`0 0 10px ${STATUS}`} animate={{ opacity: [1, 0.35, 1] }} transition={{ duration: 1.6, repeat: Infinity }} />
@@ -95,11 +89,9 @@ export default function HeroScene() {
             ))}
           </Flex>
         </Flex>
-        <Flex align="center" gap={{ md: 3, lg: 5 }}>
+        <Flex align="center" gap={{ md: 4, lg: 6 }}>
           <Stat label="FPS" spanRef={fpsRef} seed="60" />
           <Stat label="POINTS" spanRef={ptsRef} seed="220.0k" />
-          <Stat label="TRACKS" spanRef={trkRef} seed="19" />
-          <Stat label="FRAME" spanRef={frameRef} seed="#000000" />
           <span ref={tcRef} style={{ fontFamily: MONO, fontSize: "11px", fontWeight: 600, color: STATUS, fontVariantNumeric: "tabular-nums" }}>00:00.000</span>
         </Flex>
       </Flex>
@@ -110,30 +102,20 @@ export default function HeroScene() {
         <Text fontFamily={MONO} fontSize="10px" letterSpacing="0.18em" color="whiteAlpha.700">PERCEPTION · LIDAR</Text>
       </Flex>
 
-      {/* ── range colorbar (desktop) ── */}
-      <Flex position="absolute" left={{ md: 5, lg: 8 }} top="46%" transform="translateY(-50%)" direction="row" align="stretch" gap={2} zIndex={3} display={{ base: "none", md: "flex" }} pointerEvents="none">
-        <Box w="8px" h="150px" borderRadius="2px" border="1px solid" borderColor="whiteAlpha.200" sx={{ background: JET }} />
-        <Flex direction="column" justify="space-between" py="1px">
-          <Text fontFamily={MONO} fontSize="9px" color="whiteAlpha.500">58 m</Text>
-          <Text fontFamily={MONO} fontSize="9px" letterSpacing="0.1em" color="whiteAlpha.400" sx={{ writingMode: "vertical-rl" }}>RANGE</Text>
-          <Text fontFamily={MONO} fontSize="9px" color="whiteAlpha.500">0 m</Text>
-        </Flex>
-      </Flex>
-
       {/* ── telemetry graphs ── */}
       <Box position="absolute" zIndex={3} top={{ base: "auto", md: "50px" }} bottom={{ base: 3, md: "56px" }} right={{ base: 3, md: 5 }} left={{ base: 3, md: "auto" }} w={{ base: "auto", md: "300px", lg: "336px" }} h={{ base: "min(42vh, 330px)", md: "auto" }}>
         <TelemetryGraphs />
       </Box>
 
       {/* ── editorial copy (English) ── */}
-      <MotionBox variants={container} initial="hidden" animate="show" position="absolute" zIndex={3} top={{ base: 14, md: "auto" }} bottom={{ base: "auto", md: "72px" }} left={{ base: 5, md: 8, lg: 12 }} right={{ base: 5, md: "auto" }} maxW={{ base: "100%", md: "520px" }} pointerEvents="none">
+      <MotionBox variants={container} initial="hidden" animate="show" position="absolute" zIndex={3} top={{ base: 16, md: "auto" }} bottom={{ base: "auto", md: "72px" }} left={{ base: 5, md: 8, lg: 12 }} right="auto" maxW={{ base: "calc(100vw - 2.5rem)", md: "520px" }} pointerEvents="none">
         <MotionBox variants={item}>
-          <Text as="h1" fontFamily="'Pretendard Variable', Pretendard, sans-serif" fontWeight={800} lineHeight={1.05} letterSpacing="-0.02em" fontSize={{ base: "2rem", sm: "2.5rem", md: "3rem", lg: "3.4rem" }} color="white">
+          <Text as="h1" fontFamily="'Pretendard Variable', Pretendard, sans-serif" fontWeight={800} lineHeight={{ base: 1.12, md: 1.05 }} letterSpacing="-0.02em" fontSize={{ base: "1.7rem", sm: "2.4rem", md: "3rem", lg: "3.4rem" }} color="white">
             I make autonomous-driving data usable.
           </Text>
         </MotionBox>
         <MotionBox variants={item}>
-          <Text mt={{ base: 3, md: 4 }} maxW="460px" fontSize={{ base: "13px", md: "14.5px" }} lineHeight={1.65} color="whiteAlpha.700">
+          <Text mt={{ base: 3, md: 4 }} maxW={{ base: "100%", md: "460px" }} fontSize={{ base: "13px", md: "14.5px" }} lineHeight={1.65} color="whiteAlpha.700">
             A data engineer who turns raw sensor and driving logs into clean, queryable data — and builds the tools people explore it with. Above is a live lidar view of that data. Drag to orbit.
           </Text>
         </MotionBox>

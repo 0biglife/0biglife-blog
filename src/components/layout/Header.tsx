@@ -34,6 +34,12 @@ export default function Header() {
 
   const iconColor = useColorModeValue("gray.800", "white");
 
+  // The home page is a dark, full-bleed hero. Match the header to it (same near-
+  // black, white controls) so the top reads as one composition instead of a white
+  // slab butting against black. Every other route keeps the light/theme header.
+  const isHome = pathname === "/";
+  const fg = isHome ? "white" : iconColor;
+
   return (
     <Box
       as="header"
@@ -45,8 +51,14 @@ export default function Header() {
       py={3}
       px={6}
       zIndex={1000}
-      bg="white"
-      _dark={{ bg: "gray.800" }}
+      bg={isHome ? "#01030a" : "white"}
+      _dark={{ bg: isHome ? "#01030a" : "gray.800" }}
+      transition="background-color 0.3s ease"
+      sx={
+        isHome
+          ? { "& a, & button": { color: "white" }, "& button svg": { color: "white" } }
+          : undefined
+      }
       _after={{
         content: '""',
         position: "absolute",
@@ -89,7 +101,7 @@ export default function Header() {
                   aria-current={isActive ? "page" : undefined}
                   fontSize={{ base: "13px", sm: "15px" }}
                   fontWeight={isActive ? "bold" : "medium"}
-                  color={iconColor}
+                  color={fg}
                   opacity={isActive ? 1 : 0.6}
                   _hover={{ textDecoration: "none", opacity: isActive ? 1 : 0.5 }}
                   _focusVisible={{
