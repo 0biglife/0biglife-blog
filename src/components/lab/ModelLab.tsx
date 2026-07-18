@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Box, Flex, Text } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 
+// NOTE: intentionally NOT using `dynamic(..., { ssr: false })`. On Amplify's
+// Next adapter an `ssr:false` route (whose content is entirely client-only)
+// was mis-served — the SSR HTML was correct but the browser resolved the route
+// to the not-found page after hydration. Instead we code-split the WebGL canvas
+// with a normal dynamic import and only mount it on the client via `mounted`,
+// which keeps the 3D strictly client-side without the ssr:false footgun.
 const LabCanvas = dynamic(() => import("./LabCanvas"), {
-  ssr: false,
   loading: () => null,
 });
 
@@ -65,6 +70,8 @@ function Toggle({
 export default function ModelLab() {
   const [autoRotate, setAutoRotate] = useState(true);
   const [wireframe, setWireframe] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const sourceLabel = MODEL_URL
     ? MODEL_URL.split("/").pop()
@@ -89,8 +96,10 @@ export default function ModelLab() {
       color="white"
       sx={{ isolation: "isolate" }}
     >
-      {/* 3D scene */}
-      <LabCanvas modelUrl={MODEL_URL} autoRotate={autoRotate} wireframe={wireframe} />
+      {/* 3D scene — client-only (mounted guard replaces ssr:false) */}
+      {mounted && (
+        <LabCanvas modelUrl={MODEL_URL} autoRotate={autoRotate} wireframe={wireframe} />
+      )}
 
       {/* scrims for text legibility */}
       <Box position="absolute" inset={0} pointerEvents="none" zIndex={2} bgGradient={`linear(to-t, ${BG} 1%, rgba(1,3,10,0.28) 22%, transparent 50%)`} />
