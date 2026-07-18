@@ -10,12 +10,17 @@ const SliderContainer = ({ posts }: { posts: Post[] }) => {
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   // const currentIndex = 0;
   useEffect(() => {
+    if (posts.length === 0) return;
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % posts.length);
     }, 5000);
 
     return () => clearInterval(interval);
   }, [posts.length]);
+
+  // No featured posts yet (e.g. an empty content dir) — render nothing rather than
+  // dereferencing posts[0] into a NaN index and white-screening the page.
+  if (posts.length === 0) return null;
 
   return (
     <Box

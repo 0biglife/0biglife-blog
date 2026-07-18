@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: { params: Params }) {
     return notFound();
   }
 
-  const url = `https://0biglife.com/posts/${post.slug}`;
+  const url = `https://www.0biglife.com/posts/${post.slug}`;
 
   return {
     title: post.title,

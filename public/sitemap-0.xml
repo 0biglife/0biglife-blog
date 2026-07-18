@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+<url><loc>https://www.0biglife.com/lab</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/log</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/av-columnar-lakehouse</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/av-scene-search</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/av-sensor-log-pipeline</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/av-sensor-time-sync</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/begin-blog</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/blog-deployment</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/browser-lighthouse</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/browser-rendering</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/ci-optimization</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/content-delivery-network</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/github-actions-cd</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/github-actions-ci</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/helm-chart</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/image-rendering</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/javascript-action</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/javascript-structure</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/kubernetes_database</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/lighterhouse-back</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/nextjs-rendering</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/nextjs-ssg</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/rendering-optimization</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/server-component</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/ssl-certbot</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/ssr-react-query</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/posts/wetopia-cron</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/dev-logs/about_blog</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://www.0biglife.com/dev-logs/about_claude_code</loc><lastmod>2026-07-18T18:23:18.209Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+</urlset>

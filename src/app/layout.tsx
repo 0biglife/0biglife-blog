@@ -15,7 +15,7 @@ export const metadata = {
   icons: {
     icon: "/favicon.png", // 기본 아이콘
   },
-  metadataBase: new URL("https://0biglife.com"),
+  metadataBase: new URL("https://www.0biglife.com"),
   keywords: [
     "0biglife",
     "김민석",
@@ -32,12 +32,12 @@ export const metadata = {
     "data engineer",
     "3D 시각화",
   ],
-  authors: [{ name: "0biglife", url: "https://0biglife.com" }],
+  authors: [{ name: "0biglife", url: "https://www.0biglife.com" }],
   creator: "0biglife",
   openGraph: {
     title: "0biglife — 자율주행 · 데이터 엔지니어링",
     description: SITE_DESCRIPTION,
-    url: "https://0biglife.com",
+    url: "https://www.0biglife.com",
     siteName: "0biglife",
     images: [
       {
@@ -56,7 +56,7 @@ export const metadata = {
     description: SITE_DESCRIPTION,
   },
   alternates: {
-    canonical: "https://0biglife.com", // Canonical URL, 원본 페이지 인식하여 SEO 점수 향상
+    canonical: "https://www.0biglife.com", // Canonical URL, 원본 페이지 인식하여 SEO 점수 향상
   },
   // manifest: "/site.webmanifest", // PWA 지원 시 필요
 };
