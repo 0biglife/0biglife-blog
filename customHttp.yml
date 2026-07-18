@@ -29,3 +29,21 @@ headers:
     headers:
       - key: "Cache-Control"
         value: "public, max-age=3600, stale-while-revalidate=86400"
+
+  # HTML page routes must NOT inherit Amplify's default long CDN cache, or a
+  # pre-deploy response (e.g. a 404 for a route that didn't exist yet) gets
+  # stuck at the edge for up to a year. Match the short cache used above.
+  - source: "/lab"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=3600, stale-while-revalidate=86400"
+
+  - source: "/log"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=3600, stale-while-revalidate=86400"
+
+  - source: "/introduction"
+    headers:
+      - key: "Cache-Control"
+        value: "public, max-age=3600, stale-while-revalidate=86400"
