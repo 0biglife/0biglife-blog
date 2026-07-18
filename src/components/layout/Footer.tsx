@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Text, HStack, Link, Icon, Tooltip } from "@chakra-ui/react";
-import { FaLinkedin, FaGoogle, FaGithub } from "react-icons/fa";
+import { FiLinkedin, FiMail, FiGithub } from "react-icons/fi";
 import { SiTistory } from "react-icons/si";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { BLOG_EMAIL } from "@/lib/constant";
@@ -34,7 +34,7 @@ export default function Footer() {
             isExternal
             _hover={{ color: "blue.500" }}
           >
-            <Icon as={FaLinkedin} boxSize={5} />
+            <Icon as={FiLinkedin} boxSize={5} />
           </Link>
         </Tooltip>
 
@@ -50,7 +50,7 @@ export default function Footer() {
             href={`mailto:${BLOG_EMAIL}`}
             _hover={{ color: "red.500" }}
           >
-            <Icon as={FaGoogle} boxSize={5} />
+            <Icon as={FiMail} boxSize={5} />
           </Link>
         </Tooltip>
 
@@ -66,7 +66,7 @@ export default function Footer() {
             href="https://github.com/0biglife"
             _hover={{ color: "purple.500" }}
           >
-            <Icon as={FaGithub} boxSize={5} />
+            <Icon as={FiGithub} boxSize={5} />
           </Link>
         </Tooltip>
 
