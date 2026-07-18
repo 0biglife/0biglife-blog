@@ -10,6 +10,7 @@ import type { TranslationKey } from "@/i18n/dictionary";
 
 const NAV_LINKS: { key: TranslationKey; href: string }[] = [
   { key: "nav.log", href: "/log" },
+  { key: "nav.lab", href: "/lab" },
 ];
 
 export default function Header() {
@@ -20,6 +21,7 @@ export default function Header() {
   const isLinkActive = (href: string) => {
     if (href === "/") return pathname === "/";
     if (href === "/log") return pathname.startsWith("/log");
+    if (href === "/lab") return pathname.startsWith("/lab");
     return pathname === href;
   };
 

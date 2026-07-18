@@ -111,12 +111,12 @@ export default function HeroScene() {
       <MotionBox variants={container} initial="hidden" animate="show" position="absolute" zIndex={3} top={{ base: 16, md: "auto" }} bottom={{ base: "auto", md: "72px" }} left={{ base: 5, md: 8, lg: 12 }} right="auto" maxW={{ base: "calc(100vw - 2.5rem)", md: "520px" }} pointerEvents="none">
         <MotionBox variants={item}>
           <Text as="h1" fontFamily="'Pretendard Variable', Pretendard, sans-serif" fontWeight={800} lineHeight={{ base: 1.12, md: 1.05 }} letterSpacing="-0.02em" fontSize={{ base: "1.7rem", sm: "2.4rem", md: "3rem", lg: "3.4rem" }} color="white">
-            I make autonomous-driving data usable.
+            Raw sensor logs in. Query-ready driving data out.
           </Text>
         </MotionBox>
         <MotionBox variants={item}>
           <Text mt={{ base: 3, md: 4 }} maxW={{ base: "100%", md: "460px" }} fontSize={{ base: "13px", md: "14.5px" }} lineHeight={1.65} color="whiteAlpha.700">
-            A data engineer who turns raw sensor and driving logs into clean, queryable data — and builds the tools people explore it with. Above is a live lidar view of that data. Drag to orbit.
+            I build the pipelines and tooling that turn petabytes of raw sensor and driving logs into clean, queryable data — and the interfaces people explore it through. The lidar view above is one of them. Drag to orbit.
           </Text>
         </MotionBox>
         <MotionBox variants={item}>
