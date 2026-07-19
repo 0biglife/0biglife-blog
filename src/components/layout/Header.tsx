@@ -9,6 +9,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import type { TranslationKey } from "@/i18n/dictionary";
 
 const NAV_LINKS: { key: TranslationKey; href: string }[] = [
+  { key: "nav.topology", href: "/topology" },
   { key: "nav.log", href: "/log" },
   { key: "nav.lab", href: "/lab" },
 ];
@@ -22,6 +23,7 @@ export default function Header() {
     if (href === "/") return pathname === "/";
     if (href === "/log") return pathname.startsWith("/log");
     if (href === "/lab") return pathname.startsWith("/lab");
+    if (href === "/topology") return pathname.startsWith("/topology");
     return pathname === href;
   };
 

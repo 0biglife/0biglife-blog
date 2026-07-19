@@ -15,6 +15,7 @@ export const LANGS: ReadonlyArray<{ code: Lang; label: string }> = [
 const ko = {
   "nav.log": "Log",
   "nav.lab": "Lab",
+  "nav.topology": "Topology",
   "home.featured": "Recently Featured",
   "home.devLogs": "Dev Logs",
   "posts.category": "Category",
@@ -78,6 +79,7 @@ export type TranslationKey = keyof typeof ko;
 const en: Record<TranslationKey, string> = {
   "nav.log": "Log",
   "nav.lab": "Lab",
+  "nav.topology": "Topology",
   "home.featured": "Recently Featured",
   "home.devLogs": "Dev Logs",
   "posts.category": "Category",
@@ -135,6 +137,7 @@ const en: Record<TranslationKey, string> = {
 const ja: Record<TranslationKey, string> = {
   "nav.log": "Log",
   "nav.lab": "Lab",
+  "nav.topology": "Topology",
   "home.featured": "最近のおすすめ",
   "home.devLogs": "開発ログ",
   "posts.category": "カテゴリー",

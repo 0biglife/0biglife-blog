@@ -14,7 +14,7 @@
     { "id": "0biglife-blog", "name": "0biglife.com", "category": "triage", "status": "active", "importance": 0.7, "heat": 0.85, "desc": "포트폴리오 · 기술 블로그 (지금 이 사이트)", "private": false, "url": "https://github.com/0biglife", "tags": ["Next.js", "Amplify"] },
 
     { "id": "claude-pulse", "name": "claude-pulse", "category": "autonomy", "status": "active", "importance": 1.0, "heat": 1.0, "desc": "로컬 프로젝트를 실시간 3D 토폴로지로 시각화 · 이 화면을 만드는 데이터 파이프라인", "private": true, "tags": ["TypeScript", "three.js"] },
-    { "id": "pipeline-42", "name": "driving-data", "category": "autonomy", "status": "active", "importance": 0.8, "heat": 0.8, "desc": "자율주행 주행 데이터 처리·품질 파이프라인 (업무 · 비공개)", "private": true, "tags": ["Data Eng"] },
+    { "id": "pipeline-42", "name": "driving-data", "category": "autonomy", "status": "active", "importance": 0.8, "heat": 0.8, "desc": "자율주행 데이터 엔지니어링 · 주행 데이터 파이프라인 · 품질 관리", "private": true, "tags": ["Data Eng", "AV"] },
     { "id": "korea", "name": "korea", "category": "autonomy", "status": "idle", "importance": 0.45, "heat": 0.5, "desc": "공개자료 리서치·아카이빙", "private": false, "url": "https://github.com/0biglife", "tags": ["Research"] },
     { "id": "study", "name": "study", "category": "autonomy", "status": "idle", "importance": 0.4, "heat": 0.45, "desc": "데이터 엔지니어링 학습·실험 노트", "private": true, "tags": ["Notes"] },
 
