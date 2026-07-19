@@ -3,11 +3,17 @@
 import { Box, Text, HStack, Link, Icon, Tooltip } from "@chakra-ui/react";
 import { FiLinkedin, FiMail, FiGithub } from "react-icons/fi";
 import { SiTistory } from "react-icons/si";
+import { usePathname } from "next/navigation";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { BLOG_EMAIL } from "@/lib/constant";
 
 export default function Footer() {
   const { t } = useLanguage();
+  const pathname = usePathname();
+  // The home page is a full-bleed dark composition (dark hero + dark
+  // experiments). Match the footer to it so the page doesn't end on a jarring
+  // black→white seam; every other route keeps the themed footer.
+  const isHome = pathname === "/";
 
   return (
     <Box
@@ -16,9 +22,14 @@ export default function Footer() {
       py={4}
       px={6}
       pb="40px"
-      mt={10}
+      mt={isHome ? 0 : 10}
       textAlign="center"
-      _dark={{ bg: "gray.800", color: "gray.400" }}
+      bg={isHome ? "#01030a" : undefined}
+      color={isHome ? "whiteAlpha.600" : undefined}
+      borderTop={isHome ? "1px solid" : undefined}
+      borderColor={isHome ? "whiteAlpha.100" : undefined}
+      sx={isHome ? { "& a": { color: "whiteAlpha.700" } } : undefined}
+      _dark={{ bg: isHome ? "#01030a" : "gray.800", color: isHome ? "whiteAlpha.600" : "gray.400" }}
     >
       <HStack spacing={5} justify="center" mb={10}>
         <Tooltip

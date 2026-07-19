@@ -150,7 +150,14 @@ export default function FilteredPostList({ posts }: { posts: Post[] }) {
               {selectedCategory ? selectedCategory : t("posts.all")}
               {selectedSubcategory ? ` / ${selectedSubcategory}` : ""}
             </Text>
-            <Text fontSize="14px" color="red" ml={0} fontWeight="medium">
+            <Text
+              fontSize="14px"
+              ml={0}
+              fontWeight="semibold"
+              color="green.600"
+              _dark={{ color: "#c9ff4d" }}
+              sx={{ fontVariantNumeric: "tabular-nums" }}
+            >
               {filteredPosts.length}
             </Text>
           </HStack>
