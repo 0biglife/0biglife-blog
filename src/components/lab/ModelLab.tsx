@@ -22,11 +22,12 @@ const ACCENT = "#c9ff4d";
 const STATUS = "#5ce0c0";
 
 // ─────────────────────────────────────────────────────────────
-// 👇 여기가 전부입니다.
-// Tripo에서 이미지 → .glb 를 뽑아 `public/models/` 에 넣고,
-// 아래 경로만 지정하면 플레이스홀더가 실제 모델로 바뀝니다.
-//   예) const MODEL_URL = "/models/my-tripo-model.glb";
-const MODEL_URL: string = "";
+// 👇 여기만 바꾸면 됩니다.
+// 아무 .glb 나 `public/models/` 에 넣고 아래 경로만 지정하면
+// 절차적 플레이스홀더가 실제 모델로 바뀝니다. 빈 문자열이면 플레이스홀더.
+//   예) const MODEL_URL = "/models/my-model.glb";
+// 현재: DamagedHelmet (Khronos glTF sample, CC-BY).
+const MODEL_URL: string = "/models/lab-model.glb";
 // ─────────────────────────────────────────────────────────────
 
 function Toggle({
@@ -74,7 +75,7 @@ export default function ModelLab() {
   useEffect(() => setMounted(true), []);
 
   const sourceLabel = MODEL_URL
-    ? MODEL_URL.split("/").pop()
+    ? "DamagedHelmet · Khronos glTF sample (CC-BY)"
     : "procedural placeholder";
 
   const container = { hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.15 } } };
@@ -125,7 +126,7 @@ export default function ModelLab() {
       <MotionBox variants={container} initial="hidden" animate="show" position="absolute" zIndex={3} bottom={{ base: "auto", md: "84px" }} top={{ base: 16, md: "auto" }} left={{ base: 5, md: 8, lg: 12 }} maxW={{ base: "calc(100vw - 2.5rem)", md: "560px" }} pointerEvents="none">
         <MotionBox variants={item}>
           <Text fontFamily={MONO} fontSize="11px" letterSpacing="0.18em" color={ACCENT} mb={3}>
-            IMAGE → TRIPO → .GLB → WEB
+            IMAGE → 3D → GLB → WEB
           </Text>
         </MotionBox>
         <MotionBox variants={item}>
@@ -135,7 +136,7 @@ export default function ModelLab() {
         </MotionBox>
         <MotionBox variants={item}>
           <Text mt={{ base: 3, md: 4 }} maxW={{ base: "100%", md: "500px" }} fontSize={{ base: "13px", md: "14.5px" }} lineHeight={1.65} color="whiteAlpha.700">
-            Tripo turns a single reference image into a production-ready <Box as="code" fontFamily={MONO} fontSize="0.9em" color={ACCENT}>.glb</Box>. Drop it into this scene and it&apos;s instantly interactive — no 3D modeling, no game engine. Drag to orbit · scroll to zoom.
+A reference image becomes a production-ready <Box as="code" fontFamily={MONO} fontSize="0.9em" color={ACCENT}>.glb</Box>, and any model drops straight into this scene — instantly interactive, no game engine, no plugins. Drag to orbit · scroll to zoom.
           </Text>
         </MotionBox>
       </MotionBox>

@@ -8,6 +8,8 @@ import {
   Grid,
   Float,
   Center,
+  Environment,
+  Lightformer,
   useGLTF,
 } from "@react-three/drei";
 import * as THREE from "three";
@@ -16,8 +18,8 @@ const ACCENT = "#c9ff4d";
 const BG = "#01030a";
 const FLOOR_Y = -1.35;
 
-// ── Tripo에서 뽑은 .glb 를 미리 캐싱하려면 아래 주석을 풀고 경로를 넣으세요. ──
-// useGLTF.preload("/models/your-model.glb");
+// Preload the model so it's fetched as soon as the lab canvas mounts.
+useGLTF.preload("/models/lab-model.glb");
 
 /**
  * 모델이 아직 없을 때 보여줄 절차적(procedural) 플레이스홀더.
@@ -48,6 +50,16 @@ function GltfModel({ url, wireframe }: { url: string; wireframe: boolean }) {
   const { scene } = useGLTF(url);
   const cloned = useMemo(() => scene.clone(true), [scene]);
 
+  // Normalize arbitrary model scale so any GLB fills the stage consistently
+  // (raw exports range from millimetres to metres). Fit the largest dimension
+  // to a fixed target; <Center> handles positioning.
+  const fitScale = useMemo(() => {
+    const box = new THREE.Box3().setFromObject(cloned);
+    const size = box.getSize(new THREE.Vector3());
+    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+    return 2.7 / maxDim;
+  }, [cloned]);
+
   useEffect(() => {
     cloned.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
@@ -60,7 +72,7 @@ function GltfModel({ url, wireframe }: { url: string; wireframe: boolean }) {
     });
   }, [cloned, wireframe]);
 
-  return <primitive object={cloned} />;
+  return <primitive object={cloned} scale={fitScale} />;
 }
 
 export default function LabCanvas({
@@ -87,6 +99,15 @@ export default function LabCanvas({
       <directionalLight position={[5, 8, 6]} intensity={3} />
       <directionalLight position={[-6, 4, -5]} intensity={1.4} color="#63b3ff" />
       <directionalLight position={[2, 1, -4]} intensity={0.8} color={ACCENT} />
+
+      {/* Self-contained IBL (no external HDR/CDN) so PBR metals/paint have
+          something on-brand to reflect. Baked once — the model rotates through it. */}
+      <Environment resolution={256} frames={1}>
+        <Lightformer form="rect" intensity={2.4} position={[0, 5, -4]} scale={[12, 7, 1]} color="#ffffff" />
+        <Lightformer form="rect" intensity={1.3} position={[-6, 2, 2]} scale={[6, 8, 1]} color="#63b3ff" />
+        <Lightformer form="rect" intensity={1.6} position={[6, 1, 3]} scale={[6, 8, 1]} color={ACCENT} />
+        <Lightformer form="ring" intensity={1} position={[0, -3, 5]} scale={5} color="#ffffff" />
+      </Environment>
 
       <Float speed={1.4} rotationIntensity={0.25} floatIntensity={0.6}>
         <Center position={[0, 0.15, 0]}>
