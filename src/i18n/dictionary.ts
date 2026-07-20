@@ -13,6 +13,10 @@ export const LANGS: ReadonlyArray<{ code: Lang; label: string }> = [
 ];
 
 const ko = {
+  "topology.eyebrow": "TOPOLOGY",
+  "topology.title": "제가 지금 만들고 운영 중인 것들",
+  "topology.desc":
+    "40여 개 프로젝트를 하나의 살아있는 3D 뇌로. 자율주행·3D·사업을 오가며 노드를 눌러 탐색해보세요.",
   "nav.log": "Log",
   "nav.lab": "Lab",
   "nav.topology": "Topology",
@@ -77,6 +81,10 @@ const ko = {
 export type TranslationKey = keyof typeof ko;
 
 const en: Record<TranslationKey, string> = {
+  "topology.eyebrow": "TOPOLOGY",
+  "topology.title": "Everything I'm building & running",
+  "topology.desc":
+    "40-some projects as one living 3D brain. Move across autonomy, 3D and products — click a node to explore.",
   "nav.log": "Log",
   "nav.lab": "Lab",
   "nav.topology": "Topology",
@@ -135,6 +143,10 @@ const en: Record<TranslationKey, string> = {
 };
 
 const ja: Record<TranslationKey, string> = {
+  "topology.eyebrow": "TOPOLOGY",
+  "topology.title": "制作・運用中のすべて",
+  "topology.desc":
+    "40以上のプロジェクトを一つの生きた3Dの脳に。自律走行・3D・事業を切り替え、ノードをクリックして探索。",
   "nav.log": "Log",
   "nav.lab": "Lab",
   "nav.topology": "Topology",

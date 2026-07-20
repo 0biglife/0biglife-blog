@@ -4,7 +4,7 @@
   "categories": [
     { "id": "triage", "label": "PRODUCTS", "ko": "제품·사업", "desc": "실시간 운영 중인 제품 · 사업" },
     { "id": "autonomy", "label": "AUTONOMY", "ko": "자율주행·데이터", "desc": "자율주행 · 데이터 엔지니어링" },
-    { "id": "lab", "label": "LAB", "ko": "실험", "desc": "AI 실험 · R&D" }
+    { "id": "lab", "label": "3D", "ko": "실험", "desc": "AI 실험 · R&D" }
   ],
   "nodes": [
     { "id": "city-chameleon", "name": "city-chameleon", "category": "triage", "status": "active", "importance": 0.92, "heat": 0.95, "desc": "서울 컨템포러리 의류 브랜드 커머스 · 헤드리스 Next.js + cafe24", "private": true, "tags": ["Next.js", "cafe24"] },
