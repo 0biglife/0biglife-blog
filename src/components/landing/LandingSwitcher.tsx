@@ -5,7 +5,6 @@ import { Box, Flex, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/reac
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import HeroScene from "./HeroScene";
 import { ExperimentsSection } from "@/components/experiments";
 
 const MotionBox = motion(Box);
@@ -13,29 +12,24 @@ const MONO = "'JetBrains Mono', monospace";
 const HEADER = 84; // matches the <main> pt in Chakra.tsx (clears the fixed header)
 const DARK = "#01030a"; // one near-black shared by header + body + topology canvas
 
-type View = "topology" | "autonomy" | "lab";
-type Seg = { key: View | "log"; label: string; nav?: boolean };
+type View = "topology" | "lab";
+type Seg = { key: string; label: string; view?: View; href?: string };
 
+// topology + lab are inline views (the bubble slides between them); autonomy + log
+// are their own routes (LiDAR / blog) — they navigate away.
 const SEGMENTS: Seg[] = [
-  { key: "topology", label: "TOPOLOGY" },
-  { key: "autonomy", label: "AUTONOMY" },
-  { key: "lab", label: "LAB" },
-  { key: "log", label: "LOG", nav: true },
+  { key: "topology", label: "TOPOLOGY", view: "topology" },
+  { key: "autonomy", label: "AUTONOMY", href: "/autonomy" },
+  { key: "lab", label: "LAB", view: "lab" },
+  { key: "log", label: "LOG", href: "/log" },
 ];
 
-/**
- * The landing is a single, full-viewport surface with a floating switcher.
- * Each toggle is an exclusive full-screen view — topology (the 3D project brain,
- * default), autonomy (the lidar perception hero), lab (the experiments) — and LOG
- * jumps to the blog. Topology + autonomy lock page scroll so they sit inside one
- * screen; lab allows internal scroll for its card grid.
- */
 export default function LandingSwitcher() {
   const { lang } = useLanguage();
   const router = useRouter();
   const [view, setView] = useState<View>("topology");
 
-  // Topology + autonomy are strictly one-screen: kill page scroll. Lab keeps scroll.
+  // Topology is strictly one-screen: kill page scroll. Lab keeps scroll for its grid.
   useEffect(() => {
     const lock = view !== "lab";
     const html = document.documentElement;
@@ -47,8 +41,8 @@ export default function LandingSwitcher() {
     };
   }, [view]);
 
-  // The landing is a full-dark composition. Force the page background near-black so
-  // no light body strip shows between the dark header and the topology canvas.
+  // Full-dark composition — force the page background near-black so no light body
+  // strip shows between the dark header and the topology canvas.
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
@@ -63,15 +57,15 @@ export default function LandingSwitcher() {
   }, []);
 
   const onSeg = (s: Seg) => {
-    if (s.key === "log") {
-      router.push("/log");
+    if (s.href) {
+      router.push(s.href);
       return;
     }
-    setView(s.key as View);
+    if (s.view) setView(s.view);
   };
 
   const viewH = { base: `calc(100svh - ${HEADER}px)`, md: `calc(100vh - ${HEADER}px)` };
-  const current = SEGMENTS.find((s) => s.key === view) ?? SEGMENTS[0];
+  const current = SEGMENTS.find((s) => s.view === view) ?? SEGMENTS[0];
 
   return (
     <>
@@ -93,7 +87,8 @@ export default function LandingSwitcher() {
         sx={{ backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}
       >
         {SEGMENTS.map((s) => {
-          const on = !s.nav && view === s.key;
+          const on = !!s.view && view === s.view;
+          const isNav = !!s.href;
           return (
             <Box
               key={s.key}
@@ -111,11 +106,9 @@ export default function LandingSwitcher() {
               borderRadius="9px"
               cursor="pointer"
               whiteSpace="nowrap"
-              borderLeft={s.nav ? "1px solid rgba(140,180,200,0.16)" : undefined}
-              ml={s.nav ? "3px" : undefined}
-              color={on ? "#04060a" : s.nav ? "rgba(226,236,243,0.55)" : "rgba(226,236,243,0.72)"}
+              color={on ? "#04060a" : isNav ? "rgba(226,236,243,0.55)" : "rgba(226,236,243,0.72)"}
               transition="color 0.2s ease"
-              _hover={{ color: on ? "#04060a" : s.nav ? "#3df0c8" : "#e2ecf3" }}
+              _hover={{ color: on ? "#04060a" : isNav ? "#3df0c8" : "#e2ecf3" }}
               _focusVisible={{ outline: "2px solid", outlineColor: "#3df0c8", outlineOffset: "2px" }}
             >
               {on && (
@@ -132,7 +125,7 @@ export default function LandingSwitcher() {
               )}
               <Box as="span" position="relative" zIndex={1} display="inline-flex" alignItems="center">
                 {s.label}
-                {s.nav && (
+                {isNav && (
                   <Box as="span" aria-hidden ml="4px" opacity={0.7} fontSize="0.85em">
                     ↗
                   </Box>
@@ -184,7 +177,7 @@ export default function LandingSwitcher() {
             sx={{ backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)" }}
           >
             {SEGMENTS.map((s) => {
-              const on = !s.nav && view === s.key;
+              const on = !!s.view && view === s.view;
               return (
                 <MenuItem
                   key={s.key}
@@ -199,7 +192,7 @@ export default function LandingSwitcher() {
                   _focus={{ bg: "rgba(61,240,200,0.1)" }}
                 >
                   {s.label}
-                  {s.nav && " ↗"}
+                  {s.href && " ↗"}
                   {on && (
                     <Box as="span" ml="auto" color="#3df0c8">
                       ●
@@ -231,9 +224,6 @@ export default function LandingSwitcher() {
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: 0, display: "block" }}
         />
       </Box>
-
-      {/* ── AUTONOMY — the lidar perception hero (mounted on demand) ── */}
-      {view === "autonomy" && <HeroScene />}
 
       {/* ── LAB — the experiments grid (breaks out full-bleed on its own; page scrolls here) ── */}
       {view === "lab" && <ExperimentsSection />}

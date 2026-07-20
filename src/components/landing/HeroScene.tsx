@@ -2,6 +2,7 @@
 
 import { useCallback, useRef, useState, type RefObject } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { Box, Flex, Text, VisuallyHidden } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { PROFILE } from "@/lib/constant";
@@ -40,6 +41,7 @@ function Stat({ label, spanRef, seed }: { label: string; spanRef: RefObject<HTML
 }
 
 export default function HeroScene() {
+  const router = useRouter();
   const [quality] = useState<SceneQuality>(() => pickQuality());
   const labelLayerRef = useRef<HTMLDivElement>(null);
   const fpsRef = useRef<HTMLSpanElement>(null);
@@ -58,9 +60,9 @@ export default function HeroScene() {
     }
   }, []);
 
-  const scrollToExperiments = useCallback(() => {
-    document.getElementById("experiments")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
+  const goToExperiments = useCallback(() => {
+    router.push("/lab");
+  }, [router]);
 
   const container = { hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } };
   const item = { hidden: { opacity: 0, y: 18 }, show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } } };
@@ -121,8 +123,8 @@ export default function HeroScene() {
         </MotionBox>
         <MotionBox variants={item}>
           <Flex align="center" gap={{ base: 2.5, md: 3 }} mt={{ base: 5, md: 7 }} pointerEvents="auto" flexWrap="wrap">
-            <Box as="button" type="button" onClick={scrollToExperiments} display="inline-flex" alignItems="center" gap={2} px={{ base: 4, md: 5 }} h="42px" borderRadius="4px" bg={ACCENT} color="#06140a" fontFamily={MONO} fontSize="13px" fontWeight={700} letterSpacing="0.02em" transition="transform 0.15s ease, box-shadow 0.2s ease" _hover={{ transform: "translateY(-2px)", boxShadow: "0 10px 30px rgba(201,255,77,0.25)" }} _focusVisible={{ outline: "2px solid", outlineColor: STATUS, outlineOffset: "3px" }}>
-              Experiments <Box as="span" aria-hidden>↓</Box>
+            <Box as="button" type="button" onClick={goToExperiments} display="inline-flex" alignItems="center" gap={2} px={{ base: 4, md: 5 }} h="42px" borderRadius="4px" bg={ACCENT} color="#06140a" fontFamily={MONO} fontSize="13px" fontWeight={700} letterSpacing="0.02em" transition="transform 0.15s ease, box-shadow 0.2s ease" _hover={{ transform: "translateY(-2px)", boxShadow: "0 10px 30px rgba(201,255,77,0.25)" }} _focusVisible={{ outline: "2px solid", outlineColor: STATUS, outlineOffset: "3px" }}>
+              Experiments <Box as="span" aria-hidden>↗</Box>
             </Box>
             {[{ label: "LinkedIn", href: PROFILE.links.linkedin }, { label: "GitHub", href: PROFILE.links.github }].map((c) => (
               <Box key={c.label} as="a" href={c.href} target="_blank" rel="noopener noreferrer" display="inline-flex" alignItems="center" gap={2} px={{ base: 4, md: 5 }} h="42px" borderRadius="4px" border="1px solid" borderColor="whiteAlpha.250" color="whiteAlpha.900" fontFamily={MONO} fontSize="13px" fontWeight={500} transition="border-color 0.2s ease, background 0.2s ease" _hover={{ borderColor: ACCENT, bg: "whiteAlpha.50" }} _focusVisible={{ outline: "2px solid", outlineColor: ACCENT, outlineOffset: "3px" }}>

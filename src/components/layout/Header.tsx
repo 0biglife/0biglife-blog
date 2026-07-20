@@ -9,9 +9,10 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import type { TranslationKey } from "@/i18n/dictionary";
 
 const NAV_LINKS: { key: TranslationKey; href: string }[] = [
-  { key: "nav.topology", href: "/topology" },
-  { key: "nav.log", href: "/log" },
+  { key: "nav.topology", href: "/" },
+  { key: "nav.autonomy", href: "/autonomy" },
   { key: "nav.lab", href: "/lab" },
+  { key: "nav.log", href: "/log" },
 ];
 
 export default function Header() {
@@ -20,10 +21,10 @@ export default function Header() {
   const { t } = useLanguage();
 
   const isLinkActive = (href: string) => {
-    if (href === "/") return pathname === "/";
+    if (href === "/") return pathname === "/" || pathname.startsWith("/topology");
     if (href === "/log") return pathname.startsWith("/log");
     if (href === "/lab") return pathname.startsWith("/lab");
-    if (href === "/topology") return pathname.startsWith("/topology");
+    if (href === "/autonomy") return pathname.startsWith("/autonomy");
     return pathname === href;
   };
 
@@ -38,10 +39,11 @@ export default function Header() {
 
   const iconColor = useColorModeValue("gray.800", "white");
 
-  // The home page is a dark, full-bleed hero. Match the header to it (same near-
-  // black, white controls) so the top reads as one composition instead of a white
-  // slab butting against black. Every other route keeps the light/theme header.
-  const isHome = pathname === "/";
+  // The home (topology) and /autonomy routes are dark, full-bleed scenes. Match the
+  // header to them (same near-black, white controls) so the top reads as one
+  // composition instead of a light slab butting against black. Other routes keep
+  // the light/theme header.
+  const isHome = pathname === "/" || pathname.startsWith("/autonomy");
   const fg = isHome ? "white" : iconColor;
 
   return (
