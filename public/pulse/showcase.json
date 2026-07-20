@@ -38,8 +38,6 @@
     { "source": "claude-pulse", "target": "0biglife-blog", "weight": 2 },
     { "source": "0biglife-blog", "target": "pipeline-42", "weight": 1 },
     { "source": "pipeline-42", "target": "study", "weight": 1 },
-    { "source": "korea", "target": "study", "weight": 1 },
-    { "source": "cherry", "target": "erth", "weight": 1 },
     { "source": "nexus", "target": "cherry", "weight": 1 }
   ],
   "insights": [
