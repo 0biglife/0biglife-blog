@@ -51,6 +51,39 @@
       "detail": { "ko": "서울 컨템포러리 의류 브랜드 커머스. 최근 활동 최상위 — 오늘의 레버리지는 여기.", "en": "A Seoul contemporary fashion label's storefront. Top of recent activity — today's leverage is here.", "ja": "ソウルのコンテンポラリー衣料ブランドのEC。直近の活動が最上位——今日のレバレッジはここ。" }
     },
     {
+      "id": "sc-lock-trading",
+      "kind": "triage",
+      "severity": "warn",
+      "source": "reflex",
+      "nodeIds": [],
+      "locked": true,
+      "title": { "ko": "온체인 아비트라지 · 자동매매 봇 · 실현손익 ▓▓▓%", "en": "On-chain arbitrage · trading bots · realized PnL ▓▓▓%", "ja": "オンチェーン裁定 · 自動売買ボット · 実現損益 ▓▓▓%" },
+      "detail": { "ko": "전략 파라미터 · 엔트리/청산 로직 · 가스 최적화 …", "en": "Strategy params · entry/exit logic · gas optimization …", "ja": "戦略パラメータ · エントリー/決済ロジック · ガス最適化 …" },
+      "reason": { "ko": "트레이딩 엣지는 공개되는 순간 사라져요 — 전략·수익은 비공개.", "en": "A trading edge dies the moment it's public — strategy & PnL stay private.", "ja": "トレーディングのエッジは公開した瞬間に消える — 戦略・損益は非公開。" }
+    },
+    {
+      "id": "sc-lock-wealth",
+      "kind": "focus",
+      "severity": "note",
+      "source": "cognition",
+      "nodeIds": [],
+      "locked": true,
+      "title": { "ko": "개인 평생 자산 매니저 · 계좌 ▓▓ · 리밸런싱 ▓▓", "en": "Lifetime wealth manager · accounts ▓▓ · rebalancing ▓▓", "ja": "生涯資産マネージャー · 口座 ▓▓ · リバランス ▓▓" },
+      "detail": { "ko": "보유 자산 · 목표 배분 · 세금 최적화 플랜 …", "en": "Holdings · target allocation · tax-optimization plan …", "ja": "保有資産 · 目標配分 · 税最適化プラン …" },
+      "reason": { "ko": "개인 재무 데이터라 비공개.", "en": "Personal financial data — kept private.", "ja": "個人の財務データなので非公開。" }
+    },
+    {
+      "id": "sc-lock-triage",
+      "kind": "triage",
+      "severity": "warn",
+      "source": "reflex",
+      "nodeIds": [],
+      "locked": true,
+      "title": { "ko": "정리/완성 판단 · ▓▓ 프로젝트 triage", "en": "Finish / kill calls · triage on ▓▓ projects", "ja": "整理/完成の判断 · ▓▓ プロジェクトの triage" },
+      "detail": { "ko": "뭘 끝내고 · 뭘 접고 · 뭘 합칠지 …", "en": "What to finish · what to drop · what to merge …", "ja": "何を終え · 何をやめ · 何を統合するか …" },
+      "reason": { "ko": "어떤 걸 접을지 같은 내부 의사결정이라 비공개.", "en": "Internal calls like what to shut down — kept private.", "ja": "何を畳むかといった内部判断なので非公開。" }
+    },
+    {
       "id": "sc-link-voice",
       "kind": "connection",
       "severity": "info",
