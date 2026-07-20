@@ -1,12 +1,5 @@
-import { HeroScene, TopologySection } from "@/components/landing";
-import { ExperimentsSection } from "@/components/experiments";
+import { LandingSwitcher } from "@/components/landing";
 
 export default function HomePage() {
-  return (
-    <>
-      <TopologySection />
-      <HeroScene />
-      <ExperimentsSection />
-    </>
-  );
+  return <LandingSwitcher />;
 }
