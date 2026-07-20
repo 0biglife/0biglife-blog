@@ -1,32 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Box, Flex, Link, useColorModeValue } from "@chakra-ui/react";
+import { Box, Flex, Link } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle, LanguageSwitcher } from "@/components";
 import ProfilePopover from "./ProfilePopover";
-import { useLanguage } from "@/i18n/LanguageProvider";
-import type { TranslationKey } from "@/i18n/dictionary";
-
-const NAV_LINKS: { key: TranslationKey; href: string }[] = [
-  { key: "nav.topology", href: "/" },
-  { key: "nav.autonomy", href: "/autonomy" },
-  { key: "nav.lab", href: "/lab" },
-  { key: "nav.log", href: "/log" },
-];
+import HeaderSwitcher from "./HeaderSwitcher";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
-  const { t } = useLanguage();
-
-  const isLinkActive = (href: string) => {
-    if (href === "/") return pathname === "/" || pathname.startsWith("/topology");
-    if (href === "/log") return pathname.startsWith("/log");
-    if (href === "/lab") return pathname.startsWith("/lab");
-    if (href === "/autonomy") return pathname.startsWith("/autonomy");
-    return pathname === href;
-  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,14 +20,11 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const iconColor = useColorModeValue("gray.800", "white");
-
   // The home (topology) and /autonomy routes are dark, full-bleed scenes. Match the
   // header to them (same near-black, white controls) so the top reads as one
   // composition instead of a light slab butting against black. Other routes keep
   // the light/theme header.
   const isHome = pathname === "/" || pathname.startsWith("/autonomy");
-  const fg = isHome ? "white" : iconColor;
 
   return (
     <Box
@@ -91,37 +71,7 @@ export default function Header() {
         </Link>
 
         <Flex justify="flex-end" alignItems="center" gap={{ base: "2px", sm: "8px" }}>
-          <Flex
-            as="nav"
-            alignItems="center"
-            gap={{ base: "10px", sm: "18px" }}
-            mr={{ base: "2px", sm: "8px" }}
-          >
-            {NAV_LINKS.map((link) => {
-              const isActive = isLinkActive(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  as={NextLink}
-                  href={link.href}
-                  aria-current={isActive ? "page" : undefined}
-                  fontSize={{ base: "13px", sm: "15px" }}
-                  fontWeight={isActive ? "bold" : "medium"}
-                  color={fg}
-                  opacity={isActive ? 1 : 0.6}
-                  _hover={{ textDecoration: "none", opacity: isActive ? 1 : 0.5 }}
-                  _focusVisible={{
-                    outline: "2px solid",
-                    outlineColor: "teal.400",
-                    outlineOffset: "2px",
-                    borderRadius: "2px",
-                  }}
-                >
-                  {t(link.key)}
-                </Link>
-              );
-            })}
-          </Flex>
+          <HeaderSwitcher dark={isHome} />
           <ProfilePopover />
           <LanguageSwitcher />
           <ThemeToggle />
