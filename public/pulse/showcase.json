@@ -1,5 +1,5 @@
 {
-  "_readme": "Curated public-safe portfolio for the 0biglife.com showcase. Edit freely — this file alone drives the topology visitors see. Nothing is read from your machine in showcase mode.",
+  "_readme": "Curated public-safe portfolio for the 0biglife.com showcase. Edit freely — this file alone drives the topology visitors see. Nothing is read from your machine in showcase mode. insight title/detail accept either a plain string or a {ko,en,ja} object.",
   "owner": "0biglife",
   "categories": [
     { "id": "triage", "label": "PRODUCTS", "ko": "제품·사업", "desc": "실시간 운영 중인 제품 · 사업" },
@@ -27,16 +27,84 @@
   ],
   "edges": [
     { "source": "city-chameleon", "target": "0biglife-blog", "weight": 1 },
+    { "source": "lotto-lens", "target": "herald", "weight": 2 },
     { "source": "herald", "target": "oddless", "weight": 2 },
     { "source": "aria", "target": "oddless", "weight": 1 },
     { "source": "cherry", "target": "aria", "weight": 2 },
     { "source": "claude-pulse", "target": "nexus", "weight": 3 },
-    { "source": "claude-pulse", "target": "pipeline-42", "weight": 1 },
+    { "source": "claude-pulse", "target": "pipeline-42", "weight": 2 },
     { "source": "nexus", "target": "plato", "weight": 1 },
     { "source": "erth", "target": "tessera", "weight": 2 },
-    { "source": "claude-pulse", "target": "0biglife-blog", "weight": 1 },
+    { "source": "claude-pulse", "target": "0biglife-blog", "weight": 2 },
+    { "source": "0biglife-blog", "target": "pipeline-42", "weight": 1 },
     { "source": "pipeline-42", "target": "study", "weight": 1 },
     { "source": "korea", "target": "study", "weight": 1 },
-    { "source": "cherry", "target": "erth", "weight": 1 }
+    { "source": "cherry", "target": "erth", "weight": 1 },
+    { "source": "nexus", "target": "cherry", "weight": 1 }
+  ],
+  "insights": [
+    {
+      "id": "sc-focus-city",
+      "kind": "focus",
+      "severity": "info",
+      "source": "cognition",
+      "nodeIds": ["city-chameleon"],
+      "title": { "ko": "지금 열 올리는 축 · city-chameleon", "en": "Where the heat is · city-chameleon", "ja": "いま熱を上げている軸 · city-chameleon" },
+      "detail": { "ko": "서울 컨템포러리 의류 브랜드 커머스. 최근 활동 최상위 — 오늘의 레버리지는 여기.", "en": "A Seoul contemporary fashion label's storefront. Top of recent activity — today's leverage is here.", "ja": "ソウルのコンテンポラリー衣料ブランドのEC。直近の活動が最上位——今日のレバレッジはここ。" }
+    },
+    {
+      "id": "sc-link-voice",
+      "kind": "connection",
+      "severity": "info",
+      "source": "reflex",
+      "nodeIds": ["nexus", "claude-pulse"],
+      "title": { "ko": "음성이 이 뇌를 깨운다 · nexus ↔ claude-pulse", "en": "A voice wakes this brain · nexus ↔ claude-pulse", "ja": "声がこの脳を起こす · nexus ↔ claude-pulse" },
+      "detail": { "ko": "JARVIS형 음성 비서가 이 실시간 토폴로지에 연결돼요. 말로 프로젝트를 조종하는 게 다음 단계.", "en": "A JARVIS-style voice assistant plugs into this live topology. Steering projects by voice is the next step.", "ja": "JARVIS型の音声アシスタントがこのライブ・トポロジーに接続。声でプロジェクトを操るのが次の一歩。" }
+    },
+    {
+      "id": "sc-link-driving",
+      "kind": "connection",
+      "severity": "info",
+      "source": "reflex",
+      "nodeIds": ["pipeline-42", "claude-pulse"],
+      "title": { "ko": "주행 데이터 → 실시간 시각화 · driving-data ↔ claude-pulse", "en": "Driving data → live view · driving-data ↔ claude-pulse", "ja": "走行データ → ライブ可視化 · driving-data ↔ claude-pulse" },
+      "detail": { "ko": "자율주행 파이프라인에서 나온 신호를 이 3D 뷰로. 데이터 엔지니어링과 인터페이스가 한 축.", "en": "Signals from the autonomous-driving pipeline surface in this 3D view. Data engineering and interface, one axis.", "ja": "自律走行パイプラインの信号をこの3Dビューへ。データエンジニアリングとインターフェースが一つの軸。" }
+    },
+    {
+      "id": "sc-triage-auto",
+      "kind": "triage",
+      "severity": "note",
+      "source": "reflex",
+      "nodeIds": ["lotto-lens", "herald"],
+      "title": { "ko": "스스로 도는 파이프라인 · lotto-lens · herald", "en": "Pipelines that run themselves · lotto-lens · herald", "ja": "自走するパイプライン · lotto-lens · herald" },
+      "detail": { "ko": "크론으로 매주 알아서 결과물을 뱉어요. 손 안 대도 돌아가는 자동화 축.", "en": "Cron-driven, they ship output every week untouched. The automation that runs without me.", "ja": "cronで毎週、自動で成果物を出力。触らなくても回る自動化の軸。" }
+    },
+    {
+      "id": "sc-focus-lab",
+      "kind": "focus",
+      "severity": "note",
+      "source": "cognition",
+      "nodeIds": ["erth", "tessera", "cherry", "aria"],
+      "title": { "ko": "3D 랩에서 대기 중인 실험 6종", "en": "Six experiments waiting in the 3D lab", "ja": "3Dラボで待機中の実験6種" },
+      "detail": { "ko": "erth·tessera·cherry·aria… 살아있는 AI 월드와 영상 실험들이 다음 사이클을 기다려요.", "en": "erth · tessera · cherry · aria … living AI worlds and video experiments queued for the next cycle.", "ja": "erth・tessera・cherry・aria… 生きたAIワールドと映像実験が次のサイクルを待つ。" }
+    },
+    {
+      "id": "sc-link-portfolio",
+      "kind": "connection",
+      "severity": "info",
+      "source": "reflex",
+      "nodeIds": ["0biglife-blog", "city-chameleon"],
+      "title": { "ko": "포트폴리오가 곧 제품 · 0biglife.com", "en": "The portfolio is itself a product · 0biglife.com", "ja": "ポートフォリオそのものがプロダクト · 0biglife.com" },
+      "detail": { "ko": "이 사이트 자체가 하나의 노드. 만든 것들을 실시간으로 전시하는 창구예요.", "en": "This very site is a node — the window that puts everything I build on live display.", "ja": "このサイト自体が一つのノード。作ったものをライブで展示する窓口。" }
+    },
+    {
+      "id": "sc-focus-core",
+      "kind": "focus",
+      "severity": "info",
+      "source": "reflex",
+      "nodeIds": ["claude-pulse"],
+      "title": { "ko": "가장 뜨거운 노드 · claude-pulse", "en": "The hottest node · claude-pulse", "ja": "最も熱いノード · claude-pulse" },
+      "detail": { "ko": "지금 이 화면을 그려내는 엔진. heat 최상 — 뇌의 중심.", "en": "The engine drawing this very screen. Peak heat — the center of the brain.", "ja": "今この画面を描くエンジン。heat最上——脳の中心。" }
+    }
   ]
 }
