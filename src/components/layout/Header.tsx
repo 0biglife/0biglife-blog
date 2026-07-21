@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Box, Flex, Link } from "@chakra-ui/react";
+import { Box, Flex, Link, useColorMode } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle, LanguageSwitcher } from "@/components";
@@ -10,6 +10,7 @@ import HeaderSwitcher from "./HeaderSwitcher";
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const { colorMode } = useColorMode();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +26,10 @@ export default function Header() {
   // composition instead of a light slab butting against black. Other routes keep
   // the light/theme header.
   const isHome = pathname === "/" || pathname.startsWith("/autonomy");
+  // The header is dark whenever it's a forced-dark route OR the site is in dark
+  // mode (where non-home routes use gray.800). The switcher palette follows that,
+  // not just the route — otherwise the light pill vanishes on a dark-mode header.
+  const darkHeader = isHome || colorMode === "dark";
 
   return (
     <Box
@@ -58,10 +63,11 @@ export default function Header() {
         transition: "height 0.3s ease-in-out, background 0.3s ease-in-out",
       }}
     >
-      <Flex justifyContent="space-between" alignItems="center">
+      <Flex justifyContent={{ base: "flex-end", sm: "space-between" }} alignItems="center">
         <Link
           as={NextLink}
           href="/"
+          display={{ base: "none", sm: "block" }}
           fontWeight="bold"
           fontStyle="italic"
           fontSize="22px"
@@ -71,7 +77,7 @@ export default function Header() {
         </Link>
 
         <Flex justify="flex-end" alignItems="center" gap={{ base: "2px", sm: "8px" }}>
-          <HeaderSwitcher dark={isHome} />
+          <HeaderSwitcher dark={darkHeader} />
           <ProfilePopover />
           <LanguageSwitcher />
           <ThemeToggle />

@@ -1,8 +1,9 @@
 "use client";
 
 import { Box, Flex, Menu, MenuButton, MenuList, MenuItem } from "@chakra-ui/react";
-import { motion } from "framer-motion";
-import { useRouter, usePathname } from "next/navigation";
+import { motion, useReducedMotion } from "framer-motion";
+import NextLink from "next/link";
+import { usePathname } from "next/navigation";
 
 const MotionBox = motion(Box);
 const MONO = "'JetBrains Mono', monospace";
@@ -20,18 +21,20 @@ function activeKey(pathname: string): string | null {
   if (pathname === "/" || pathname.startsWith("/topology")) return "topology";
   if (pathname.startsWith("/autonomy")) return "autonomy";
   if (pathname.startsWith("/lab")) return "lab";
-  if (pathname.startsWith("/log")) return "log";
+  // /log and the article routes it links to (/posts/*, /dev-logs/*) all belong to LOG
+  if (pathname.startsWith("/log") || pathname.startsWith("/posts") || pathname.startsWith("/dev-logs"))
+    return "log";
   return null;
 }
 
 /**
  * The site's primary nav, rendered as a segmented pill with an animated bubble
  * that slides to the active route. Lives in the global header (left of the profile
- * avatar) and adapts to the dark (/, /autonomy) vs light (/lab, /log) header.
+ * avatar) and adapts to the dark (/, /autonomy, dark-mode) vs light header.
  */
 export default function HeaderSwitcher({ dark }: { dark: boolean }) {
-  const router = useRouter();
   const pathname = usePathname();
+  const reduce = useReducedMotion();
   const active = activeKey(pathname);
   const current = ITEMS.find((i) => i.key === active) ?? ITEMS[0];
 
@@ -43,7 +46,7 @@ export default function HeaderSwitcher({ dark }: { dark: boolean }) {
         bubble: "#e8f6f1",
         onText: "#04060a",
         offText: "rgba(226,236,243,0.72)",
-        hover: "#eef6f4",
+        hoverBg: "rgba(255,255,255,0.06)",
         menuBg: "rgba(9,13,24,0.96)",
         menuBorder: "rgba(140,180,200,0.16)",
         accent: "#3df0c8",
@@ -54,16 +57,14 @@ export default function HeaderSwitcher({ dark }: { dark: boolean }) {
         bubble: "#16202e",
         onText: "#ffffff",
         offText: "rgba(30,41,59,0.72)",
-        hover: "#0b1220",
+        hoverBg: "rgba(15,23,32,0.06)",
         menuBg: "#ffffff",
         menuBorder: "rgba(15,23,32,0.12)",
         accent: "#0d9488",
       };
 
-  const go = (href: string) => router.push(href);
-
   return (
-    <>
+    <Box as="nav" aria-label="Primary" display="flex" alignItems="center">
       {/* desktop: segmented pill with sliding bubble */}
       <Flex
         display={{ base: "none", md: "flex" }}
@@ -80,9 +81,8 @@ export default function HeaderSwitcher({ dark }: { dark: boolean }) {
           return (
             <Box
               key={item.key}
-              as="button"
-              type="button"
-              onClick={() => go(item.href)}
+              as={NextLink}
+              href={item.href}
               aria-current={on ? "page" : undefined}
               position="relative"
               fontFamily={MONO}
@@ -94,8 +94,9 @@ export default function HeaderSwitcher({ dark }: { dark: boolean }) {
               borderRadius="7px"
               cursor="pointer"
               whiteSpace="nowrap"
-              // inline color beats the header's dark-route `& button { color: white }` cascade
-              style={{ color: on ? c.onText : c.offText, transition: "color 0.2s ease" }}
+              // inline color beats the header's dark-route `& a { color: white }` cascade
+              style={{ color: on ? c.onText : c.offText, transition: "color 0.2s ease, background 0.15s ease" }}
+              _hover={on ? undefined : { bg: c.hoverBg, textDecoration: "none" }}
               _focusVisible={{ outline: "2px solid", outlineColor: c.accent, outlineOffset: "2px" }}
             >
               {on && (
@@ -107,7 +108,7 @@ export default function HeaderSwitcher({ dark }: { dark: boolean }) {
                   bg={c.bubble}
                   boxShadow={dark ? "0 0 14px rgba(61,240,200,0.35)" : "0 2px 8px rgba(15,23,32,0.25)"}
                   zIndex={0}
-                  transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 420, damping: 34 }}
                 />
               )}
               <Box as="span" position="relative" zIndex={1}>
@@ -154,19 +155,21 @@ export default function HeaderSwitcher({ dark }: { dark: boolean }) {
               return (
                 <MenuItem
                   key={item.key}
-                  onClick={() => go(item.href)}
+                  as={NextLink}
+                  href={item.href}
+                  aria-current={on ? "page" : undefined}
                   bg="transparent"
                   fontFamily={MONO}
                   fontSize="11px"
                   letterSpacing="0.08em"
                   fontWeight={on ? 700 : 500}
                   color={on ? c.accent : dark ? "rgba(226,236,243,0.8)" : "rgba(30,41,59,0.8)"}
-                  _hover={{ bg: dark ? "rgba(61,240,200,0.1)" : "rgba(13,148,136,0.1)" }}
+                  _hover={{ bg: dark ? "rgba(61,240,200,0.1)" : "rgba(13,148,136,0.1)", textDecoration: "none" }}
                   _focus={{ bg: dark ? "rgba(61,240,200,0.1)" : "rgba(13,148,136,0.1)" }}
                 >
                   {item.label}
                   {on && (
-                    <Box as="span" ml="auto" color={c.accent}>
+                    <Box as="span" aria-hidden ml="auto" color={c.accent}>
                       ●
                     </Box>
                   )}
@@ -176,6 +179,6 @@ export default function HeaderSwitcher({ dark }: { dark: boolean }) {
           </MenuList>
         </Menu>
       </Box>
-    </>
+    </Box>
   );
 }
