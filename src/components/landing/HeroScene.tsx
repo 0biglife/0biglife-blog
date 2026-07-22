@@ -65,7 +65,7 @@ export default function HeroScene() {
   }, []);
 
   const goToExperiments = useCallback(() => {
-    router.push("/lab");
+    router.push("/log");
   }, [router]);
 
   const container = { hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.2 } } };

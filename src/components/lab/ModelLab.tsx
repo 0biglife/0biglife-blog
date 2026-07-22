@@ -74,6 +74,25 @@ export default function ModelLab() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // Full-screen scene like / and /autonomy: lock page scroll (+ near-black bg) so
+  // the footer/padding below the viewport can't peek in — keeps the scene routes
+  // visually consistent (no stray footer only on /lab).
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    const prev = { ho: html.style.overflow, bo: body.style.overflow, hb: html.style.background, bb: body.style.background };
+    html.style.overflow = "hidden";
+    body.style.overflow = "hidden";
+    html.style.background = "#01030a";
+    body.style.background = "#01030a";
+    return () => {
+      html.style.overflow = prev.ho;
+      body.style.overflow = prev.bo;
+      html.style.background = prev.hb;
+      body.style.background = prev.bb;
+    };
+  }, []);
+
   const sourceLabel = MODEL_URL
     ? "DamagedHelmet · Khronos glTF sample (CC-BY)"
     : "procedural placeholder";
