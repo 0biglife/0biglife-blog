@@ -1,0 +1,118 @@
+---
+title: "[자율주행] 로그 데이터와 포맷 — rosbag에서 MCAP, 그리고 컬럼형까지"
+date: "2026-07-24"
+description: "시리즈 내내 '데이터가 있다'고 가정했다. 그런데 주행 한 번은 실제로 어떤 파일에 기록되고, 페타바이트에서 필요한 장면을 어떻게 골라내는가. 여기가 자율주행 데이터 엔지니어의 본진이다. rosbag의 한계, 왜 업계가 MCAP으로 옮겨가는지, 그리고 record용 MCAP과 분석·학습용 컬럼형(Parquet)을 나눠 쓰는 2층 구조를 — 실제 코드로 MCAP을 읽어 좌표변환하고 Parquet으로 굽는 예시까지 — 정리한다."
+thumbnail: "thumbnail.png"
+category: "자율주행"
+subcategory: "데이터"
+tags: []
+---
+
+앞선 글들은 편하게 '데이터가 있다'고 가정했다. [씬](/posts/av-scene-data)이 있고, [좌표계](/posts/av-3d-geometry)가 맞춰져 있고, 그 위에서 모델이 돈다고. 하지만 실무의 절반은 그 앞 질문이다. **주행 한 번은 어떤 파일로 기록되고, 페타바이트 속에서 지금 필요한 장면을 어떻게 꺼내는가.** 여기가 '자율주행 데이터 엔지니어'라는 말의 본진이다.
+
+## 원본 로그의 성질
+
+한 번의 주행은 여러 센서가 서로 다른 주기로 쏟아내는 **시간순 메시지 스트림**이다. 20Hz 라이다, 30Hz 카메라 ×N, 100Hz IMU, GNSS, CAN… 이걸 한 파일에 시간순으로 적으면 그게 **로그(log)** 다. 성질이 까다롭다.
+
+- **멀티모달** — 한 파일에 종류가 다른 메시지가 섞인다.
+- **고빈도·대용량** — 몇 분이 수 GB, 하루가 수 TB.
+- **시간이 1급 시민** — "그 순간"으로 되감아 재생(replay)할 수 있어야 한다.
+
+## rosbag — 고전
+
+로보틱스는 오래 **ROS의 rosbag**으로 기록해왔다. 토픽별 메시지를 시간순으로 담는 컨테이너다. 생태계가 두텁지만 약점이 있다 — ROS에 강하게 묶이고(스키마가 ROS 메시지 정의에 의존), 대용량에서 **탐색(seek)·인덱싱**이 약하며, ROS 밖 도구와의 호환이 번거롭다.
+
+## MCAP — 요즘의 표준
+
+그래서 업계가 옮겨가는 컨테이너가 **MCAP**이다. 한 줄로 말하면 "**어떤 메시지든** 담고, **빠르게 되감고**, **자기 자신을 설명하는** 로그 파일".
+
+- **스키마 불가지(schema-agnostic)** — ROS 메시지든 **Protobuf**든 JSON이든, 채널마다 스키마를 함께 박아 담는다. 그래서 **self-describing** — 파일만 있으면 무엇이 들었는지 안다.
+- **인덱싱 + 빠른 seek** — 끝에 인덱스를 둬서 "37.5초의 라이다"로 즉시 점프. 페타바이트 replay의 전제.
+- **멀티모달·압축·append 친화**. ROS에 안 묶인다.
+
+MCAP은 [시각화 도구](/posts/av-visualization) Foxglove가 만들어 사실상 표준이 됐고, 로그 기록·재생 계층의 기본값으로 자리잡는 중이다.
+
+## 두 층위: 기록용 vs 분석용
+
+여기서 실무의 핵심 설계가 나온다. **하나의 포맷으로 다 하려 하지 마라.** 로그 데이터는 성격이 다른 두 일에 쓰인다.
+
+| | 기록·재생 | 분석·학습 |
+| --- | --- | --- |
+| 접근 | 시간순, 한 로그 통째 replay | "밤·좌회전·보행자" 조건으로 가로질러 |
+| 포맷 | **MCAP**(행/시간 정렬) | **컬럼형 Parquet**(질의 정렬) |
+| 최적화 | 빠른 seek·멀티모달 | 열 프루닝·조건 필터·집계 |
+
+페타바이트 MCAP을 매번 뒤져 "밤에 좌회전한 장면"을 찾을 수는 없다. 그래서 **MCAP → 필요한 신호를 뽑아 컬럼형(Parquet) 레이크하우스로 굽고**, 그 위에서 질의한다. record는 MCAP, analytics는 Parquet — 이 2층이 현대 AV 데이터 스택의 뼈대다.
+
+## 실전: MCAP을 읽어 Parquet으로 굽기
+
+말보다 코드다. MCAP에서 라이다와 에고 포즈를 읽어, [앞 글의 좌표 변환](/posts/av-3d-geometry)으로 점을 월드로 옮기고, 프레임 메타를 Parquet으로 쓰는 골격이다.
+
+```python
+from mcap.reader import make_reader
+import numpy as np
+import pyarrow as pa
+import pyarrow.parquet as pq
+
+rows = []
+with open("drive_0042.mcap", "rb") as f:
+    reader = make_reader(f)
+    latest_pose = None  # 최신 에고 포즈 (T_ego->world)
+
+    for schema, channel, message in reader.iter_messages(
+        topics=["/ego_pose", "/lidar/points"]
+    ):
+        # 채널의 스키마/인코딩에 맞춰 디코드 (ros2/protobuf 등)
+        msg = decode(schema, message.data)
+
+        if channel.topic == "/ego_pose":
+            # 자세는 쿼터니언 → 4x4 동차변환으로
+            latest_pose = to_transform(msg.position, msg.orientation_quat)
+
+        elif channel.topic == "/lidar/points" and latest_pose is not None:
+            pts = to_xyz(msg)                       # (N,3) 센서 좌표
+            pts_h = np.c_[pts, np.ones(len(pts))]   # 동차좌표
+            world = (latest_pose @ T_lidar_to_ego @ pts_h.T).T[:, :3]
+
+            rows.append({
+                "log_id":    "drive_0042",
+                "t_ns":      message.log_time,
+                "n_points":  len(pts),
+                "x_center":  float(world[:, 0].mean()),
+                "y_center":  float(world[:, 1].mean()),
+                # 필요한 파생 신호만 컬럼으로 (원본 점군은 별도 저장)
+            })
+
+# 로그·시간으로 파티션해 레이크하우스에 적재
+pq.write_to_dataset(
+    pa.Table.from_pylist(rows),
+    root_path="lake/frames",
+    partition_cols=["log_id"],
+)
+```
+
+핵심은 코드의 화려함이 아니라 **흐름**이다. `MCAP(원본 스트림) → 좌표 변환 → 필요한 신호만 컬럼으로 → 파티션된 Parquet`. 원본 점군은 그대로 두고, 질의에 쓸 **파생 신호와 메타만** 컬럼형으로 뽑는다.
+
+## 페타바이트에서 장면을 꺼내는 법
+
+컬럼형으로 구우면 비로소 '큐레이션'이 가능해진다.
+
+- **파티셔닝** — `log_id`·날짜·시나리오로 잘라, 질의가 필요한 조각만 읽게.
+- **공간 인덱스** — 세상을 타일로 나눠 위치 기반 조회(이 지점을 지난 모든 주행).
+- **파생 태그** — 날씨·시간대·기동(좌회전/급제동)·객체 유무를 컬럼으로 미리 계산.
+
+그러면 "비 오는 밤, 좌회전 중, 보행자 있음"이 **SQL 한 줄**이 된다. 롱테일 장면을 골라 [검출](/posts/av-3d-object-detection)·[점유](/posts/av-occupancy) 라벨링으로 보내는 데이터 플라이휠의 엔진이 이것이다.
+
+## 재현성: 데이터도 버전이 있다
+
+마지막으로 실무의 성숙도를 가르는 것. **어떤 데이터 버전이 어떤 모델을 학습시켰는가**를 추적하지 못하면, 성능 회귀의 원인을 영영 못 찾는다. 그래서 데이터셋 스냅샷을 **DVC·lakeFS** 같은 도구로 버전 관리하고, "모델 v7 = 데이터 스냅샷 2026-07-01 + 캘리브레이션 버전 x"처럼 못 박는다. [캘리브레이션이 씬을 따라다니는 메타데이터](/posts/av-calibration)라고 했던 이유가 여기서 완성된다.
+
+## 정리
+
+- 주행은 멀티모달·고빈도·시간순 **로그 스트림**으로 기록된다.
+- rosbag(ROS 결합·seek 약함) → **MCAP**(스키마 불가지·인덱싱·self-describing)으로 record 계층이 이동 중이다.
+- **record는 MCAP, analytics/학습은 컬럼형(Parquet)** 으로 나누는 2층 구조가 핵심 설계다.
+- MCAP을 읽어 좌표 변환 후 파생 신호를 파티션된 Parquet으로 구우면, 페타바이트에서 장면을 **질의로** 꺼낼 수 있다.
+- 데이터 버저닝(DVC/lakeFS)으로 "어떤 데이터가 어떤 모델을 만들었는지"를 못 박아야 재현성이 선다.
+
+이제 이렇게 쌓인 데이터를 사람이 실제로 **눈으로 열어보는** 도구 — Foxglove·rerun — 이야기가 [자율주행 시각화](/posts/av-visualization)에서 이어진다.
