@@ -6,10 +6,14 @@ import { useRouter } from "next/navigation";
 import { Box, Flex, Text, VisuallyHidden } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { PROFILE } from "@/lib/constant";
+import SceneLoading from "@/components/common/SceneLoading";
 import { ACCENT, STATUS, type SceneQuality } from "./scene/sceneTypes";
 import type { SceneStats } from "./scene/PerceptionCanvas";
 
-const PerceptionCanvas = dynamic(() => import("./scene/PerceptionCanvas"), { ssr: false });
+const PerceptionCanvas = dynamic(() => import("./scene/PerceptionCanvas"), {
+  ssr: false,
+  loading: () => <SceneLoading label="perception · lidar" />,
+});
 const TelemetryGraphs = dynamic(() => import("./TelemetryGraphs"), { ssr: false });
 
 const MotionBox = motion(Box);
