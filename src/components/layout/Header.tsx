@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Box, Flex, Link, useColorMode } from "@chakra-ui/react";
+import { AnimatePresence, motion } from "framer-motion";
 import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle, LanguageSwitcher } from "@/components";
@@ -21,15 +22,21 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // The home (topology) and /autonomy routes are dark, full-bleed scenes. Match the
-  // header to them (same near-black, white controls) so the top reads as one
-  // composition instead of a light slab butting against black. Other routes keep
-  // the light/theme header.
-  const isHome = pathname === "/" || pathname.startsWith("/autonomy");
-  // The header is dark whenever it's a forced-dark route OR the site is in dark
-  // mode (where non-home routes use gray.800). The switcher palette follows that,
-  // not just the route — otherwise the light pill vanishes on a dark-mode header.
-  const darkHeader = isHome || colorMode === "dark";
+  // Topology (/) · autonomy · lab are dark, full-screen 3D scenes: force a dark
+  // header and NO theme toggle (they only exist in dark). The blog/LOG section
+  // (/log, /posts, /dev-logs) is the only place theming applies, so the theme
+  // toggle slides in only there.
+  const isScene =
+    pathname === "/" ||
+    pathname.startsWith("/topology") ||
+    pathname.startsWith("/autonomy") ||
+    pathname.startsWith("/lab");
+  const isLog =
+    pathname.startsWith("/log") ||
+    pathname.startsWith("/posts") ||
+    pathname.startsWith("/dev-logs");
+  // Header is dark on any scene route, or when the (blog) site is in dark mode.
+  const darkHeader = isScene || colorMode === "dark";
 
   return (
     <Box
@@ -42,11 +49,11 @@ export default function Header() {
       py={3}
       px={6}
       zIndex={1000}
-      bg={isHome ? "#01030a" : "white"}
-      _dark={{ bg: isHome ? "#01030a" : "gray.800" }}
+      bg={isScene ? "#01030a" : "white"}
+      _dark={{ bg: isScene ? "#01030a" : "gray.800" }}
       transition="background-color 0.3s ease"
       sx={
-        isHome
+        isScene
           ? { "& a, & button": { color: "white" }, "& button svg": { color: "white" } }
           : undefined
       }
@@ -80,7 +87,22 @@ export default function Header() {
           <HeaderSwitcher dark={darkHeader} />
           <ProfilePopover />
           <LanguageSwitcher />
-          <ThemeToggle />
+          {/* theme toggle only in the blog/LOG section — scene routes are dark-only.
+              It slides in/out as you cross into or out of LOG. */}
+          <AnimatePresence initial={false}>
+            {isLog && (
+              <motion.div
+                key="theme-toggle"
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: "auto", opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.28, ease: [0.2, 0.8, 0.2, 1] }}
+                style={{ overflow: "hidden", display: "flex", alignItems: "center" }}
+              >
+                <ThemeToggle />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </Flex>
       </Flex>
     </Box>
