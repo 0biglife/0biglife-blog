@@ -40,7 +40,7 @@ function Seg<T extends string>({
   onPick: (id: T) => void;
 }) {
   return (
-    <Flex direction="column" gap={1.5}>
+    <Flex direction="column" gap={1.5} flexShrink={0}>
       <Text fontFamily={MONO} fontSize="9px" letterSpacing="0.18em" color="whiteAlpha.500">
         {label}
       </Text>
@@ -113,16 +113,18 @@ function ActionBtn({ children, onClick, primary }: { children: React.ReactNode; 
       as="button"
       type="button"
       onClick={onClick}
-      px={3.5}
-      h="30px"
+      px={{ base: 2.5, md: 3.5 }}
+      h={{ base: "28px", md: "30px" }}
       borderRadius="4px"
       border="1px solid"
       borderColor={primary ? ACCENT : "whiteAlpha.250"}
       bg={primary ? ACCENT : "rgba(4,7,12,0.5)"}
       color={primary ? "#06140a" : "whiteAlpha.900"}
       fontFamily={MONO}
-      fontSize="11px"
+      fontSize={{ base: "10px", md: "11px" }}
       fontWeight={700}
+      whiteSpace="nowrap"
+      flexShrink={0}
       letterSpacing="0.03em"
       display="inline-flex"
       alignItems="center"
@@ -268,27 +270,27 @@ export default function ModelLab() {
 
       {/* ── top bar ── */}
       <Flex position="absolute" top={0} left={0} right={0} pt={4} px={{ base: 5, md: 6, lg: 8 }} align="center" justify="space-between" zIndex={4} pointerEvents="none">
-        <Flex align="center" gap={2}>
-          <MotionBox w="6px" h="6px" borderRadius="full" bg={STATUS} boxShadow={`0 0 10px ${STATUS}`} animate={{ opacity: [1, 0.35, 1] }} transition={{ duration: 1.6, repeat: Infinity }} />
-          <Text fontFamily={MONO} fontSize={{ base: "10px", md: "11px" }} fontWeight={600} letterSpacing="0.16em" color="whiteAlpha.800">
-            MODEL LAB · 3D STUDIO
+        <Flex align="center" gap={2} minW={0} overflow="hidden">
+          <MotionBox flexShrink={0} w="6px" h="6px" borderRadius="full" bg={STATUS} boxShadow={`0 0 10px ${STATUS}`} animate={{ opacity: [1, 0.35, 1] }} transition={{ duration: 1.6, repeat: Infinity }} />
+          <Text fontFamily={MONO} fontSize={{ base: "10px", md: "11px" }} fontWeight={600} letterSpacing="0.16em" color="whiteAlpha.800" whiteSpace="nowrap">
+            <Box as="span" display={{ base: "none", sm: "inline" }}>MODEL LAB · </Box>3D STUDIO
           </Text>
         </Flex>
-        <Flex align="center" gap={2} pointerEvents="auto">
+        <Flex align="center" gap={2} pointerEvents="auto" flexShrink={0}>
           <ActionBtn onClick={onShare}>{copied ? "복사됨 ✓" : "SHARE ↗"}</ActionBtn>
           <ActionBtn onClick={onSavePng}>SAVE PNG</ActionBtn>
         </Flex>
       </Flex>
 
       {/* ── editorial eyebrow (top-left, below bar) ── */}
-      <MotionBox variants={container} initial="hidden" animate="show" position="absolute" zIndex={3} top={{ base: 16, md: 20 }} left={{ base: 5, md: 8, lg: 12 }} maxW={{ base: "calc(100vw - 2.5rem)", md: "460px" }} pointerEvents="none">
+      <MotionBox variants={container} initial="hidden" animate="show" position="absolute" zIndex={3} top={{ base: 16, md: 20 }} left={{ base: 5, md: 8, lg: 12 }} maxW={{ base: "82vw", sm: "70vw", md: "460px" }} pointerEvents="none">
         <MotionBox variants={item}>
           <Text fontFamily={MONO} fontSize="11px" letterSpacing="0.18em" color={ACCENT} mb={2.5}>
             YOU DIRECT THE SCENE
           </Text>
         </MotionBox>
         <MotionBox variants={item}>
-          <Text as="h1" fontFamily="'Pretendard Variable', Pretendard, sans-serif" fontWeight={800} lineHeight={{ base: 1.12, md: 1.06 }} letterSpacing="-0.02em" fontSize={{ base: "1.5rem", sm: "2rem", md: "2.5rem" }} color="white">
+          <Text as="h1" fontFamily="'Pretendard Variable', Pretendard, sans-serif" fontWeight={800} lineHeight={{ base: 1.12, md: 1.06 }} letterSpacing="-0.02em" fontSize={{ base: "1.3rem", sm: "2rem", md: "2.5rem" }} color="white" sx={{ overflowWrap: "break-word" }}>
             A 3D studio in your browser.
           </Text>
         </MotionBox>
@@ -326,11 +328,17 @@ export default function ModelLab() {
           p={{ base: 3, md: 4 }}
           sx={{ backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}
         >
-          <Flex gap={{ base: 4, md: 6 }} flexWrap="wrap" align="flex-start">
+          <Flex
+            gap={{ base: 3, md: 6 }}
+            direction={{ base: "column", lg: "row" }}
+            flexWrap={{ base: "nowrap", lg: "wrap" }}
+            align="flex-start"
+            w={{ base: "100%", lg: "auto" }}
+          >
             <Seg label="MODEL" value={s.model} options={MODELS} onPick={(id) => update({ model: id })} />
             <Seg label="FINISH" value={s.material} options={MATERIALS} onPick={(id) => update({ material: id })} />
             <Seg label="ENV" value={s.env} options={ENVS} onPick={(id) => update({ env: id })} />
-            <Flex direction="column" gap={1.5}>
+            <Flex direction="column" gap={1.5} flexShrink={0}>
               <Text fontFamily={MONO} fontSize="9px" letterSpacing="0.18em" color="whiteAlpha.500">
                 FX · MOTION
               </Text>
