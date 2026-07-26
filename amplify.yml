@@ -1,0 +1,24 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - corepack enable
+        - yarn install --immutable
+    build:
+      commands:
+        # Amplify 콘솔의 환경변수는 빌드 컨테이너에만 존재하고, SSR 런타임(WEB_COMPUTE
+        # Lambda)에는 전달되지 않는다. 그래서 /api/analytics가 런타임에
+        # process.env.GA_PRIVATE_KEY를 읽으면 undefined → "No key or keyFile set."
+        # AWS 권장 방식대로 빌드 전에 .env.production으로 넘겨 Next가 싣도록 한다.
+        # (.env* 는 gitignore 대상 — 빌드 컨테이너에서만 생성된다)
+        - env | grep -E '^GA_' >> .env.production
+        - yarn build
+  artifacts:
+    baseDirectory: .next
+    files:
+      - "**/*"
+  cache:
+    paths:
+      - .next/cache/**/*
+      - node_modules/**/*
