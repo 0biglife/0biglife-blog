@@ -14,6 +14,7 @@ const ITEMS: Item[] = [
   { key: "topology", label: "TOPOLOGY", href: "/" },
   { key: "autonomy", label: "AUTONOMY", href: "/autonomy" },
   { key: "lab", label: "LAB", href: "/lab" },
+  { key: "tools", label: "TOOLS", href: "/tools/coordinate-frames" },
   { key: "log", label: "LOG", href: "/log" },
 ];
 
@@ -21,6 +22,7 @@ function activeKey(pathname: string): string | null {
   if (pathname === "/" || pathname.startsWith("/topology")) return "topology";
   if (pathname.startsWith("/autonomy")) return "autonomy";
   if (pathname.startsWith("/lab")) return "lab";
+  if (pathname.startsWith("/tools")) return "tools";
   // /log and the article routes it links to (/posts/*, /dev-logs/*) all belong to LOG
   if (pathname.startsWith("/log") || pathname.startsWith("/posts") || pathname.startsWith("/dev-logs"))
     return "log";

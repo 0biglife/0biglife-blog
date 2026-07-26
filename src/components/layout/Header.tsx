@@ -22,15 +22,16 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Topology (/) · autonomy · lab are dark, full-screen 3D scenes: force a dark
-  // header and NO theme toggle (they only exist in dark). The blog/LOG section
-  // (/log, /posts, /dev-logs) is the only place theming applies, so the theme
-  // toggle slides in only there.
+  // Topology (/) · autonomy · lab · tools are dark instrument surfaces: force a
+  // dark header and NO theme toggle (they only exist in dark). The blog/LOG
+  // section (/log, /posts, /dev-logs) is the only place theming applies, so the
+  // theme toggle slides in only there.
   const isScene =
     pathname === "/" ||
     pathname.startsWith("/topology") ||
     pathname.startsWith("/autonomy") ||
-    pathname.startsWith("/lab");
+    pathname.startsWith("/lab") ||
+    pathname.startsWith("/tools");
   const isLog =
     pathname.startsWith("/log") ||
     pathname.startsWith("/posts") ||
