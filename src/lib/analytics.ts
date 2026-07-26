@@ -16,9 +16,10 @@ export async function getBlogAnalytics() {
   }
 
   const propertyId = process.env.GA_PROPERTY_ID || "";
-  const privateKey = process.env.GA_PRIVATE_KEY?.split(String.raw`\n`).join(
-    "\n"
-  );
+  // 키가 따옴표째 저장돼 있으면 PEM 파싱이 깨져 인증이 조용히 실패한다(조회수 0으로 표시됨).
+  const privateKey = process.env.GA_PRIVATE_KEY?.replace(/^"|"$/g, "")
+    .split(String.raw`\n`)
+    .join("\n");
 
   const clientEmail = process.env.GA_CLIENT_EMAIL;
 
@@ -30,12 +31,11 @@ export async function getBlogAnalytics() {
 
   const analyticsData = google.analyticsdata({ version: "v1beta", auth });
 
-  const today = new Date().toISOString().split("T")[0];
-
+  // GA의 "today"는 속성 타임존(Asia/Seoul) 기준 — UTC 날짜를 직접 만들면 하루가 밀린다.
   const todayRes = await analyticsData.properties.runReport({
     property: propertyId,
     requestBody: {
-      dateRanges: [{ startDate: today, endDate: today }],
+      dateRanges: [{ startDate: "today", endDate: "today" }],
       metrics: [{ name: METRIC_VIEW_NAME }],
     },
   });
@@ -43,7 +43,7 @@ export async function getBlogAnalytics() {
   const totalRes = await analyticsData.properties.runReport({
     property: propertyId,
     requestBody: {
-      dateRanges: [{ startDate: BLOG_START_DATE, endDate: today }],
+      dateRanges: [{ startDate: BLOG_START_DATE, endDate: "today" }],
       metrics: [{ name: METRIC_VIEW_NAME }],
     },
   });
