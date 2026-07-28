@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { Title } from "@/components";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { Box, Container } from "@chakra-ui/react";
-import { DevLog, Post } from "@/lib/types";
+import { DevLogSummary, Post } from "@/lib/types";
 import { useEffect, useState } from "react";
 
 // Next.js 15 부터는 `ssr: false` 사용 불가능으로 클라이언트 컴포넌트 따로 분리
@@ -21,7 +21,7 @@ const FilteredPostList = dynamic(
 interface PostContentProps {
   posts: Post[];
   featuredPosts: Post[];
-  devLogs: DevLog[];
+  devLogs: DevLogSummary[];
 }
 
 export default function PostContent({

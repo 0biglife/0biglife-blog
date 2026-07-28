@@ -1,5 +1,33 @@
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+// `Prism` 전체 빌드는 refractor 언어 ~290종(brainfuck·cobol·wolfram 포함)을 통째로
+// 끌고 들어와 청크 하나가 797KB 였다. 이 블로그가 실제로 쓰는 펜스는 12종뿐이라
+// PrismLight + 필요한 언어만 등록으로 바꾼다. 등록 안 된 언어는 평문으로 렌더된다.
+import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark as DarkCodeStyle } from "react-syntax-highlighter/dist/esm/styles/prism";
+import bash from "react-syntax-highlighter/dist/esm/languages/prism/bash";
+import javascript from "react-syntax-highlighter/dist/esm/languages/prism/javascript";
+import typescript from "react-syntax-highlighter/dist/esm/languages/prism/typescript";
+import tsx from "react-syntax-highlighter/dist/esm/languages/prism/tsx";
+import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml";
+import go from "react-syntax-highlighter/dist/esm/languages/prism/go";
+import json from "react-syntax-highlighter/dist/esm/languages/prism/json";
+import java from "react-syntax-highlighter/dist/esm/languages/prism/java";
+import python from "react-syntax-highlighter/dist/esm/languages/prism/python";
+import markdown from "react-syntax-highlighter/dist/esm/languages/prism/markdown";
+import docker from "react-syntax-highlighter/dist/esm/languages/prism/docker";
+import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql";
+
+// 펜스에 쓰는 별칭(js·ts·yml·zsh…)까지 같은 모듈로 등록해야 하이라이팅이 붙는다.
+const LANGS: Record<string, Parameters<typeof SyntaxHighlighter.registerLanguage>[1]> = {
+  bash, sh: bash, shell: bash, zsh: bash,
+  javascript, js: javascript, jsx: javascript,
+  typescript, ts: typescript, tsx, json, yaml, yml: yaml,
+  go, java, python, py: python,
+  markdown, md: markdown, mdx: markdown,
+  docker, dockerfile: docker, sql,
+};
+Object.entries(LANGS).forEach(([name, mod]) =>
+  SyntaxHighlighter.registerLanguage(name, mod)
+);
 import { CopyButton } from "@/components";
 import Image from "next/image";
 import React from "react";

@@ -11,9 +11,13 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { DevLog, Post, TOCItem } from "./types";
+import { DevLog, DevLogSummary, Post, TOCItem } from "./types";
 import { compileMDX } from "next-mdx-remote/rsc";
-import { MarkdownRenderer } from "@/components";
+// 배럴(@/components)로 가져오면 "use client" 컴포넌트(PageContent 등)가 그 배럴을
+// import하는 순간 MarkdownRenderer → react-syntax-highlighter 까지 클라이언트 번들에
+// 딸려 들어간다. 코드블록이 하나도 없는 /log 가 797KB 하이라이터를 싣던 원인.
+// 이 렌더러는 서버(compileMDX)에서만 쓰므로 파일 경로로 직접 가져온다.
+import { MarkdownRenderer } from "@/components/template/MarkdownRenderer";
 import { errorLog, slugify } from "./utils";
 import remarkGfm from "remark-gfm";
 
@@ -149,11 +153,11 @@ export const getPostBySlug = async (slug: string): Promise<Post | null> => {
   };
 };
 
-export const getAllDevLogs = (): DevLog[] => {
+export const getAllDevLogs = (): DevLogSummary[] => {
   const folders = fs.readdirSync(contentLogDir);
 
   return folders
-    .map((folder) => {
+    .map((folder): DevLogSummary | null => {
       const filePath = path.join(contentLogDir, folder, "index.mdx");
       if (!fs.existsSync(filePath)) return null;
 
@@ -167,9 +171,11 @@ export const getAllDevLogs = (): DevLog[] => {
         slug,
         title: data.title,
         date: data.date,
+        indexable: data.indexable === true,
+        description: data.description,
       };
     })
-    .filter((post): post is DevLog => post !== null)
+    .filter((post): post is DevLogSummary => post !== null)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 };
 
@@ -199,6 +205,8 @@ export const getDevLogBySlug = async (slug: string): Promise<DevLog | null> => {
     date: data.date,
     content: mdxSource.content,
     toc,
+    indexable: data.indexable === true,
+    description: data.description,
   };
 };
 

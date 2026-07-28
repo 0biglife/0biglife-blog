@@ -5,7 +5,6 @@ import {
   LogContainer,
   SliderContainer,
   FilteredPostList,
-  MarkdownRenderer,
   TableOfContents,
 } from "./template";
 
@@ -23,5 +22,4 @@ export {
   FilteredPostList,
   ScrollToTopButton,
   TableOfContents,
-  MarkdownRenderer,
 };

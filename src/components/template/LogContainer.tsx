@@ -1,11 +1,11 @@
 "use client";
 // import { TESTING, TODAY_COUNT, TOTAL_COUNT } from "@/lib/constant";
-import { DevLog } from "@/lib/types";
+import { DevLogSummary } from "@/lib/types";
 import { Box, Link, Text } from "@chakra-ui/react";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
 interface LogContainerProps {
-  logs: DevLog[];
+  logs: DevLogSummary[];
   todayViews: string;
   totalViews: string;
 }

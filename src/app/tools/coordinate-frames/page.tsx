@@ -19,11 +19,28 @@ export const metadata: Metadata = {
     "autonomous driving",
   ],
   alternates: { canonical: "https://www.0biglife.com/tools/coordinate-frames" },
+  // openGraph 를 라우트에서 재정의하면 Next 는 부모(layout)의 images 를 물려주지 않는다.
+  // 그래서 이 페이지만 소셜 미리보기가 비어 있었다 — 영어권 공유가 목적인 페이지라
+  // 전용 이미지를 굽는다(scripts/make-og-tools.mjs).
   openGraph: {
     title: TITLE,
     description: DESCRIPTION,
     url: "https://www.0biglife.com/tools/coordinate-frames",
     type: "website",
+    images: [
+      {
+        url: "/assets/og-coordinate-frames.png",
+        width: 1200,
+        height: 630,
+        alt: "Coordinate frame converter — FLU to RDF axis maps for KITTI, nuScenes, Waymo and ROS",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ["/assets/og-coordinate-frames.png"],
   },
 };
 

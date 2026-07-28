@@ -11,12 +11,36 @@ export async function generateStaticParams() {
   return devLogs.map((log) => ({ slug: log.slug }));
 }
 
-export async function generateMetadata() {
+// 여기는 원래 전 글 일괄 noindex 였다. dev-log 가 메모장이던 시절의 설정인데, 그 뒤
+// 본문 8천자짜리 글도 같은 폴더에 쌓이면서 검색에서 통째로 막혀 있었다. 게다가
+// 사이트맵에는 그대로 실려 "색인해달라 / 하지 마라"가 동시에 나가는 상태였다.
+// → frontmatter `indexable: true` 인 글만 색인하고, 나머지는 noindex + 사이트맵 제외.
+//   (사이트맵 쪽 기준은 next-sitemap.config.js 가 같은 frontmatter 를 읽는다)
+export async function generateMetadata({ params }: { params: Params }) {
+  const { slug } = await params;
+  const devLog = await getDevLogBySlug(decodeURIComponent(slug ?? ""));
+  if (!devLog) return { robots: { index: false, follow: false } };
+
+  const description =
+    devLog.description ?? `${devLog.title} — 0biglife 개발 로그 (${devLog.date})`;
+
+  if (!devLog.indexable) {
+    return { title: devLog.title, description, robots: { index: false, follow: false } };
+  }
+
+  const url = `https://www.0biglife.com/dev-logs/${devLog.slug}`;
   return {
-    robots: {
-      index: false,
-      follow: false,
+    title: devLog.title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title: devLog.title,
+      description,
+      url,
+      type: "article",
+      publishedTime: devLog.date,
     },
+    twitter: { card: "summary_large_image", title: devLog.title, description },
   };
 }
 
