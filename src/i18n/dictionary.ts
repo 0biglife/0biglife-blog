@@ -76,6 +76,26 @@ const ko = {
   "experiments.subtitle":
     "인지·센서·계획을 작은 인터랙티브 실험으로 하나씩 풀어봅니다. 카드를 누르면 크게 볼 수 있어요.",
   "experiments.close": "닫기",
+  // 랜딩 본문 — 토폴로지 아래. 크롤러가 읽는 유일한 홈 본문이기도 하다.
+  "landing.eyebrow": "자율주행 · 데이터 엔지니어링",
+  "landing.h1": "센서 로그를 질의 가능한 주행 데이터로 바꿉니다",
+  "landing.lead":
+    "라이다·카메라·레이더가 쏟아내는 원시 로그를 시간 동기화하고, 좌표계를 맞추고, 컬럼형으로 쌓습니다. 인지 모델과 분석이 실제로 꺼내 쓸 수 있는 형태가 될 때까지가 제 일입니다.",
+  "landing.topoNote":
+    "위 그림은 지금 제가 만들고 운영 중인 프로젝트들의 연결 상태입니다. 밝을수록 최근에 손댄 것이고, 잠긴 노드는 비공개 저장소라 제목만 남겨두었습니다.",
+  "landing.cardsTitle": "여기서 볼 수 있는 것",
+  "landing.autonomyTitle": "실시간 라이다 퍼셉션 씬",
+  "landing.autonomyDesc":
+    "포인트 클라우드·스캔 링·바운딩 박스·차량 텔레메트리를 브라우저에서 직접 돌립니다. 엔진 없이 손으로 짠 렌더러입니다.",
+  "landing.toolsTitle": "좌표계 변환기",
+  "landing.toolsDesc":
+    "KITTI·nuScenes·Waymo·ROS는 어느 축이 앞인지, heading 이 어디서 시작하는지가 전부 다릅니다. 두 규약을 고르면 같은 차를 서술하는 두 벌의 숫자와 변환 행렬, 그리고 그 사이를 건너는 코드를 보여줍니다.",
+  "landing.logTitle": "자율주행 인지 시리즈",
+  "landing.logDesc":
+    "좌표계와 회전 같은 기초부터 캘리브레이션·3D 검출·점유 격자·궤적 예측까지, 인지 파이프라인을 순서대로 정리한 글입니다.",
+  "landing.seriesTitle": "자율주행 시리즈",
+  "landing.seriesMore": "전체 글 보기",
+  "landing.scrollCue": "아래로",
 } as const;
 
 // ko의 키 집합이 곧 전체 번역 키. en/ja는 이 타입으로 누락/오타가 컴파일 타임에 차단됨.
@@ -142,6 +162,25 @@ const en: Record<TranslationKey, string> = {
   "experiments.subtitle":
     "Perception, sensors and planning, taken apart into small interactive experiments. Click a card to open it larger.",
   "experiments.close": "Close",
+  "landing.eyebrow": "Autonomous driving · Data engineering",
+  "landing.h1": "Raw sensor logs in. Query-ready driving data out.",
+  "landing.lead":
+    "Lidar, camera and radar throw off raw logs. I time-sync them, agree on a coordinate frame, and land them in columnar storage — until perception models and analysts can actually pull what they need.",
+  "landing.topoNote":
+    "The map above is what I'm building and running right now. Brighter nodes were touched more recently; locked ones live in private repos, so only the title is here.",
+  "landing.cardsTitle": "What's here",
+  "landing.autonomyTitle": "Live lidar perception scene",
+  "landing.autonomyDesc":
+    "Point clouds, scan rings, bounding boxes and vehicle telemetry, running in the browser. A hand-written renderer, no engine.",
+  "landing.toolsTitle": "Coordinate frame converter",
+  "landing.toolsDesc":
+    "KITTI, nuScenes, Waymo and ROS all disagree about which axis is forward and where a heading angle starts. Pick two and see the same physical car described by two different sets of numbers, plus the matrix and the code that carry you between them.",
+  "landing.logTitle": "Perception series",
+  "landing.logDesc":
+    "From the basics — frames and rotations — through calibration, 3D detection, occupancy and trajectory prediction: the perception pipeline, in order.",
+  "landing.seriesTitle": "Autonomous-driving series",
+  "landing.seriesMore": "All posts",
+  "landing.scrollCue": "scroll",
 };
 
 const ja: Record<TranslationKey, string> = {
@@ -205,6 +244,25 @@ const ja: Record<TranslationKey, string> = {
   "experiments.subtitle":
     "認識・センサー・計画を、小さなインタラクティブ実験として一つずつ解いてみます。カードを押すと大きく見られます。",
   "experiments.close": "閉じる",
+  "landing.eyebrow": "自動運転 · データエンジニアリング",
+  "landing.h1": "センサーログを、問い合わせできる走行データに変えます",
+  "landing.lead":
+    "ライダー・カメラ・レーダーが吐き出す生ログを時刻同期し、座標系を揃え、列指向で蓄積します。認識モデルと分析が実際に取り出せる形になるまでが私の仕事です。",
+  "landing.topoNote":
+    "上の図は、いま制作・運用しているプロジェクトのつながりです。明るいノードほど最近触ったもので、鍵付きは非公開リポジトリのためタイトルだけ残しています。",
+  "landing.cardsTitle": "ここで見られるもの",
+  "landing.autonomyTitle": "リアルタイム・ライダー認識シーン",
+  "landing.autonomyDesc":
+    "点群・スキャンリング・バウンディングボックス・車両テレメトリをブラウザで直接動かします。エンジンを使わない手書きのレンダラーです。",
+  "landing.toolsTitle": "座標系コンバータ",
+  "landing.toolsDesc":
+    "KITTI・nuScenes・Waymo・ROS は、どの軸が前で heading がどこから始まるかがすべて違います。二つの規約を選ぶと、同じ車を表す二組の数値と変換行列、その間を渡るコードが出ます。",
+  "landing.logTitle": "自動運転・認識シリーズ",
+  "landing.logDesc":
+    "座標系と回転といった基礎から、キャリブレーション・3D 検出・占有格子・軌跡予測まで、認識パイプラインを順に整理した記事です。",
+  "landing.seriesTitle": "自動運転シリーズ",
+  "landing.seriesMore": "記事をすべて見る",
+  "landing.scrollCue": "下へ",
 };
 
 export const dictionary: Record<Lang, Record<TranslationKey, string>> = {

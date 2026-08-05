@@ -46,7 +46,7 @@ MCAP은 [시각화 도구](/posts/av-visualization) Foxglove가 만들어 사실
 
 ## 실전: MCAP을 읽어 Parquet으로 굽기
 
-말보다 코드다. MCAP에서 라이다와 에고 포즈를 읽어, [앞 글의 좌표 변환](/posts/av-3d-geometry)으로 점을 월드로 옮기고, 프레임 메타를 Parquet으로 쓰는 골격이다.
+말보다 코드다. MCAP에서 라이다와 에고 포즈를 읽어, [앞 글의 좌표 변환](/posts/av-3d-geometry)으로 점을 월드로 옮기고, 프레임 메타를 Parquet으로 쓰는 골격이다. (여러 데이터셋을 한 레이크에 모을 때 필요한 규약별 변환 행렬은 [좌표계 변환기](/tools/coordinate-frames)가 파이썬 스니펫까지 만들어 준다.)
 
 ```python
 from mcap.reader import make_reader
