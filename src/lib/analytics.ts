@@ -100,14 +100,24 @@ let realtimeFetchedAt = 0;
 // 동시 요청이 몰려도 GA 호출은 한 번만 나가도록 진행 중인 프라미스를 공유한다.
 let inFlight: Promise<RealtimeAnalytics> | null = null;
 
+// GA가 값을 확정하지 못했을 때 넣는 자리표시자. 방문자에게 보여줄 문자열이 아니다.
+const GA_PLACEHOLDERS = new Set(["(other)", "(not set)", "(none)"]);
+
+// 모든 문서 제목이 "… | 0biglife"로 끝나 목록에서 접미사만 반복된다.
+function shortenTitle(label: string) {
+  return label.replace(/\s*\|\s*0biglife\s*$/i, "").trim() || label;
+}
+
 function toRows(
-  res: analyticsdata_v1beta.Schema$RunRealtimeReportResponse
+  res: analyticsdata_v1beta.Schema$RunRealtimeReportResponse,
+  { shorten = false }: { shorten?: boolean } = {}
 ): RealtimeBreakdownRow[] {
   return (res.rows ?? []).flatMap((row) => {
-    const label = row.dimensionValues?.[0]?.value?.trim();
+    const raw = row.dimensionValues?.[0]?.value?.trim();
     const users = Number(row.metricValues?.[0]?.value ?? 0);
-    if (!label || !Number.isFinite(users) || users <= 0) return [];
-    return [{ label, users }];
+    if (!raw || GA_PLACEHOLDERS.has(raw.toLowerCase())) return [];
+    if (!Number.isFinite(users) || users <= 0) return [];
+    return [{ label: shorten ? shortenTitle(raw) : raw, users }];
   });
 }
 
@@ -146,7 +156,7 @@ async function fetchRealtime(): Promise<RealtimeAnalytics> {
 
   return {
     activeUsers: Number.isFinite(total) && total > 0 ? total : 0,
-    pages: toRows(pageRes.data),
+    pages: toRows(pageRes.data, { shorten: true }),
     countries: toRows(countryRes.data),
     fetchedAt: new Date().toISOString(),
   };
