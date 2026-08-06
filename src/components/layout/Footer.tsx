@@ -6,6 +6,7 @@ import { SiTistory } from "react-icons/si";
 import { usePathname } from "next/navigation";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { BLOG_EMAIL } from "@/lib/constant";
+import LiveVisitors from "./LiveVisitors";
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -99,7 +100,10 @@ export default function Footer() {
         </Tooltip>
       </HStack>
 
-      <Text fontSize="12px">
+      {/* 아무도 없을 땐 스스로 숨는다 — 자리를 비워두지 않도록 문구와 같은 스택에 둔다. */}
+      <LiveVisitors />
+
+      <Text fontSize="12px" mt={2}>
         © {new Date().getFullYear()} {t("footer.rights")}
       </Text>
     </Box>
