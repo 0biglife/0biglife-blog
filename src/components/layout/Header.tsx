@@ -22,7 +22,7 @@ export default function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Topology (/) · autonomy · lab · tools are dark instrument surfaces: force a
+  // Topology (/) · autonomy · lab are dark instrument surfaces: force a
   // dark header and NO theme toggle (they only exist in dark). The blog/LOG
   // section (/log, /posts, /dev-logs) is the only place theming applies, so the
   // theme toggle slides in only there.
@@ -30,8 +30,7 @@ export default function Header() {
     pathname === "/" ||
     pathname.startsWith("/topology") ||
     pathname.startsWith("/autonomy") ||
-    pathname.startsWith("/lab") ||
-    pathname.startsWith("/tools");
+    pathname.startsWith("/lab");
   const isLog =
     pathname.startsWith("/log") ||
     pathname.startsWith("/posts") ||

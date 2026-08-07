@@ -94,9 +94,9 @@ const ko = {
   "landing.autonomyTitle": "실시간 라이다 퍼셉션 씬",
   "landing.autonomyDesc":
     "포인트 클라우드·스캔 링·바운딩 박스·차량 텔레메트리를 브라우저에서 직접 돌립니다. 엔진 없이 손으로 짠 렌더러입니다.",
-  "landing.toolsTitle": "좌표계 변환기",
-  "landing.toolsDesc":
-    "KITTI·nuScenes·Waymo·ROS는 어느 축이 앞인지, heading 이 어디서 시작하는지가 전부 다릅니다. 두 규약을 고르면 같은 차를 서술하는 두 벌의 숫자와 변환 행렬, 그리고 그 사이를 건너는 코드를 보여줍니다.",
+  "landing.labTitle": "브라우저 3D 뷰어",
+  "landing.labDesc":
+    "GLB 모델을 외부 CDN 없이 브라우저에서 바로 그립니다. 드래그해서 돌려볼 수 있어요.",
   "landing.logTitle": "자율주행 인지 시리즈",
   "landing.logDesc":
     "좌표계와 회전 같은 기초부터 캘리브레이션·3D 검출·점유 격자·궤적 예측까지, 인지 파이프라인을 순서대로 정리한 글입니다.",
@@ -185,9 +185,9 @@ const en: Record<TranslationKey, string> = {
   "landing.autonomyTitle": "Live lidar perception scene",
   "landing.autonomyDesc":
     "Point clouds, scan rings, bounding boxes and vehicle telemetry, running in the browser. A hand-written renderer, no engine.",
-  "landing.toolsTitle": "Coordinate frame converter",
-  "landing.toolsDesc":
-    "KITTI, nuScenes, Waymo and ROS all disagree about which axis is forward and where a heading angle starts. Pick two and see the same physical car described by two different sets of numbers, plus the matrix and the code that carry you between them.",
+  "landing.labTitle": "3D viewer in the browser",
+  "landing.labDesc":
+    "GLB models rendered straight in the browser, no external CDN. Drag to orbit.",
   "landing.logTitle": "Perception series",
   "landing.logDesc":
     "From the basics — frames and rotations — through calibration, 3D detection, occupancy and trajectory prediction: the perception pipeline, in order.",
@@ -273,9 +273,9 @@ const ja: Record<TranslationKey, string> = {
   "landing.autonomyTitle": "リアルタイム・ライダー認識シーン",
   "landing.autonomyDesc":
     "点群・スキャンリング・バウンディングボックス・車両テレメトリをブラウザで直接動かします。エンジンを使わない手書きのレンダラーです。",
-  "landing.toolsTitle": "座標系コンバータ",
-  "landing.toolsDesc":
-    "KITTI・nuScenes・Waymo・ROS は、どの軸が前で heading がどこから始まるかがすべて違います。二つの規約を選ぶと、同じ車を表す二組の数値と変換行列、その間を渡るコードが出ます。",
+  "landing.labTitle": "ブラウザの3Dビューア",
+  "landing.labDesc":
+    "GLB モデルを外部 CDN なしでブラウザに直接描画します。ドラッグして回せます。",
   "landing.logTitle": "自動運転・認識シリーズ",
   "landing.logDesc":
     "座標系と回転といった基礎から、キャリブレーション・3D 検出・占有格子・軌跡予測まで、認識パイプラインを順に整理した記事です。",

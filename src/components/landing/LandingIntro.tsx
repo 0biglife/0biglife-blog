@@ -51,13 +51,13 @@ export default function LandingIntro() {
               <T k="landing.autonomyDesc" />
             </p>
           </Link>
-          <Link href="/tools/coordinate-frames" className={styles.card}>
-            <span className={styles.cardKicker}>TOOLS</span>
+          <Link href="/lab" className={styles.card}>
+            <span className={styles.cardKicker}>LAB</span>
             <p className={styles.cardTitle}>
-              <T k="landing.toolsTitle" />
+              <T k="landing.labTitle" />
             </p>
             <p className={styles.cardDesc}>
-              <T k="landing.toolsDesc" />
+              <T k="landing.labDesc" />
             </p>
           </Link>
           <Link href="/log" className={styles.card}>
