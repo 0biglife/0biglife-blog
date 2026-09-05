@@ -12,6 +12,8 @@ export type Post = {
   tags: string[];
   content: ReactNode;
   toc?: TOCItem[];
+  /** 본문의 전문용어에 용어 사전 모달이 붙었는지 (자율주행 글) */
+  hasGlossary?: boolean;
 };
 
 /**

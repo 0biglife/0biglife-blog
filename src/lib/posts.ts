@@ -20,6 +20,10 @@ import { compileMDX } from "next-mdx-remote/rsc";
 import { MarkdownRenderer } from "@/components/template/MarkdownRenderer";
 import { errorLog, slugify } from "./utils";
 import remarkGfm from "remark-gfm";
+import { remarkGlossary } from "./remarkGlossary";
+// 클라이언트 컴포넌트지만 서버에서 components 맵에 얹기만 하므로 안전하다.
+// 배럴이 아니라 파일 경로로 가져와 다른 컴포넌트가 딸려오지 않게 한다.
+import GlossaryTerm from "@/components/glossary/GlossaryTerm";
 
 const contentPostDir = path.join(process.cwd(), "content/posts");
 const contentLogDir = path.join(process.cwd(), "content/dev-logs");
@@ -123,16 +127,21 @@ export const getPostBySlug = async (slug: string): Promise<Post | null> => {
 
   const transformedContent = transformImagePaths(content, slug);
 
+  // 용어 자동 링크는 자율주행 글에만 켠다. 프론트엔드 글의 'PSD'나 'CAN' 이
+  // 자율주행 용어로 잡히는 오탐을 막기 위해서다. 개별 글에서 강제로 켜려면
+  // 프론트매터에 glossary: true 를 준다.
+  const glossaryOn = data.category === "자율주행" || data.glossary === true;
+
   const mdxSource = await compileMDX({
     source: transformedContent,
-    // components: MarkdownRenderer,
     components: {
       ...MarkdownRenderer,
       img: (props) => MarkdownRenderer.img({ ...props, slug }),
+      Term: GlossaryTerm,
     },
     options: {
       mdxOptions: {
-        remarkPlugins: [remarkGfm],
+        remarkPlugins: glossaryOn ? [remarkGfm, remarkGlossary] : [remarkGfm],
       },
     },
   });
@@ -150,6 +159,7 @@ export const getPostBySlug = async (slug: string): Promise<Post | null> => {
     tags: data.tags,
     content: mdxSource.content,
     toc,
+    hasGlossary: glossaryOn,
   };
 };
 

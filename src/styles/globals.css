@@ -48,3 +48,52 @@ body.chakra-ui-dark .inline-code {
   color: #f5f5f5;
   border-color: #4a5568;
 }
+
+/* ── 용어 사전: 본문에서 누를 수 있는 전문용어 ──
+   링크(파란색 밑줄)와 헷갈리지 않게 점선 밑줄로만 표시하고,
+   호버·포커스에서만 색과 배경을 준다. 한 글에 수십 개가 깔리므로
+   기본 상태는 최대한 조용해야 한다. */
+.gl-term {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed rgba(13, 148, 136, 0.55);
+  border-radius: 2px;
+  padding: 0 0 1px;
+  margin: 0;
+  cursor: pointer;
+  vertical-align: baseline;
+  text-align: left;
+  transition: background-color 0.14s ease, border-color 0.14s ease, color 0.14s ease;
+}
+
+.gl-term:hover,
+.gl-term:focus-visible {
+  color: #0f766e;
+  border-bottom-color: #0f766e;
+  border-bottom-style: solid;
+  background-color: rgba(13, 148, 136, 0.1);
+}
+
+.gl-term:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+body.chakra-ui-dark .gl-term {
+  border-bottom-color: rgba(94, 234, 212, 0.5);
+}
+
+body.chakra-ui-dark .gl-term:hover,
+body.chakra-ui-dark .gl-term:focus-visible {
+  color: #5eead4;
+  border-bottom-color: #5eead4;
+  background-color: rgba(94, 234, 212, 0.14);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gl-term {
+    transition: none;
+  }
+}

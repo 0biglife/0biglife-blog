@@ -23,6 +23,7 @@ import { getAllPosts, getPostBySlug } from "@/lib/posts";
 import Image from "next/image";
 import { TableOfContents } from "@/components";
 import { Giscus } from "@/components/template";
+import { GlossaryProvider } from "@/components/glossary";
 
 type Params = Promise<{ slug: string }>;
 
@@ -133,8 +134,25 @@ export default async function PostDetailPage({ params }: { params: Params }) {
                 style={{ objectFit: "cover" }}
               />
             </Box>
+            {post.hasGlossary && (
+              <Box
+                mb={6}
+                px={3}
+                py={2}
+                borderLeft="3px solid"
+                borderLeftColor="teal.400"
+                bg="blackAlpha.50"
+                _dark={{ bg: "whiteAlpha.100" }}
+                borderRadius="0 6px 6px 0"
+              >
+                <Text fontSize="0.82rem" opacity={0.8}>
+                  본문의 <Text as="span" borderBottom="1px dashed" borderColor="teal.500">점선 밑줄</Text> 친
+                  전문용어를 누르면 설명이 열립니다.
+                </Text>
+              </Box>
+            )}
             <Box className="prose lg:prose-lg" flex="1">
-              {post.content}
+              <GlossaryProvider>{post.content}</GlossaryProvider>
             </Box>
             <Giscus />
           </Box>
