@@ -20,7 +20,8 @@ export type GlossaryCategory =
   | "로그·포맷"
   | "데이터 인프라"
   | "도구"
-  | "모델·학습";
+  | "모델·학습"
+  | "렌더링";
 
 export interface GlossaryEntry {
   /** URL/앵커로도 쓰이는 안정적 키 */
@@ -1394,6 +1395,160 @@ export const GLOSSARY: GlossaryEntry[] = [
     related: ["mcap", "log-time", "e2e", "odd"],
     post: { label: "시뮬레이션과 리시뮬", href: "/posts/av-simulation" },
     match: ["리시뮬", "닫힌 루프", "열린 루프"],
+  },
+
+  /* ─────────────────────────── 렌더링 ─────────────────────────── */
+  {
+    id: "webgl",
+    term: "WebGL",
+    full: "Web Graphics Library",
+    category: "렌더링",
+    summary: "브라우저에서 GPU를 직접 다루는 저수준 그래픽 API. OpenGL ES 를 웹으로 옮긴 것이다.",
+    body: [
+      "캔버스에 삼각형과 점을 그리는 데 필요한 것만 준다 — 버퍼, 셰이더, 텍스처, 드로우콜. 씬 그래프도 카메라도 조명도 없다. 그건 위층(three.js 같은)의 일이다.",
+      "자율주행 뷰어가 브라우저로 옮겨온 이유가 여기 있다. 설치 없이 링크 하나로 팀 전체가 같은 장면을 열고, 수십만~수백만 점을 GPU로 실시간에 그린다.",
+      "WebGL 1은 OpenGL ES 2.0, **WebGL 2는 OpenGL ES 3.0**에 대응한다. 둘의 차이가 대용량 점군에서는 꽤 크다.",
+    ],
+    related: ["webgl2", "threejs", "draw-call", "webgpu"],
+    post: { label: "WebGL2로 뷰어를 직접 짓기", href: "/posts/av-webgl" },
+    match: ["WebGL"],
+  },
+  {
+    id: "webgl2",
+    term: "WebGL2",
+    category: "렌더링",
+    summary:
+      "OpenGL ES 3.0 기반의 웹 그래픽 API. 정수 attribute·표준 인스턴싱·3D 텍스처·트랜스폼 피드백이 들어오면서 대용량 데이터 시각화가 실용적이 됐다.",
+    body: [
+      "자율주행 데이터 관점에서 WebGL 1과 실제로 갈리는 지점들:",
+      "- **정수 attribute** — intensity·ring·라벨 id 를 float 로 부풀리지 않고 `u8`·`u16` 그대로 올린다. 3천만 점이면 수백 MB 차이가 난다.",
+      "- **표준 인스턴싱** — 3D 박스 수백 개를 드로우콜 한 번에.",
+      "- **3D 텍스처** — 점유 격자를 텍스처 한 장으로 올려 셰이더에서 조회한다. WebGL 1 로는 불가능했다.",
+      "- **트랜스폼 피드백** — 정점 셰이더 출력을 버퍼로 되받아 CPU 없이 상태를 갱신한다.",
+      "- **MRT·정수 렌더타깃** — 화면과 함께 객체 id 버퍼를 그려 GPU 피킹에 쓴다.",
+      "- **VAO·UBO·`gl_VertexID`·`texelFetch`** — 상태 전환과 조회 비용을 줄인다.",
+      "정리하면 WebGL 2 의 값어치는 화려한 효과가 아니라 **버퍼를 어떻게 담고 몇 번에 그리느냐**에 있다.",
+    ],
+    related: ["webgl", "instancing", "vao", "transform-feedback", "gpu-picking", "threejs"],
+    post: { label: "WebGL2로 뷰어를 직접 짓기", href: "/posts/av-webgl" },
+    match: ["WebGL2", "WebGL 2"],
+  },
+  {
+    id: "threejs",
+    term: "three.js",
+    category: "렌더링",
+    summary: "WebGL 위에 씬 그래프·카메라·재질·로더를 얹은 자바스크립트 3D 라이브러리.",
+    body: [
+      "WebGL 과 경쟁하는 물건이 아니라 **그 위의 층**이다. three.js 도 내부적으로 WebGL 을 호출한다.",
+      "강한 곳은 분명하다 — 부모-자식 좌표 변환, 쿼터니언, 카메라 컨트롤(OrbitControls), GLTF 로더, PBR 재질. \"3D 장면\"을 만드는 일에는 압도적으로 낫다.",
+      "반대로 자율주행 뷰어의 본체는 장면이 아니라 **대용량 데이터 스트림**이라, 최적화를 더할수록 프레임워크를 우회하게 된다.",
+      "- 박스 200개를 `Mesh` 200개로 두면 프레임마다 행렬 갱신·컬링이 200번. 결국 하나로 병합하게 된다.",
+      "- `BufferAttribute` 는 CPU 쪽 사본을 계속 들고 있어 수천만 점에서 메모리가 문제가 된다.",
+      "- 인터리브드 레이아웃·부분 갱신·더블 버퍼링을 정밀하게 조율하려 할수록 프레임워크와 씨름한다.",
+      "**못 하는 게 아니라, 필요한 최적화를 하나씩 적용할수록 three.js 를 안 쓰는 코드에 가까워진다**는 게 정확한 표현이다.",
+    ],
+    related: ["webgl", "webgl2", "draw-call", "instancing"],
+    post: { label: "WebGL2로 뷰어를 직접 짓기", href: "/posts/av-webgl" },
+    match: ["three.js"],
+  },
+  {
+    id: "draw-call",
+    term: "드로우콜",
+    full: "draw call",
+    category: "렌더링",
+    summary: "CPU가 GPU에게 \"이 버퍼를 이렇게 그려라\"고 지시하는 한 번의 명령. 개수가 곧 프레임 예산이다.",
+    body: [
+      "GPU 는 한 번에 많이 그리는 데 강하고, 자주 지시받는 데 약하다. 드로우콜마다 상태 검증과 드라이버 왕복이 붙기 때문에, **점 100만 개를 한 번에 그리는 것이 점 1000개를 1000번 그리는 것보다 훨씬 빠르다.**",
+      "그래서 뷰어 최적화의 첫 단계는 늘 같다 — **합치기.** 같은 재질의 선분은 하나의 버퍼로 병합하고, 반복되는 형상은 인스턴싱으로 묶는다.",
+      "이 사이트의 라이다 씬도 박스 19개의 엣지를 전부 하나의 `LineSegments` 로 합쳐 드로우콜 한 번에 그린다.",
+    ],
+    related: ["instancing", "threejs", "webgl2", "vao"],
+    post: { label: "WebGL2로 뷰어를 직접 짓기", href: "/posts/av-webgl" },
+    match: ["드로우콜"],
+  },
+  {
+    id: "instancing",
+    term: "인스턴싱",
+    full: "instanced rendering",
+    category: "렌더링",
+    summary: "같은 형상을 위치·크기·색만 바꿔 수백~수만 개 그리는 기법. 드로우콜 한 번으로 끝난다.",
+    body: [
+      "형상(예: 큐브 엣지) 버퍼는 하나만 두고, 인스턴스마다 다른 값(중심·크기·yaw·클래스 색)을 별도 attribute 로 붙인다. `vertexAttribDivisor` 로 \"이 attribute 는 정점마다가 아니라 인스턴스마다 하나씩\"이라고 알려준다.",
+      "```\ngl.vertexAttribDivisor(locCenter, 1);\ngl.drawArraysInstanced(gl.LINES, 0, 24, boxCount);\n```",
+      "자율주행 뷰어에서 3D 박스·화살표·궤적 마커·복셀 큐브가 전부 여기 해당한다. WebGL 2 에서는 표준 기능이고, WebGL 1 에서는 확장에 의존해야 했다.",
+    ],
+    related: ["draw-call", "webgl2", "threejs"],
+    match: ["인스턴싱"],
+  },
+  {
+    id: "vao",
+    term: "VAO",
+    full: "Vertex Array Object",
+    category: "렌더링",
+    summary: "정점 attribute 설정을 하나로 묶어둔 객체. 프레임마다 반복되는 상태 세팅을 한 번의 바인딩으로 줄인다.",
+    body: [
+      "VAO 가 없으면 그릴 때마다 버퍼 바인딩과 `vertexAttribPointer` 호출을 attribute 수만큼 반복해야 한다. 그리는 대상이 여러 종류면 이 비용이 쌓인다.",
+      "VAO 에 한 번 담아두면 이후에는 `bindVertexArray` 한 번이다. WebGL 2 에서 표준이 됐다.",
+    ],
+    related: ["webgl2", "draw-call"],
+    match: ["VAO"],
+  },
+  {
+    id: "transform-feedback",
+    term: "트랜스폼 피드백",
+    full: "transform feedback",
+    category: "렌더링",
+    summary: "정점 셰이더의 출력을 화면이 아니라 버퍼로 되받는 기능. CPU를 거치지 않고 GPU 안에서 상태를 갱신한다.",
+    body: [
+      "보통 정점 셰이더 결과는 래스터라이저로 흘러가 픽셀이 되지만, 트랜스폼 피드백을 켜면 그 결과를 **버퍼에 다시 적을 수 있다.**",
+      "쓰임은 시뮬레이션·누적 계산이다. 점군을 프레임마다 누적하거나, 궤적을 GPU에서 적분하거나, 필터링 결과를 다음 프레임 입력으로 넘길 때 CPU 왕복이 사라진다.",
+      "WebGL 2 의 기능이고, three.js 는 직접 노출하지 않는다(핑퐁 텍스처로 우회하는 방식이 흔하다).",
+    ],
+    related: ["webgl2", "webgpu", "threejs"],
+    match: ["트랜스폼 피드백"],
+  },
+  {
+    id: "gpu-picking",
+    term: "GPU 피킹",
+    full: "GPU picking / ID buffer",
+    category: "렌더링",
+    summary: "클릭한 지점의 객체를 CPU 레이캐스팅이 아니라, 객체 id를 그린 별도 버퍼를 읽어 알아내는 기법.",
+    body: [
+      "수십만 개 프리미티브에 대해 광선-교차 검사를 CPU 에서 도는 건 현실적이지 않다. 대신 화면을 그릴 때 **객체 id 를 정수 렌더타깃에 함께 그리고**(MRT), 클릭한 픽셀 하나만 읽는다.",
+      "함정 하나 — `readPixels` 는 GPU 파이프라인을 멈춰 세운다(스톨). WebGL 2 에서는 픽셀 버퍼 오브젝트로 받고 `fenceSync` 로 완료를 기다렸다가 `getBufferSubData` 하면 **비동기**가 되어 프레임이 끊기지 않는다.",
+    ],
+    related: ["webgl2", "draw-call"],
+    match: ["GPU 피킹"],
+  },
+  {
+    id: "float-precision",
+    term: "좌표 정밀도",
+    full: "float32 precision",
+    category: "렌더링",
+    summary: "GPU의 32비트 float은 가수부가 24비트뿐이라, 절대 좌표를 그대로 올리면 위치가 격자에 붙어 떨린다.",
+    body: [
+      "UTM 같은 절대 좌표는 수십만 m 단위다. 이 크기에서 float32 가 표현할 수 있는 최소 간격은 수 cm 로 벌어진다. 카메라를 당기면 점들이 눈에 띄게 계단처럼 튀고, 여러 프레임을 누적하면 벽이 두 겹으로 보인다.",
+      "해법은 단순하다. **원점을 옮긴다.** 에고 위치(또는 지도 타일 원점)를 기준으로 상대 좌표를 만들어 GPU 에 올리고, 큰 절대값은 CPU 의 float64 에만 둔다.",
+      "자율주행 뷰어에서는 선택이 아니라 필수다. 이 처리를 빼먹으면 \"먼 곳이 이상하게 지저분한\" 증상으로만 나타나서 원인을 찾기 어렵다.",
+    ],
+    related: ["webgl2", "ego-pose", "tf"],
+    post: { label: "WebGL2로 뷰어를 직접 짓기", href: "/posts/av-webgl" },
+    match: ["좌표 정밀도"],
+  },
+  {
+    id: "webgpu",
+    term: "WebGPU",
+    category: "렌더링",
+    summary: "WebGL의 후속 웹 그래픽 API. 컴퓨트 셰이더와 현대적인 상태 관리를 준다.",
+    body: [
+      "WebGL 이 OpenGL ES 계보라면 WebGPU 는 Vulkan·Metal·D3D12 계보다. 자율주행 뷰어 관점에서 중요한 차이는 둘이다.",
+      "- **컴퓨트 셰이더** — 점군 다운샘플링·정렬·컬링을 GPU 안에서 끝낸다. WebGL 2 에서는 트랜스폼 피드백으로 우회해야 했던 일들이다.",
+      "- **파이프라인 상태 객체** — 상태 전환 비용이 낮아 드로우콜 오버헤드가 줄어든다.",
+      "다만 브라우저·드라이버 편차가 남아 있어, 외부에 여는 뷰어라면 아직 폴백이 필요하다. 현실적인 태도는 **렌더러 인터페이스를 한 겹 두고 백엔드를 갈아끼울 수 있게 짜 두는 것**이다.",
+    ],
+    related: ["webgl2", "transform-feedback", "webgl"],
+    post: { label: "WebGL2로 뷰어를 직접 짓기", href: "/posts/av-webgl" },
+    match: ["WebGPU"],
   },
 ];
 

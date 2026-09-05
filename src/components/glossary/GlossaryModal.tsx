@@ -31,6 +31,7 @@ const HUE: Record<GlossaryCategory, { light: string; dark: string }> = {
   "데이터 인프라": { light: "#6d28d9", dark: "#c4b5fd" },
   도구: { light: "#475569", dark: "#cbd5e1" },
   "모델·학습": { light: "#be123c", dark: "#fda4af" },
+  렌더링: { light: "#c2410c", dark: "#fdba74" },
 };
 
 /** **굵게** 와 `코드` 만 해석하는 최소 인라인 렌더러 */
