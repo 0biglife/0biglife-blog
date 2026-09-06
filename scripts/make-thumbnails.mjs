@@ -187,6 +187,115 @@ export const THUMBS = [
         .join("")}
       <rect x="280" y="368" width="240" height="13" rx="6.5" fill="currentColor" opacity="0.9"/>`),
   },
+  {
+    slug: "av-sensors",
+    no: "19",
+    title: "SENSORS",
+    accent: "#f97316",
+    art: svg(`
+      <circle cx="400" cy="288" r="14" stroke="currentColor" stroke-width="2.4"/>
+      <circle cx="400" cy="288" r="5" fill="currentColor"/>
+      ${Array.from({ length: 5 }, (_, i) => {
+        const r = 48 + i * 34;
+        return `<path d="M ${400 - r} 288 A ${r} ${r} 0 0 1 ${400 + r} 288" stroke="currentColor" stroke-width="1.8" opacity="${(0.75 - i * 0.13).toFixed(2)}" fill="none"/>`;
+      }).join("")}
+      ${(() => {
+        const r = seeded(41);
+        return Array.from({ length: 30 }, () => {
+          const a = Math.PI + r() * Math.PI;
+          const d = 60 + r() * 160;
+          return `<circle cx="${(400 + Math.cos(a) * d).toFixed(1)}" cy="${(288 + Math.sin(a) * d * 0.55).toFixed(1)}" r="2" fill="currentColor" opacity="${(0.3 + r() * 0.5).toFixed(2)}"/>`;
+        }).join("");
+      })()}`),
+  },
+  {
+    slug: "av-localization",
+    no: "20",
+    title: "LOCALIZATION",
+    accent: "#34d399",
+    art: svg(`<defs>${ARROW}</defs>
+      <path d="M262 344 C 320 344 330 250 386 250 C 440 250 452 320 520 312"
+            stroke="currentColor" stroke-width="2.4" fill="none" opacity="0.35" stroke-dasharray="7 6"/>
+      <path d="M262 344 C 322 344 332 238 390 238 C 446 238 460 306 538 296"
+            stroke="currentColor" stroke-width="2.6" fill="none"/>
+      <circle cx="262" cy="344" r="6" fill="currentColor"/>
+      <circle cx="538" cy="296" r="6" stroke="currentColor" stroke-width="2.4"/>
+      <line x1="520" y1="312" x2="538" y2="296" stroke="currentColor" stroke-width="1.6" opacity="0.5"/>
+      <path d="M446 200 L446 224" stroke="currentColor" stroke-width="1.6" opacity="0.5"/>
+      <path d="M434 208 L458 208" stroke="currentColor" stroke-width="1.6" opacity="0.5"/>`),
+  },
+  {
+    slug: "av-planning-control",
+    no: "21",
+    title: "PLANNING",
+    accent: "#60a5fa",
+    art: svg(`<defs>${ARROW}</defs>
+      <line x1="250" y1="216" x2="550" y2="216" stroke="currentColor" stroke-width="1.4" opacity="0.28"/>
+      <line x1="250" y1="360" x2="550" y2="360" stroke="currentColor" stroke-width="1.4" opacity="0.28"/>
+      <line x1="250" y1="288" x2="550" y2="288" stroke="currentColor" stroke-width="1.4" opacity="0.2" stroke-dasharray="12 12"/>
+      <circle cx="278" cy="324" r="6" fill="currentColor"/>
+      <path d="M278 324 C 350 324 380 250 470 244" stroke="currentColor" stroke-width="2.8" fill="none" marker-end="url(#ah)"/>
+      <path d="M278 324 C 350 324 386 320 470 318" stroke="currentColor" stroke-width="1.8" fill="none" opacity="0.35" stroke-dasharray="6 5"/>
+      <path d="M278 324 C 344 324 372 348 470 350" stroke="currentColor" stroke-width="1.8" fill="none" opacity="0.35" stroke-dasharray="6 5"/>
+      <rect x="486" y="228" width="34" height="20" rx="3" stroke="currentColor" stroke-width="1.8" opacity="0.8"/>`),
+  },
+  {
+    slug: "av-annotation-tool",
+    no: "22",
+    title: "EDITOR",
+    accent: "#c084fc",
+    art: svg(`
+      ${(() => {
+        const r = seeded(13);
+        return Array.from({ length: 30 }, () => {
+          const x = 268 + r() * 264;
+          const y = 200 + r() * 160;
+          return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2" fill="currentColor" opacity="${(0.22 + r() * 0.35).toFixed(2)}"/>`;
+        }).join("");
+      })()}
+      <path d="M318 246 L442 226 L482 250 L358 272 Z" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M318 246 L318 316 L358 342 L358 272" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M482 250 L482 320 L358 342" stroke="currentColor" stroke-width="2" fill="none"/>
+      <path d="M442 226 L442 296 L482 320" stroke="currentColor" stroke-width="2" fill="none" opacity="0.45"/>
+      <path d="M318 316 L442 296" stroke="currentColor" stroke-width="2" fill="none" opacity="0.45"/>
+      ${[[318, 246], [442, 226], [482, 250], [358, 272], [318, 316], [482, 320], [358, 342], [442, 296]]
+        .map(([x, y]) => `<rect x="${x - 4}" y="${y - 4}" width="8" height="8" fill="currentColor"/>`)
+        .join("")}
+      <path d="M404 300 L404 336 L392 326 M404 336 L416 326" stroke="currentColor" stroke-width="2" fill="none" opacity="0.75"/>`),
+  },
+  {
+    slug: "av-annotation-backend",
+    no: "23",
+    title: "LABEL API",
+    accent: "#2dd4bf",
+    art: svg(`<defs>${ARROW}</defs>
+      <rect x="256" y="238" width="112" height="86" rx="5" stroke="currentColor" stroke-width="2"/>
+      <line x1="272" y1="262" x2="336" y2="262" stroke="currentColor" stroke-width="2.4" opacity="0.5"/>
+      <line x1="272" y1="282" x2="352" y2="282" stroke="currentColor" stroke-width="2.4" opacity="0.5"/>
+      <line x1="272" y1="302" x2="316" y2="302" stroke="currentColor" stroke-width="2.4" opacity="0.5"/>
+      <line x1="378" y1="270" x2="424" y2="270" stroke="currentColor" stroke-width="2" marker-end="url(#ah)"/>
+      <line x1="424" y1="296" x2="378" y2="296" stroke="currentColor" stroke-width="2" opacity="0.45" marker-end="url(#ah)"/>
+      <ellipse cx="492" cy="236" rx="52" ry="14" stroke="currentColor" stroke-width="2"/>
+      <path d="M440 236 L440 326" stroke="currentColor" stroke-width="2"/>
+      <path d="M544 236 L544 326" stroke="currentColor" stroke-width="2"/>
+      <ellipse cx="492" cy="326" rx="52" ry="14" stroke="currentColor" stroke-width="2"/>
+      <ellipse cx="492" cy="281" rx="52" ry="14" stroke="currentColor" stroke-width="1.6" opacity="0.4"/>`),
+  },
+  {
+    slug: "av-label-loop",
+    no: "24",
+    title: "LABEL LOOP",
+    accent: "#fb7185",
+    art: svg(`<defs>${ARROW}</defs>
+      <path d="M400 196 A 92 92 0 1 1 399 196" stroke="currentColor" stroke-width="2.4" fill="none" opacity="0.35"/>
+      <path d="M400 196 A 92 92 0 0 1 481 331" stroke="currentColor" stroke-width="2.8" fill="none" marker-end="url(#ah)"/>
+      <circle cx="400" cy="196" r="9" fill="currentColor"/>
+      <circle cx="492" cy="288" r="9" fill="currentColor" opacity="0.75"/>
+      <circle cx="400" cy="380" r="9" fill="currentColor" opacity="0.55"/>
+      <circle cx="308" cy="288" r="9" fill="currentColor" opacity="0.75"/>
+      <circle cx="400" cy="288" r="26" stroke="currentColor" stroke-width="1.6" opacity="0.3"/>
+      <path d="M390 288 L397 296 L412 279" stroke="currentColor" stroke-width="2.4" fill="none"/>`),
+  },
 ];
 
 /* ── 렌더 ──────────────────────────────────────────────────── */
