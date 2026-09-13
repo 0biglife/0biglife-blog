@@ -296,6 +296,31 @@ export const THUMBS = [
       <circle cx="400" cy="288" r="26" stroke="currentColor" stroke-width="1.6" opacity="0.3"/>
       <path d="M390 288 L397 296 L412 279" stroke="currentColor" stroke-width="2.4" fill="none"/>`),
   },
+  {
+    slug: "av-deskew",
+    no: "25",
+    title: "DESKEW",
+    accent: "#38bdf8",
+    art: svg(`<defs>${ARROW}</defs>
+      ${/* 왼쪽: 스윕이 도는 동안 밀린 벽 — 늦게 찍힌 점일수록 더 밀리고 더 진하다 */ ""}
+      <line x1="266" y1="192" x2="266" y2="384" stroke="currentColor" stroke-width="1.4"
+            opacity="0.22" stroke-dasharray="5 6"/>
+      ${Array.from({ length: 11 }, (_, i) => {
+        const y = 194 + i * 19;
+        const x = 266 + i * 5.4;
+        return `<circle cx="${x.toFixed(1)}" cy="${y}" r="3" fill="currentColor" opacity="${(0.3 + i * 0.065).toFixed(2)}"/>`;
+      }).join("")}
+      <path d="M266 194 L320 384" stroke="currentColor" stroke-width="1.6" opacity="0.5"/>
+      ${/* 스캔이 도는 방향 */ ""}
+      <path d="M212 250 A 46 46 0 0 1 212 326" stroke="currentColor" stroke-width="1.8"
+            fill="none" opacity="0.45" marker-end="url(#ah)"/>
+      <line x1="400" y1="288" x2="470" y2="288" stroke="currentColor" stroke-width="2.2" marker-end="url(#ah)"/>
+      ${/* 오른쪽: 기준 시각으로 되돌린 같은 벽 */ ""}
+      <line x1="536" y1="192" x2="536" y2="384" stroke="currentColor" stroke-width="1.8" opacity="0.55"/>
+      ${Array.from({ length: 11 }, (_, i) =>
+        `<circle cx="536" cy="${194 + i * 19}" r="3" fill="currentColor" opacity="0.9"/>`
+      ).join("")}`),
+  },
 ];
 
 /* ── 렌더 ──────────────────────────────────────────────────── */

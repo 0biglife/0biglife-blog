@@ -774,7 +774,8 @@ export const GLOSSARY: GlossaryEntry[] = [
       "그래서 필요한 재료가 **점별 타임스탬프 + 고주파 에고 포즈**다. 둘 중 하나만 없어도 보정을 할 수 없고, 이건 기록 단계에서 결정된다.",
     ],
     related: ["sweep", "point-cloud", "ego-pose", "tf"],
-    match: ["모션 보정"],
+    post: { label: "모션 디스큐", href: "/posts/av-deskew" },
+    match: ["모션 보정", "모션 디스큐"],
   },
 
   /* ─────────────────────────── 카메라·영상 ─────────────────────────── */
