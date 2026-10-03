@@ -2,10 +2,10 @@
 import { useState, useEffect } from "react";
 import { Box, Heading, Link, Text } from "@chakra-ui/react";
 import Image from "next/image";
-import { Post } from "@/lib/types";
+import { PostSummary } from "@/lib/types";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
-const SliderContainer = ({ posts }: { posts: Post[] }) => {
+const SliderContainer = ({ posts }: { posts: PostSummary[] }) => {
   const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   // const currentIndex = 0;

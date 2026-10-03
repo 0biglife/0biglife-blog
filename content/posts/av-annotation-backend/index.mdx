@@ -1,10 +1,13 @@
 ---
 title: "[자율주행] 어노테이션 툴 만들기 ② 백엔드 — 라벨을 잃지 않고 다투지 않게"
 date: "2026-09-07"
+updated: "2026-10-03"
 description: "에디터만으로는 도구가 아니다. 수십 명이 몇 달을 쓰면 반드시 온다 — 두 사람이 같은 씬을 열었고, 스펙이 바뀌어 과거 라벨을 고쳐야 하고, '이 박스 누가 언제 옮겼나'를 답해야 한다. 라벨 스키마 버저닝과 마이그레이션, 부분 저장과 멱등성, 낙관적 잠금, 리뷰 워크플로 상태기계, 감사 로그, 그리고 라벨 DB와 학습용 컬럼형 계층을 어떻게 나눌지를 정리한다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "어노테이션 툴"
+subcategory: "어노테이션과 품질"
+series: "annotation-quality"
+seriesOrder: 3
 tags: []
 ---
 
@@ -243,3 +246,8 @@ MCAP (원본, 수십 GB)
 - **라벨 DB와 학습용 컬럼형 계층을 분리**하고 버전 붙인 스냅샷으로 잇는다.
 
 이어서 볼 글: 에디터 쪽은 [① 에디터](/posts/av-annotation-tool), 자동 라벨과 품질 게이트로 루프를 닫는 이야기는 [③ 휴먼인더루프](/posts/av-label-loop), 데이터 계층은 [AV 데이터 플랫폼](/posts/av-data-platform)에서 다룬다.
+
+## 참고 자료
+
+- [RFC 6902 — JSON Patch](https://www.rfc-editor.org/rfc/rfc6902) — 라벨 변경을 연산 목록으로 표현할 때 참고할 표준.
+- [RFC 9110 — If-Match](https://www.rfc-editor.org/rfc/rfc9110.html#name-if-match) — 조건부 갱신으로 오래된 버전의 덮어쓰기를 방지하는 규약.

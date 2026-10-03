@@ -1,0 +1,67 @@
+.page { max-width: 1000px; margin: 0 auto; padding: 40px 16px 88px; color: inherit; }
+.breadcrumbs { display: flex; flex-wrap: wrap; gap: 12px; font-size: 13px; color: #52606c; margin-bottom: 36px; }
+.breadcrumbs a:hover { text-decoration: underline; }
+.eyebrow { font-family: "JetBrains Mono", monospace; font-size: 11px; letter-spacing: .13em; color: #427016; margin: 0 0 16px; }
+.title { font-size: clamp(28px, 5vw, 46px); font-weight: 750; letter-spacing: -.045em; line-height: 1.25; word-break: keep-all; overflow-wrap: anywhere; }
+.lead { max-width: 700px; color: #52606c; font-size: 16px; line-height: 1.85; margin: 20px 0 0; word-break: keep-all; overflow-wrap: anywhere; }
+.sectionHeading { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 12px; margin: 42px 0 18px; }
+.sectionHeading h2 { font-size: 21px; font-weight: 700; letter-spacing: -.03em; }
+.sectionHeading a { font-size: 13px; color: #427016; }
+.guide { display: block; color: inherit; padding: 24px; margin-top: 30px; background: #eff5e7; border-left: 3px solid #719440; border-radius: 0 10px 10px 0; }
+.guide strong { display: block; font-size: 17px; margin-bottom: 8px; }
+.guide p { font-size: 14px; line-height: 1.8; color: #445142; }
+.guide a { text-decoration: underline; text-underline-offset: 4px; font-weight: 600; }
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.card { display: flex; flex-direction: column; min-width: 0; padding: 24px; color: inherit; background: #f7f8f6; border: 1px solid #dfe4dc; border-radius: 12px; transition: border-color .18s, background .18s; }
+.card:hover { background: #f0f5e9; border-color: #759b42; }
+.cardMeta { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; font-family: "JetBrains Mono", monospace; font-size: 10px; line-height: 1.7; letter-spacing: .03em; color: #617152; }
+.cardTitle { margin: 16px 0 10px; font-size: clamp(18px, 2.3vw, 22px); font-weight: 700; line-height: 1.4; letter-spacing: -.025em; word-break: keep-all; overflow-wrap: anywhere; }
+.cardDescription { font-size: 14px; line-height: 1.8; color: #52606c; margin: 0 0 22px; word-break: keep-all; overflow-wrap: anywhere; }
+.cardCta { margin-top: auto; padding-top: 12px; border-top: 1px solid #dfe4dc; display: flex; justify-content: space-between; color: #427016; font-size: 12px; font-weight: 600; }
+.readingInfo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 30px; padding: 24px 0; border-block: 1px solid #dfe4dc; }
+.readingInfo dt { font-size: 12px; color: #427016; font-weight: 700; margin-bottom: 8px; }
+.readingInfo dd { font-size: 14px; line-height: 1.75; color: #52606c; }
+.chapterList { list-style: none; margin: 0; padding: 0; border-top: 1px solid #dfe4dc; }
+.chapterList li { border-bottom: 1px solid #dfe4dc; }
+.chapterLink { display: grid; grid-template-columns: 32px minmax(0, 1fr) 18px; gap: 16px; align-items: start; padding: 24px 4px; color: inherit; }
+.chapterLink:hover h3 { color: #427016; }
+.chapterNumber { font-family: "JetBrains Mono", monospace; font-size: 12px; line-height: 1.8; color: #617152; padding-top: 3px; }
+.chapterLink h3 { font-size: 18px; font-weight: 650; line-height: 1.6; word-break: keep-all; overflow-wrap: anywhere; }
+.chapterLink p { margin-top: 10px; color: #52606c; font-size: 14px; line-height: 1.85; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.chapterLink time { display: block; margin-top: 12px; font-size: 12px; color: #617152; }
+.backLink { color: #427016; font-size: 13px; line-height: 1.7; text-decoration: underline; text-underline-offset: 4px; }
+.postNav { margin: 24px 0 30px; padding: 16px 18px; background: #f4f7f0; border: 1px solid #dfe4dc; border-radius: 10px; }
+.postNavHeading { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; font-size: 14px; font-weight: 600; line-height: 1.7; }
+.postNavHeading a { color: #427016; }
+.position { flex: none; font: 12px "JetBrains Mono", monospace; color: #617152; }
+.contents { margin-top: 10px; }
+.contents summary { cursor: pointer; font-size: 12px; color: #52606c; padding: 7px 0; }
+.compactChapters { list-style: none; margin: 12px 0 0; padding: 0; }
+.compactChapters a { display: flex; align-items: baseline; gap: 12px; padding: 9px 10px; border-radius: 6px; font-size: 13px; line-height: 1.7; }
+.compactChapters a[aria-current="page"] { background: #e3ecd8; font-weight: 700; }
+.compactChapters a:hover { text-decoration: underline; text-underline-offset: 4px; }
+.continue { margin: 48px 0; padding-top: 24px; border-top: 1px solid #dfe4dc; }
+.nextGrid { margin-top: 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.nextLink { display: flex; flex-direction: column; gap: 12px; padding: 18px; border: 1px solid #dfe4dc; border-radius: 10px; line-height: 1.7; font-size: 14px; word-break: keep-all; overflow-wrap: anywhere; }
+.nextLink:hover { border-color: #759b42; }
+.smallLabel { font-size: 11px; color: #617152; }
+.card:focus-visible, .chapterLink:focus-visible, .postNav a:focus-visible, .contents summary:focus-visible, .nextLink:focus-visible, .guide a:focus-visible { outline: 2px solid #6e9635; outline-offset: 4px; }
+.dark .card, :global(body.chakra-ui-dark) .card { background: rgba(255,255,255,.025); border-color: #2a3440; color: #e8edf5; }
+.dark .card:hover, :global(body.chakra-ui-dark) .card:hover { background: rgba(201,255,77,.04); border-color: #738e43; }
+.dark .cardMeta, .dark .cardCta, :global(body.chakra-ui-dark) .cardMeta, :global(body.chakra-ui-dark) .cardCta, :global(body.chakra-ui-dark) .eyebrow, :global(body.chakra-ui-dark) .backLink, :global(body.chakra-ui-dark) .readingInfo dt, :global(body.chakra-ui-dark) .sectionHeading a, :global(body.chakra-ui-dark) .postNavHeading a { color: #c9ff4d; }
+.dark .cardDescription, :global(body.chakra-ui-dark) .cardDescription, :global(body.chakra-ui-dark) .lead, :global(body.chakra-ui-dark) .readingInfo dd, :global(body.chakra-ui-dark) .chapterLink p, :global(body.chakra-ui-dark) .breadcrumbs, :global(body.chakra-ui-dark) .contents summary { color: #a8b3c4; }
+.dark .cardCta, :global(body.chakra-ui-dark) .cardCta, :global(body.chakra-ui-dark) .chapterList, :global(body.chakra-ui-dark) .chapterList li, :global(body.chakra-ui-dark) .readingInfo, :global(body.chakra-ui-dark) .continue, :global(body.chakra-ui-dark) .nextLink { border-color: #35404e; }
+:global(body.chakra-ui-dark) .guide, :global(body.chakra-ui-dark) .postNav { background: #1b2619; border-color: #475939; }
+:global(body.chakra-ui-dark) .guide p { color: #b9c5b4; }
+:global(body.chakra-ui-dark) .compactChapters a[aria-current="page"] { background: #35472a; }
+:global(body.chakra-ui-dark) .chapterNumber, :global(body.chakra-ui-dark) .chapterLink time, :global(body.chakra-ui-dark) .smallLabel, :global(body.chakra-ui-dark) .position { color: #a5b395; }
+:global(body.chakra-ui-dark) .chapterLink:hover h3 { color: #c9ff4d; }
+@media (max-width: 600px) {
+  .page { padding-top: 24px; }
+  .cards, .readingInfo, .nextGrid { grid-template-columns: minmax(0, 1fr); }
+  .card { padding: 21px; }
+  .readingInfo { gap: 18px; }
+  .chapterLink { gap: 10px; grid-template-columns: 26px minmax(0, 1fr) 14px; }
+  .chapterLink h3 { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } }

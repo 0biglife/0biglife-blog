@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { T } from "@/i18n/T";
 import { getAllPosts } from "@/lib/posts";
+import SeriesCards from "@/components/series/SeriesCards";
 
 import styles from "./LandingIntro.module.css";
 
@@ -18,9 +19,7 @@ import styles from "./LandingIntro.module.css";
  */
 export default function LandingIntro() {
   // 시리즈는 frontmatter 에서 파생한다 — 글이 늘면 홈도 같이 는다.
-  const series = getAllPosts()
-    .filter((p) => p.category === "자율주행")
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  const series = getAllPosts().filter((p) => p.category === "자율주행");
 
   return (
     <section className={styles.section}>
@@ -76,20 +75,9 @@ export default function LandingIntro() {
             <h2 className={styles.blockTitle}>
               <T k="landing.seriesTitle" />
             </h2>
-            <ol className={styles.series}>
-              {series.map((post, i) => (
-                <li key={post.slug} className={styles.seriesItem}>
-                  <Link href={`/posts/${post.slug}`} className={styles.seriesLink}>
-                    <span className={styles.seriesNo}>
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <span>{post.title}</span>
-                  </Link>
-                </li>
-              ))}
-            </ol>
-            <Link href="/log" className={styles.seriesMore}>
-              <T k="landing.seriesMore" /> →
+            <SeriesCards posts={series} tone="dark" />
+            <Link href="/series" className={styles.seriesMore}>
+              시리즈별 목차와 읽기 안내 →
             </Link>
           </>
         )}

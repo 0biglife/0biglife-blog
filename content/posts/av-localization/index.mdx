@@ -1,10 +1,13 @@
 ---
 title: "[자율주행] 측위와 SLAM — 에고 포즈는 어디서 오는가"
 date: "2026-09-06"
+updated: "2026-10-03"
 description: "시리즈 내내 에고 포즈를 당연한 듯 썼다. 씬의 정의도, 모션 보정도, 점군 누적도, 라벨 품질의 상한도 전부 여기 걸려 있는데 그게 어떻게 만들어지는지는 짚은 적이 없다. map·odom·base_link 세 프레임이 왜 나뉘어 있는지, GNSS·IMU·라이다 오도메트리가 어떻게 합쳐지는지, SLAM이 오프라인에서 하는 일은 무엇인지, 그리고 온라인 포즈와 리파인 포즈를 섞으면 왜 라벨이 조용히 틀어지는지를 정리한다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "기초"
+subcategory: "센서와 좌표계"
+series: "sensors-coordinates"
+seriesOrder: 6
 tags: []
 ---
 
@@ -141,3 +144,8 @@ pose_version: v3
 - 포즈 값만 남기지 말고 **공분산·GNSS 상태·점프 이벤트**를 함께 남긴다. 그래야 나쁜 구간을 질의로 걸러낸다.
 
 이어서 볼 글: 센서가 무엇을 재는지는 [센서 물리](/posts/av-sensors), 좌표 변환의 근간은 [3D 기하 기초](/posts/av-3d-geometry), 이 포즈 위에서 만들어지는 정답은 [어노테이션 데이터](/posts/av-annotation-data)에서 다룬다.
+
+## 참고 자료
+
+- [ROS REP-105](https://github.com/ros-infrastructure/rep/blob/master/rep-0105.rst) — map·odom·base_link의 역할과 연속성.
+- [LIO-SAM 공식 구현](https://github.com/TixiaoShan/LIO-SAM) — 라이다·IMU 결합과 점별 시각을 이용한 디스큐.

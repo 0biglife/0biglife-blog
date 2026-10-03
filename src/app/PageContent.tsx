@@ -4,8 +4,11 @@ import dynamic from "next/dynamic";
 import { Title } from "@/components";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { Box, Container } from "@chakra-ui/react";
-import { DevLogSummary, Post } from "@/lib/types";
+import { DevLogSummary, PostSummary } from "@/lib/types";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import SeriesCards from "@/components/series/SeriesCards";
+import seriesStyles from "@/components/series/Series.module.css";
 
 // Next.js 15 부터는 `ssr: false` 사용 불가능으로 클라이언트 컴포넌트 따로 분리
 const SliderContainer = dynamic(
@@ -19,8 +22,8 @@ const FilteredPostList = dynamic(
 );
 
 interface PostContentProps {
-  posts: Post[];
-  featuredPosts: Post[];
+  posts: PostSummary[];
+  featuredPosts: PostSummary[];
   devLogs: DevLogSummary[];
 }
 
@@ -48,6 +51,13 @@ export default function PostContent({
 
   return (
     <Container maxWidth="900px" userSelect={"none"} px={{ base: 0, sm: 5 }}>
+      <section aria-labelledby="log-series-title" style={{ marginBottom: 44 }}>
+        <div className={seriesStyles.sectionHeading}>
+          <h2 id="log-series-title">자율주행, 주제별로 읽기</h2>
+          <Link href="/series">처음 읽는 분을 위한 안내 →</Link>
+        </div>
+        <SeriesCards posts={posts} />
+      </section>
       <Box
         display="flex"
         flexDirection={{ base: "column", sm: "row" }}

@@ -1,10 +1,13 @@
 ---
 title: "[자율주행] 모션 디스큐(deskew) — 한 스윕은 한 순간이 아니다"
 date: "2026-09-13"
+updated: "2026-10-03"
 description: "회전 라이다는 한 바퀴 도는 100ms 동안에도 차가 움직인다. 그래서 한 스윕의 점들은 서로 다른 원점에서 본 값이고, 보정하지 않으면 직선 벽이 휘고 차가 늘어난다. deskew가 정확히 무슨 연산인지, 무엇을 고치고 무엇을 못 고치는지, 내 데이터가 이미 보정돼 있는지 확인하는 네 가지 방법, 그리고 기준 시각·이중 보정·저주파 포즈 같은 실무의 함정까지 정리한다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "센서"
+subcategory: "센서와 좌표계"
+series: "sensors-coordinates"
+seriesOrder: 7
 tags: []
 ---
 
@@ -217,3 +220,7 @@ deskew:
 - 보정본은 **버전이 붙는 파생 데이터**로 다루고, 원본과 메타데이터를 함께 남긴다.
 
 이어서 볼 글: 이 왜곡이 왜 생기는지의 물리는 [센서는 어떻게 세상을 재는가](/posts/av-sensors), 시간과 공간을 맞추는 일 전체는 [센서 캘리브레이션](/posts/av-calibration), 보정에 쓰는 포즈가 어디서 오는지는 [측위와 SLAM](/posts/av-localization), 보정본을 어떤 토픽으로 남길지는 [MCAP 완전 정복](/posts/av-mcap)에서 다룬다.
+
+## 참고 자료
+
+- [LIO-SAM 공식 구현](https://github.com/TixiaoShan/LIO-SAM) — 라이다·IMU 결합과 점별 시각을 이용한 디스큐.

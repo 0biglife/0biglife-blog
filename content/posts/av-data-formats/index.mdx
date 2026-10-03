@@ -1,10 +1,13 @@
 ---
 title: "[자율주행] 로그 데이터와 포맷 — rosbag에서 MCAP, 그리고 컬럼형까지"
 date: "2026-07-24"
-description: "시리즈 내내 '데이터가 있다'고 가정했다. 그런데 주행 한 번은 실제로 어떤 파일에 기록되고, 페타바이트에서 필요한 장면을 어떻게 골라내는가. 여기가 자율주행 데이터 엔지니어의 본진이다. rosbag의 한계, 왜 업계가 MCAP으로 옮겨가는지, 그리고 record용 MCAP과 분석·학습용 컬럼형(Parquet)을 나눠 쓰는 2층 구조를 — 실제 코드로 MCAP을 읽어 좌표변환하고 Parquet으로 굽는 예시까지 — 정리한다."
+updated: "2026-10-03"
+description: "시리즈 내내 '데이터가 있다'고 가정했다. 그런데 주행 한 번은 실제로 어떤 파일에 기록되고, 페타바이트에서 필요한 장면을 어떻게 골라내는가. 여기가 자율주행 데이터 엔지니어의 본진이다. ROS 1 rosbag과 ROS 2 rosbag2의 차이, MCAP의 선택 기준, 그리고 record용 MCAP과 분석·학습용 컬럼형(Parquet)을 나눠 쓰는 2층 구조를 — 스키마별 어댑터가 필요한 변환 코드 골격까지 — 정리한다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "데이터"
+subcategory: "데이터 플랫폼"
+series: "data-platform"
+seriesOrder: 2
 tags: []
 ---
 
@@ -20,17 +23,17 @@ tags: []
 
 ## rosbag — 고전
 
-로보틱스는 오래 **ROS의 rosbag**으로 기록해왔다. 토픽별 메시지를 시간순으로 담는 컨테이너다. 생태계가 두텁지만 약점이 있다 — ROS에 강하게 묶이고(스키마가 ROS 메시지 정의에 의존), 대용량에서 **탐색(seek)·인덱싱**이 약하며, ROS 밖 도구와의 호환이 번거롭다.
+먼저 **ROS 1의 rosbag 파일 형식**과 **ROS 2의 rosbag2 기록 도구**를 구분해야 한다. ROS 1 bag에도 청크와 인덱스가 있다. ROS 2 rosbag2는 저장 플러그인을 통해 SQLite나 MCAP 등을 사용할 수 있으므로 'rosbag에는 인덱스가 없고 MCAP으로 바꿔야 한다'는 비교는 맞지 않는다. 실제 선택은 사용하는 메시지 인코딩, 압축, 시간 구간 읽기, 기존 도구와의 호환성을 기준으로 한다.
 
-## MCAP — 요즘의 표준
+## MCAP — 범용 로그 컨테이너
 
-그래서 업계가 옮겨가는 컨테이너가 **MCAP**이다. 한 줄로 말하면 "**어떤 메시지든** 담고, **빠르게 되감고**, **자기 자신을 설명하는** 로그 파일".
+ROS 안팎에서 사용할 수 있는 컨테이너 중 하나가 **MCAP**이다. 한 줄로 말하면 "**어떤 메시지든** 담고, **빠르게 되감고**, **자기 자신을 설명하는** 로그 파일".
 
 - **스키마 불가지(schema-agnostic)** — ROS 메시지든 **Protobuf**든 JSON이든, 채널마다 스키마를 함께 박아 담는다. 그래서 **self-describing** — 파일만 있으면 무엇이 들었는지 안다.
-- **인덱싱 + 빠른 seek** — 끝에 인덱스를 둬서 "37.5초의 라이다"로 즉시 점프. 페타바이트 replay의 전제.
+- **선택적인 인덱싱 + seek** — 요약·청크 인덱스를 기록하면 원하는 토픽과 시각을 찾아 필요한 구간만 읽을 수 있다. 모든 MCAP 파일이 인덱스를 포함하는 것은 아니다.
 - **멀티모달·압축·append 친화**. ROS에 안 묶인다.
 
-MCAP은 [시각화 도구](/posts/av-visualization) Foxglove가 만들어 사실상 표준이 됐고, 로그 기록·재생 계층의 기본값으로 자리잡는 중이다.
+MCAP은 Foxglove가 개발한 공개 포맷이며, rosbag2와 [시각화 도구](/posts/av-visualization)에서 활용할 수 있다. 프로젝트의 기록·복구·읽기 요구를 검증한 뒤 채택하는 것이 좋다.
 
 여기서는 개요만 짚는다. 파일 안쪽 구조, 스키마 선택, 세 개의 시계, 인지·융합·계획·제어의 토픽 설계, 실제 마이그레이션 절차는 [MCAP 완전 정복](/posts/av-mcap)에서 따로 판다. **회사 로그 포맷을 실제로 MCAP으로 바꾸는 중이라면 그쪽이 본편이다.**
 
@@ -46,9 +49,17 @@ MCAP은 [시각화 도구](/posts/av-visualization) Foxglove가 만들어 사실
 
 페타바이트 MCAP을 매번 뒤져 "밤에 좌회전한 장면"을 찾을 수는 없다. 그래서 **MCAP → 필요한 신호를 뽑아 컬럼형(Parquet) 레이크하우스로 굽고**, 그 위에서 질의한다. record는 MCAP, analytics는 Parquet — 이 2층이 현대 AV 데이터 스택의 뼈대다.
 
-## 실전: MCAP을 읽어 Parquet으로 굽기
+## 변환 골격: 캡처 시각을 맞춘 뒤 Parquet으로 굽기
 
-말보다 코드다. MCAP에서 라이다와 에고 포즈를 읽어, [앞 글의 좌표 변환](/posts/av-3d-geometry)으로 점을 월드로 옮기고, 프레임 메타를 Parquet으로 쓰는 골격이다.
+MCAP에서 라이다와 에고 포즈를 읽어, [좌표 변환](/posts/av-3d-geometry)으로 점을 월드로 옮기고 프레임 메타를 Parquet으로 쓴다. 아래는 **스키마별 어댑터를 생략한 설계 예시이며 그대로 실행되는 완성 스크립트는 아니다.** 핵심은 마지막으로 도착한 포즈를 재사용하지 않고, 모든 입력을 공통 시간축에 정합한 뒤 센서 캡처 시각의 포즈를 조회하는 것이다.
+
+헬퍼 함수에는 다음 계약이 필요하다.
+
+- `decode(schema, encoding, data)`는 채널의 스키마와 인코딩에 맞는 객체를 반환한다.
+- `capture_time_ns(msg)`는 센서별 시계를 보정한 공통 시간축의 캡처 시각을 반환한다. `log_time`으로 대체하지 않는다.
+- `PoseTimeline.from_samples(samples)`는 포즈 캡처 시각으로 정렬하고, 중복·불연속·유효하지 않은 자세를 검사한다. `interpolate(t, max_gap_ns=...)`는 구간 밖 외삽을 거부하며, 양쪽 포즈 간격이 한도를 넘으면 실패한다. 이동은 선형 보간하고 정규화한 쿼터니언은 SLERP한다.
+- `calibration_at(t)`는 해당 차량·센서·시각에 유효한 버전의 `T_lidar_to_ego`를 반환하며, 불확실한 버전은 실패 처리한다.
+- `to_reference_xyz(msg)`는 스윕의 점들을 지정한 캡처 기준 시각의 라이다 프레임으로 맞춘 점군을 반환한다. 이를 위해 필요하면 [점별 디스큐](/posts/av-deskew)를 수행한다. 포즈 보간 하나만으로 스윕 전체의 시간 왜곡이 해결되지는 않는다.
 
 ```python
 from mcap.reader import make_reader
@@ -56,42 +67,49 @@ import numpy as np
 import pyarrow as pa
 import pyarrow.parquet as pq
 
+# decode, capture_time_ns, PoseTimeline, calibration_at,
+# to_reference_xyz는 위 계약을 만족하는 프로젝트별 어댑터다.
+path = "drive_0042.mcap"
+pose_samples = []
+with open(path, "rb") as f:
+    for schema, channel, message in make_reader(f).iter_messages(topics=["/ego_pose"]):
+        msg = decode(schema, channel.message_encoding, message.data)
+        pose_samples.append((capture_time_ns(msg), msg.position, msg.orientation_quat))
+poses = PoseTimeline.from_samples(pose_samples)
+
 rows = []
-with open("drive_0042.mcap", "rb") as f:
-    reader = make_reader(f)
-    latest_pose = None  # 최신 에고 포즈 (T_ego->world)
+with open(path, "rb") as f:
+    for schema, channel, message in make_reader(f).iter_messages(topics=["/lidar/points"]):
+        msg = decode(schema, channel.message_encoding, message.data)
+        t_ns = capture_time_ns(msg)
+        # 50ms는 예시 정책값. 실제 포즈 주기·운동 오차 예산으로 정해야 한다.
+        T_ego_to_world = poses.interpolate(t_ns, max_gap_ns=50_000_000)
+        T_lidar_to_ego, calib_version = calibration_at(t_ns)
+        pts = to_reference_xyz(msg)
+        pts = pts[np.isfinite(pts).all(axis=1)]
+        if not len(pts):
+            continue
+        pts_h = np.c_[pts, np.ones(len(pts))]
+        world = (T_ego_to_world @ T_lidar_to_ego @ pts_h.T).T[:, :3]
+        rows.append({
+            "log_id": "drive_0042",
+            "capture_time_ns": t_ns,
+            "log_time_ns": message.log_time,  # 별도 보존: 기록 지연·탐색용
+            "calibration_version": calib_version,
+            "n_points": len(pts),
+            "x_center": float(world[:, 0].mean()),
+            "y_center": float(world[:, 1].mean()),
+        })
 
-    for schema, channel, message in reader.iter_messages(
-        topics=["/ego_pose", "/lidar/points"]
-    ):
-        # 채널의 스키마/인코딩에 맞춰 디코드 (ros2/protobuf 등)
-        msg = decode(schema, message.data)
-
-        if channel.topic == "/ego_pose":
-            # 자세는 쿼터니언 → 4x4 동차변환으로
-            latest_pose = to_transform(msg.position, msg.orientation_quat)
-
-        elif channel.topic == "/lidar/points" and latest_pose is not None:
-            pts = to_xyz(msg)                       # (N,3) 센서 좌표
-            pts_h = np.c_[pts, np.ones(len(pts))]   # 동차좌표
-            world = (latest_pose @ T_lidar_to_ego @ pts_h.T).T[:, :3]
-
-            rows.append({
-                "log_id":    "drive_0042",
-                "t_ns":      message.log_time,
-                "n_points":  len(pts),
-                "x_center":  float(world[:, 0].mean()),
-                "y_center":  float(world[:, 1].mean()),
-                # 필요한 파생 신호만 컬럼으로 (원본 점군은 별도 저장)
-            })
-
-# 로그·시간으로 파티션해 레이크하우스에 적재
-pq.write_to_dataset(
-    pa.Table.from_pylist(rows),
-    root_path="lake/frames",
-    partition_cols=["log_id"],
-)
+if rows:
+    pq.write_to_dataset(
+        pa.Table.from_pylist(rows),
+        root_path="lake/frames",
+        partition_cols=["log_id"],
+    )
 ```
+
+이 예시는 작은 로그를 두 번 읽고 결과를 메모리에 모은다. 운영에서는 포즈 인덱스·청크 배치 처리·멱등적인 결과 커밋을 사용하고, 시간·캘리브레이션 검증 실패는 이유와 함께 격리 큐로 보낸다. 로그 ID별 파티션도 파일 수가 과도해지지 않는지 점검해야 한다.
 
 핵심은 코드의 화려함이 아니라 **흐름**이다. `MCAP(원본 스트림) → 좌표 변환 → 필요한 신호만 컬럼으로 → 파티션된 Parquet`. 원본 점군은 그대로 두고, 질의에 쓸 **파생 신호와 메타만** 컬럼형으로 뽑는다.
 
@@ -112,11 +130,17 @@ pq.write_to_dataset(
 ## 정리
 
 - 주행은 멀티모달·고빈도·시간순 **로그 스트림**으로 기록된다.
-- rosbag(ROS 결합·seek 약함) → **MCAP**(스키마 불가지·인덱싱·self-describing)으로 record 계층이 이동 중이다.
+- **ROS 1 bag 포맷과 ROS 2 rosbag2 도구를 구분**한다. rosbag2에서도 MCAP을 저장 포맷으로 사용할 수 있다.
 - **record는 MCAP, analytics/학습은 컬럼형(Parquet)** 으로 나누는 2층 구조가 핵심 설계다.
 - MCAP을 읽어 좌표 변환 후 파생 신호를 파티션된 Parquet으로 구우면, 페타바이트에서 장면을 **질의로** 꺼낼 수 있다.
 - 데이터 버저닝(DVC/lakeFS)으로 "어떤 데이터가 어떤 모델을 만들었는지"를 못 박아야 재현성이 선다.
 
 그리고 이 2층을 실제로 어떤 인프라 위에 올리는가 — 저장 계층화, 레이크하우스, 학습 I/O — 는 [AV 데이터 플랫폼](/posts/av-data-platform)에서 이어진다.
 
-이렇게 쌓아둔 로그는 보관용이 아니다. 다음 글에서 이 로그를 **다시 돌려** 모델을 검증하는 이야기 — [시뮬레이션과 리시뮬](/posts/av-simulation)로 간다.
+이렇게 쌓아둔 로그는 보관용이 아니다. 관련 글에서 이 로그를 **다시 돌려** 모델을 검증하는 이야기 — [시뮬레이션과 리시뮬](/posts/av-simulation)로 간다.
+
+## 참고 자료
+
+- [rosbag2 공식 저장소](https://github.com/ros2/rosbag2) — ROS 2의 저장 플러그인과 MCAP·SQLite 기록 방식.
+- [MCAP 공식 사양](https://mcap.dev/spec) — 메시지 시각, 청크, 선택적인 요약·인덱스 구조.
+- [Apache Parquet 파일 구조](https://parquet.apache.org/docs/file-format/) — 컬럼 청크·로우 그룹과 분석용 접근 구조.

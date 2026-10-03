@@ -1,10 +1,13 @@
 ---
 title: "[자율주행] 카메라 이미지의 실제 — 왜곡 이미지, 보정, 그리고 잃는 것들"
 date: "2026-09-02"
+updated: "2026-10-03"
 description: "자율주행에서 '이미지 한 장'은 생각보다 복잡한 물건이다. 렌즈가 직선을 휘게 만들고(distorted image), 그걸 펴면 화각과 질감을 잃고, 어안은 아예 펼 수 없다. 게다가 파일에 담긴 픽셀은 이미 ISP 가 여러 번 가공한 결과이고, 롤링 셔터 때문에 한 장이 여러 시각에 걸쳐 만들어진다. 왜곡 모델과 보정의 트레이드오프, 라벨을 어느 이미지 위에 그릴 것인가, 그리고 로그에 영상을 어떻게 담을 것인가를 정리한다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "센서"
+subcategory: "센서와 좌표계"
+series: "sensors-coordinates"
+seriesOrder: 4
 tags: []
 ---
 
@@ -61,7 +64,7 @@ tags: []
 | `equidistant` / Kannala-Brandt | `k1~k4` | 어안 (120°~200°) |
 | double sphere, MEI | 별도 파라미터 | 초광각·전방위 |
 
-**화각이 120°를 넘어가면 핀홀 모델로는 표현이 안 된다.** 수학적으로도 그렇다 — 180° 어안을 평면에 펴려면 가장자리가 무한대로 늘어난다.
+**120°가 핀홀 모델의 수학적 한계는 아니다.** 핀홀의 평면 투영은 광축에서 90°에 가까워질수록 값이 발산하므로, 전체 화각 180°에 접근할수록 가장자리의 늘어짐이 커진다. 넓은 화각에서는 렌즈에 맞는 어안 모델을 사용하고, 보정할 출력 화각과 크롭 범위를 정해야 한다.
 
 ## 왜곡 보정이 공짜가 아닌 이유
 
@@ -200,3 +203,7 @@ frame_id:         camera_front
 라이다와 레이더가 물리적으로 어떻게 재는지는 [센서는 어떻게 세상을 재는가](/posts/av-sensors)에서 다룬다.
 
 이어서 볼 글: 좌표계와 변환의 근간은 [센서 캘리브레이션](/posts/av-calibration), 이 이미지들이 어느 태스크에 쓰이는지는 [인지 태스크 지도](/posts/av-perception-tasks), 로그에 담는 규약은 [MCAP 완전 정복](/posts/av-mcap)에서 이어진다.
+
+## 참고 자료
+
+- [OpenCV — Camera Calibration and 3D Reconstruction](https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html) — 내부·외부 파라미터, 왜곡 모델과 투영.

@@ -1,10 +1,13 @@
 ---
 title: "[자율주행] 점유 예측(Occupancy) — 박스로 안 잡히는 세상을 다루는 법"
 date: "2026-07-20"
+updated: "2026-10-03"
 description: "3D 박스는 '아는 물체'만 잡는다. 하지만 도로엔 박스로 분류되지 않는 것들 — 떨어진 적재물, 공사 자재, 누운 나무, 처음 보는 형상 — 이 널려 있다. 점유(occupancy)는 세상을 작은 3D 칸으로 나눠 '여기에 무언가 차 있는가'를 직접 예측한다. 클래스를 몰라도 부피를 안다. 점유 격자에서 점유 네트워크, 그리고 시간까지 예측하는 4D 점유로의 흐름을 정리한다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "인지"
+subcategory: "인지와 예측"
+series: "perception-prediction"
+seriesOrder: 5
 tags: []
 ---
 
@@ -60,4 +63,8 @@ tags: []
 - 검출과 점유는 경쟁이 아니라 보완이며, 최근엔 하나의 BEV 위에 통합된다.
 - 지금을 넘어 미래 점유를 예측하는 **4D 점유**로 확장 중이고, 비용(메모리·연산)이 핵심 제약이다.
 
-부피를 알았으니, 이제 그것들이 **어디로 갈지**를 물을 차례다. 다음 글은 [궤적 예측(Trajectory)](/posts/av-trajectory)이다.
+부피를 알았으니, 이제 그것들이 **어디로 갈지**를 물을 차례다. 관련 글은 [궤적 예측(Trajectory)](/posts/av-trajectory)이다.
+
+## 참고 자료
+
+- [Occ3D 공식 데이터·구현](https://github.com/Tsinghua-MARS-Lab/Occ3D) — 3D 점유 라벨 생성, 가시성 마스크와 평가.

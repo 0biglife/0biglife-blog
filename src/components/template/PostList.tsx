@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import { Post } from "@/lib/types";
+import { PostSummary } from "@/lib/types";
 import {
   Box,
   Heading,
@@ -20,7 +20,7 @@ const PostList = ({
   posts,
   viewMode,
 }: {
-  posts: Post[];
+  posts: PostSummary[];
   viewMode: "list" | "grid";
 }) => {
   const { t } = useLanguage();
@@ -87,7 +87,7 @@ const PostList = ({
     <Box>
       {viewMode === "list" ? (
         <Stack spacing={4}>
-          {currentPosts.map((post: Post) => (
+          {currentPosts.map((post: PostSummary) => (
             <Box
               as={Link}
               role="group"
@@ -156,7 +156,7 @@ const PostList = ({
         </Stack>
       ) : (
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={6}>
-          {currentPosts.map((post: Post) => (
+          {currentPosts.map((post: PostSummary) => (
             <Box
               as={Link}
               aria-label={`read more about ${post.title}`}

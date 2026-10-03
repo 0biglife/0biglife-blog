@@ -1,10 +1,13 @@
 ---
 title: "[자율주행] WebGL2로 뷰어를 직접 짓기 — three.js를 언제 벗어나는가"
 date: "2026-09-05"
+updated: "2026-10-03"
 description: "브라우저에서 수백만 점을 60fps로 그리려면 결국 GPU에 무엇을 어떻게 넘기느냐의 문제가 된다. WebGL1과 WebGL2가 자율주행 데이터에서 실제로 갈리는 지점(정수 attribute·gl_VertexID·인스턴싱·3D 텍스처·트랜스폼 피드백), three.js가 편한 구간과 오히려 걸림돌이 되는 구간, 그리고 자체 뷰어를 WebGL2로 설계할 때의 버퍼 레이아웃·부분 갱신·GPU 피킹·좌표 정밀도까지 — 이 사이트의 라이다 씬 코드를 근거로 정리한다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "시각화"
+subcategory: "시각화와 뷰어"
+series: "visualization"
+seriesOrder: 2
 tags: []
 ---
 
@@ -198,3 +201,7 @@ gl.drawArraysInstanced(gl.LINES, 0, 24, boxCount);   // 드로우콜 1번
 이 렌더러 위에 편집 기능을 얹어 실제 라벨링 도구로 만드는 이야기는 [어노테이션 툴 만들기 ① 에디터](/posts/av-annotation-tool)에서 이어진다.
 
 이어서 볼 글: 시각화의 역할과 도구 생태계는 [자율주행 시각화](/posts/av-visualization), 그 데이터가 어떤 포맷으로 들어오는지는 [MCAP 완전 정복](/posts/av-mcap), 좌표와 변환의 근간은 [3D 기하 기초](/posts/av-3d-geometry)에서 다룬다.
+
+## 참고 자료
+
+- [Khronos — WebGL 2.0 Specification](https://registry.khronos.org/webgl/specs/latest/2.0/) — 인스턴싱, 버퍼·텍스처와 WebGL2 API의 규약.

@@ -1,14 +1,17 @@
 ---
 title: "[자율주행] 센서 캘리브레이션 — 좌표계를 맞추지 못하면 아무것도 맞지 않는다"
 date: "2026-07-16"
+updated: "2026-10-03"
 description: "여러 센서를 겹쳐 쓰는 순간, '같은 대상을 같은 위치로 보고 있는가'가 모든 것을 가른다. 캘리브레이션은 각 센서의 내부 특성(intrinsic)과 센서 사이의 위치·자세(extrinsic), 그리고 시간축(temporal)을 정렬하는 작업이다. 몇 밀리미터·몇 밀리초의 어긋남이 어떻게 라이다 점을 이미지 밖으로 밀어내고 융합을 망가뜨리는지, 그리고 왜 캘리브레이션이 '한 번 하고 끝'이 아닌지를 정리한다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "캘리브레이션"
+subcategory: "센서와 좌표계"
+series: "sensors-coordinates"
+seriesOrder: 5
 tags: []
 ---
 
-[앞 글](/posts/av-scene-data)에서 씬(scene)은 여러 센서가 같은 순간을 각자의 좌표계로 기록한 묶음이라고 했다. 그렇다면 당연한 질문이 남는다. **그 좌표계들을 어떻게 하나로 맞추는가.** 이 정합의 정확도를 책임지는 작업이 **캘리브레이션(calibration)** 이다.
+[관련 글](/posts/av-scene-data)에서 씬(scene)은 여러 센서가 같은 순간을 각자의 좌표계로 기록한 묶음이라고 했다. 그렇다면 당연한 질문이 남는다. **그 좌표계들을 어떻게 하나로 맞추는가.** 이 정합의 정확도를 책임지는 작업이 **캘리브레이션(calibration)** 이다.
 
 캘리브레이션은 눈에 잘 안 띄지만, 자율주행에서 가장 조용하고 치명적인 부분이다. 모델이 아무리 좋아도, **센서 사이가 몇 cm·몇 ms 어긋나 있으면 그 위의 모든 판단이 미세하게, 그러나 일관되게 틀어진다.**
 
@@ -82,4 +85,9 @@ extrinsic이 몇 도만 틀어져도, 먼 거리에서는 그 오차가 미터 �
 - 센서가 움직이는 순간을 다루므로 시간 동기화와 모션 보정이 필수다.
 - 진동·정비로 값이 변하므로 온라인 보정·모니터링이 필요하고, 캘리브레이션은 씬을 따라다니는 메타데이터로 관리해야 한다.
 
-좌표계를 맞췄다면, 이제 그 위의 3D 데이터를 어떻게 '표현'하느냐가 남는다. 다음 글은 [3D 데이터 표현 — 포인트 클라우드부터 복셀·BEV까지](/posts/av-3d-data)다.
+좌표계를 맞췄다면, 이제 그 위의 3D 데이터를 어떻게 '표현'하느냐가 남는다. 관련 글은 [3D 데이터 표현 — 포인트 클라우드부터 복셀·BEV까지](/posts/av-3d-data)다.
+
+## 참고 자료
+
+- [OpenCV — Camera Calibration and 3D Reconstruction](https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html) — 내부·외부 파라미터, 왜곡 모델과 투영.
+- [nuScenes 데이터 스키마](https://github.com/nutonomy/nuscenes-devkit/blob/master/docs/schema_nuscenes.md) — scene·sample·sample_data와 캘리브레이션·에고 포즈의 연결.

@@ -21,8 +21,8 @@ function activeKey(pathname: string): string | null {
   if (pathname === "/" || pathname.startsWith("/topology")) return "topology";
   if (pathname.startsWith("/autonomy")) return "autonomy";
   if (pathname.startsWith("/lab")) return "lab";
-  // /log and the article routes it links to (/posts/*, /dev-logs/*) all belong to LOG
-  if (pathname.startsWith("/log") || pathname.startsWith("/posts") || pathname.startsWith("/dev-logs"))
+  // Series and article routes belong to LOG.
+  if (pathname.startsWith("/log") || pathname.startsWith("/series") || pathname.startsWith("/posts") || pathname.startsWith("/dev-logs"))
     return "log";
   return null;
 }

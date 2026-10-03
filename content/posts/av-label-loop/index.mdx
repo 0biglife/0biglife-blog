@@ -1,10 +1,13 @@
 ---
 title: "[자율주행] 어노테이션 툴 만들기 ③ 루프 — 자동 라벨과 사람이 서로를 먹이는 법"
 date: "2026-09-07"
+updated: "2026-10-03"
 description: "도구와 데이터가 하나로 붙는 지점. 오프라인 자동 라벨러가 왜 사람보다 나을 수 있는지, 그 결과를 에디터에 어떻게 집어넣어야 라벨러가 신뢰하는지, 자기 확증을 어떻게 막는지, 그리고 라벨 납품에 CI를 붙여 품질을 자동으로 거르는 법. 마지막으로 라벨러 처리량을 무엇으로 재고 UI 변경을 어떻게 A/B로 검증하는지 — 데이터 엔지니어와 툴 엔지니어라는 직무 조합이 왜 존재하는지가 여기서 드러난다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "어노테이션 툴"
+subcategory: "어노테이션과 품질"
+series: "annotation-quality"
+seriesOrder: 4
 tags: []
 ---
 
@@ -180,3 +183,8 @@ auto  ──(사람이 수정)──▶  auto+human
 - 이 루프는 데이터와 도구의 **경계에 있고**, 그래서 두 직무가 한 사람에게 붙어 있다.
 
 이 시리즈: [① 에디터](/posts/av-annotation-tool) · [② 백엔드](/posts/av-annotation-backend) · ③ 루프. 정답 데이터 자체는 [어노테이션 데이터](/posts/av-annotation-data), 그 위의 데이터 계층은 [AV 데이터 플랫폼](/posts/av-data-platform)에서 다룬다.
+
+## 참고 자료
+
+- [CVAT — Automated QA](https://docs.cvat.ai/docs/manual/advanced/analytics-and-monitoring/auto-qa/) — 검증용 정답 집합과 품질 비교의 운영 예시. 문서의 자동 품질 평가는 2D 태스크 대상이며 3D 지원을 뜻하지 않는다.
+- [CVAT — 3D Object Annotation](https://docs.cvat.ai/docs/manual/basics/3d-object-annotation/) — 3D 큐보이드 편집, 다중 투영과 트랙 보간.

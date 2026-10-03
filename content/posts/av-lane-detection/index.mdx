@@ -1,10 +1,13 @@
 ---
 title: "[자율주행] 차선 검출과 온라인 맵 — 차가 '길'을 이해하는 법"
 date: "2026-07-18"
+updated: "2026-10-03"
 description: "물체를 피하는 것만으로는 운전이 안 된다. 차는 '어디가 길이고, 어느 차선으로, 어떻게 이어지는가'를 알아야 한다. 차선 검출은 픽셀 분할에서 시작해 차선을 곡선(폴리라인)으로, 나아가 차선끼리의 연결(위상)까지 뽑아내는 방향으로 발전했다. 미리 만든 HD 맵과, 주행 중 즉석에서 그리는 온라인 맵의 차이, 그리고 왜 이것이 계획(planning)의 전제인지를 정리한다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "인지"
+subcategory: "인지와 예측"
+series: "perception-prediction"
+seriesOrder: 4
 tags: []
 ---
 
@@ -71,4 +74,8 @@ tags: []
 
 차선과 함께 노면 표시(화살표·정지선·횡단보도), 그리고 신호등(TLD)·주차 슬롯(PSD)까지의 전체 배치는 [인지 태스크 지도](/posts/av-perception-tasks)에서 정리한다.
 
-길을 이해했으니, 이제 그 길 위의 **동적인 것들**을 잡을 차례다. 다음 글은 [3D 객체 검출(3DOD) — 세상을 3D 박스로 읽기](/posts/av-3d-object-detection)다.
+길을 이해했으니, 이제 그 길 위의 **동적인 것들**을 잡을 차례다. 관련 글은 [3D 객체 검출(3DOD) — 세상을 3D 박스로 읽기](/posts/av-3d-object-detection)다.
+
+## 참고 자료
+
+- [MapTR 공식 구현](https://github.com/hustvl/MapTR) — 온라인 벡터 맵 표현과 학습.
