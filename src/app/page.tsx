@@ -1,10 +1,5 @@
-import { LandingIntro, LandingSwitcher } from "@/components/landing";
+import LandingSwitcher from "@/components/landing/LandingSwitcher";
 
 export default function HomePage() {
-  return (
-    <>
-      <LandingSwitcher />
-      <LandingIntro />
-    </>
-  );
+  return <LandingSwitcher />;
 }
