@@ -1,13 +1,10 @@
 ---
 title: "[자율주행] 3D 데이터 표현 — 포인트 클라우드부터 복셀·BEV까지"
 date: "2026-07-17"
-updated: "2026-10-03"
 description: "라이다가 뱉는 것은 정렬되지 않은 3D 점들의 집합이다. 이 성기고 순서 없는 데이터를 어떤 '형태'로 담느냐 — 점 그대로, 복셀 격자, 기둥(pillar), 거리 이미지, 조감도(BEV) — 가 이후 검출·점유·예측 모델의 구조를 통째로 결정한다. 각 표현의 원리와 트레이드오프, 그리고 왜 최근 자율주행이 BEV로 수렴했는지를 정리한다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "인지와 예측"
-series: "perception-prediction"
-seriesOrder: 2
+subcategory: "데이터"
 tags: []
 ---
 
@@ -82,8 +79,3 @@ BEV가 강한 이유는 분명하다.
 - 표현 선택은 모델 구조이자 동시에 저장·전처리 포맷의 설계다.
 
 이제 이 3D 표현 위에서 실제 알고리즘이 돈다. 먼저 차가 '길'을 이해하는 법 — [차선 검출과 온라인 맵](/posts/av-lane-detection)으로 간다.
-
-## 참고 자료
-
-- [PointPillars 논문](https://arxiv.org/abs/1812.05784) — 점군을 필러 특징으로 변환하는 3D 검출 방식.
-- [BEVFusion 논문](https://arxiv.org/abs/2205.13542) — 여러 센서의 특징을 BEV에서 결합하는 구조.

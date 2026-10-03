@@ -24,7 +24,7 @@ export default function Header() {
 
   // Topology (/) · autonomy · lab are dark instrument surfaces: force a
   // dark header and NO theme toggle (they only exist in dark). The blog/LOG
-  // section (/log, /series, /posts, /dev-logs) is the only place theming applies, so the
+  // section (/log, /posts, /dev-logs) is the only place theming applies, so the
   // theme toggle slides in only there.
   const isScene =
     pathname === "/" ||
@@ -33,7 +33,6 @@ export default function Header() {
     pathname.startsWith("/lab");
   const isLog =
     pathname.startsWith("/log") ||
-    pathname.startsWith("/series") ||
     pathname.startsWith("/posts") ||
     pathname.startsWith("/dev-logs");
   // Header is dark on any scene route, or when the (blog) site is in dark mode.

@@ -24,7 +24,6 @@ import Image from "next/image";
 import { TableOfContents } from "@/components";
 import { Giscus } from "@/components/template";
 import { GlossaryProvider } from "@/components/glossary";
-import PostSeriesNav from "@/components/series/PostSeriesNav";
 
 type Params = Promise<{ slug: string }>;
 
@@ -54,7 +53,7 @@ export async function generateMetadata({ params }: { params: Params }) {
 
   return {
     title: post.title,
-    description: post.description,
+    description: `0biglife Blog Post about '${post.title}'`,
     alternates: {
       canonical: url,
     },
@@ -65,7 +64,6 @@ export async function generateMetadata({ params }: { params: Params }) {
       type: "article",
       url: url,
       publishedTime: post.date,
-      modifiedTime: post.updated ?? post.date,
     },
     twitter: {
       card: "summary_large_image",
@@ -86,7 +84,6 @@ export default async function PostDetailPage({ params }: { params: Params }) {
   const decodedSlug = decodeURIComponent(slug ?? "");
   const post = await getPostBySlug(decodedSlug);
   if (!post) return notFound();
-  const posts = getAllPosts();
 
   return (
     <Box>
@@ -108,15 +105,14 @@ export default async function PostDetailPage({ params }: { params: Params }) {
             <Heading as="h1" fontSize="3xl">
               {post.title}
             </Heading>
-            <HStack mb={1} mt={4} flexWrap="wrap">
+            <HStack mb={1} mt={4}>
               <Text fontSize="smaller">
                 {post.category}/{post.subcategory}
               </Text>
               <Text fontSize="smaller" opacity={0.8}>
-                · {post.date}{post.updated ? ` · 수정 ${post.updated}` : ""}
+                · {post.date}
               </Text>
             </HStack>
-            <PostSeriesNav posts={posts} slug={post.slug} />
             <Box
               display="flex"
               position="relative"
@@ -158,7 +154,6 @@ export default async function PostDetailPage({ params }: { params: Params }) {
             <Box className="prose lg:prose-lg" flex="1">
               <GlossaryProvider>{post.content}</GlossaryProvider>
             </Box>
-            <PostSeriesNav posts={posts} slug={post.slug} placement="footer" />
             <Giscus />
           </Box>
           <TableOfContents toc={post.toc ?? []} />

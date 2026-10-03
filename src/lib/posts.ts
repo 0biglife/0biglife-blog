@@ -11,7 +11,7 @@ import "server-only";
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
-import { DevLog, DevLogSummary, Post, PostSummary, TOCItem } from "./types";
+import { DevLog, DevLogSummary, Post, TOCItem } from "./types";
 import { compileMDX } from "next-mdx-remote/rsc";
 // 배럴(@/components)로 가져오면 "use client" 컴포넌트(PageContent 등)가 그 배럴을
 // import하는 순간 MarkdownRenderer → react-syntax-highlighter 까지 클라이언트 번들에
@@ -73,11 +73,11 @@ const transformImagePaths = (content: string, slug: string): string => {
   );
 };
 
-export const getAllPosts = (): PostSummary[] => {
+export const getAllPosts = (): Post[] => {
   const folders = fs.readdirSync(contentPostDir);
 
   const posts = folders
-    .map((folder): PostSummary | null => {
+    .map((folder) => {
       const filePath = path.join(contentPostDir, folder, "index.mdx");
       if (!fs.existsSync(filePath)) return null;
 
@@ -88,9 +88,6 @@ export const getAllPosts = (): PostSummary[] => {
         slug: folder,
         title: data.title,
         date: data.date,
-        updated: data.updated,
-        series: data.series,
-        seriesOrder: data.seriesOrder,
         description: data.description,
         category: data.category,
         subcategory: data.subcategory,
@@ -98,7 +95,7 @@ export const getAllPosts = (): PostSummary[] => {
         tags: data.tags,
       };
     })
-    .filter((post): post is PostSummary => post !== null);
+    .filter((post): post is Post => post !== null);
 
   posts.sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -155,9 +152,6 @@ export const getPostBySlug = async (slug: string): Promise<Post | null> => {
     slug,
     title: data.title,
     date: data.date,
-    updated: data.updated,
-    series: data.series,
-    seriesOrder: data.seriesOrder,
     description: data.description,
     category: data.category || null,
     subcategory: data.subcategory || null,

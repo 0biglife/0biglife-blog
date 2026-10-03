@@ -1,13 +1,10 @@
 ---
 title: "[자율주행] 센서는 어떻게 세상을 재는가 — 라이다·레이더의 물리와 로그 스키마"
 date: "2026-09-06"
-updated: "2026-10-03"
 description: "라이다가 거리를 어떻게 재는지 모르면 왜 먼 차는 점이 네 개뿐인지, 왜 intensity가 차선을 읽는지, 왜 점별 타임스탬프를 버리면 되돌릴 수 없는지를 설명할 수 없다. ToF와 FMCW, 멀티 리턴, 채널과 각해상도, 레이더의 도플러와 각해상도 한계까지 — 센서 물리에서 시작해 그것이 곧바로 로그 스키마를 어떻게 결정하는지로 잇는다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "센서와 좌표계"
-series: "sensors-coordinates"
-seriesOrder: 2
+subcategory: "센서"
 tags: []
 ---
 
@@ -198,8 +195,3 @@ range, azimuth, elevation, doppler, rcs, snr, (track_id)
 - **물리가 곧 스키마다.** 남길 필드 목록은 센서가 무엇을 재는지에서 그대로 나온다.
 
 이어서 볼 글: 좌표를 맞추는 일은 [센서 캘리브레이션](/posts/av-calibration), 이 데이터가 담기는 로그는 [MCAP 완전 정복](/posts/av-mcap), 그리고 이 센서들이 만든 에고 포즈가 어디서 오는지는 [측위와 SLAM](/posts/av-localization)에서 다룬다.
-
-## 참고 자료
-
-- [Texas Instruments — FMCW Radar 기초](https://www.ti.com/video/5415203482001) — 처프와 거리 추정의 물리적 원리.
-- [nuScenes 데이터 스키마](https://github.com/nutonomy/nuscenes-devkit/blob/master/docs/schema_nuscenes.md) — scene·sample·sample_data와 캘리브레이션·에고 포즈의 연결.

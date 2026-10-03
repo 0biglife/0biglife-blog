@@ -1,13 +1,10 @@
 ---
 title: "[자율주행] 궤적 예측(Trajectory) — 남들이 '어디로 갈지' 읽기"
 date: "2026-07-21"
-updated: "2026-10-03"
 description: "지금 어디에 있는지를 알아도 운전은 안 된다. 상대가 다음 몇 초 동안 어디로 갈지를 읽어야 안전한 계획이 나온다. 궤적 예측은 각 주체(차·보행자·자전거)의 미래 경로를 예측하되, 미래가 본질적으로 여러 갈래라는 점(멀티모달)과 주체들이 서로 영향을 준다는 점(상호작용)을 다룬다. 왜 하나의 미래로는 부족한지, 지도와 상호작용이 왜 필수인지, 그리고 계획과 어떻게 이어지는지를 정리한다."
 thumbnail: "thumbnail.png"
 category: "자율주행"
-subcategory: "인지와 예측"
-series: "perception-prediction"
-seriesOrder: 6
+subcategory: "예측"
 tags: []
 ---
 
@@ -66,9 +63,4 @@ tags: []
 - 과거 궤적·지도·상호작용을 함께 보며, 특히 주체 간 상호작용(joint 예측)이 어렵다.
 - minADE/minFDE로 평가하고, 최근엔 예측·계획·[점유](/posts/av-occupancy)의 경계가 흐려지며 엔드투엔드로 수렴 중이다.
 
-여기까지가 '알고리즘'이다. 관련 글은 이 모든 데이터를 사람이 **눈으로 보는** 이야기 — [자율주행 시각화](/posts/av-visualization)로 간다.
-
-## 참고 자료
-
-- [Motion Transformer 논문](https://arxiv.org/abs/2209.13508) — 다중 모드 미래 궤적을 생성·보정하는 접근.
-- [nuPlan 논문](https://arxiv.org/abs/2106.11810) — 계획 평가에서 열린 루프 지표의 한계와 닫힌 루프 평가.
+여기까지가 '알고리즘'이다. 다음 글은 이 모든 데이터를 사람이 **눈으로 보는** 이야기 — [자율주행 시각화](/posts/av-visualization)로 간다.

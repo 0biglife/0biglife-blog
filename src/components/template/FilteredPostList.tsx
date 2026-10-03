@@ -11,7 +11,7 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { PostList } from "@/components";
-import { PostSummary } from "@/lib/types";
+import { Post } from "@/lib/types";
 import { TbGridDots, TbList, TbTriangleInvertedFilled } from "react-icons/tb";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { GoDotFill } from "react-icons/go";
@@ -37,7 +37,7 @@ const CATEGORY_ORDER = {
 //   "Self-Motification": <FaPersonDigging />,
 // };
 
-export default function FilteredPostList({ posts }: { posts: PostSummary[] }) {
+export default function FilteredPostList({ posts }: { posts: Post[] }) {
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);

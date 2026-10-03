@@ -1,0 +1,175 @@
+/* 랜딩 본문. 토폴로지 임베드 아래에 오는, 이 사이트 홈의 유일한 실제 텍스트다.
+   Chakra 를 거치지 않는 서버 컴포넌트라서 초기 HTML 에 그대로 실린다. */
+
+.section {
+  background: #01030a;
+  color: #e8edf5;
+  padding: clamp(72px, 10vw, 128px) 24px clamp(80px, 9vw, 120px);
+}
+
+.inner {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.eyebrow {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #c9ff4d;
+  margin: 0 0 20px;
+}
+
+.h1 {
+  font-size: clamp(28px, 4.6vw, 52px);
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  margin: 0 0 24px;
+  max-width: 20ch;
+}
+
+.lead {
+  font-size: clamp(15px, 1.5vw, 19px);
+  line-height: 1.75;
+  color: #a8b3c4;
+  margin: 0;
+  max-width: 62ch;
+}
+
+.topoNote {
+  font-size: 14px;
+  line-height: 1.7;
+  color: #6d7a8d;
+  margin: 28px 0 0;
+  padding-left: 14px;
+  border-left: 2px solid rgba(201, 255, 77, 0.35);
+  max-width: 62ch;
+}
+
+.blockTitle {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6d7a8d;
+  margin: clamp(56px, 7vw, 88px) 0 20px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+  gap: 16px;
+}
+
+.card {
+  display: block;
+  min-width: 0;
+  padding: 26px 24px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.card:hover,
+.card:focus-visible {
+  border-color: rgba(201, 255, 77, 0.5);
+  background: rgba(201, 255, 77, 0.045);
+  transform: translateY(-2px);
+}
+
+.cardKicker {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: #c9ff4d;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.cardTitle {
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.4;
+  margin: 0 0 10px;
+}
+
+.cardDesc {
+  font-size: 14px;
+  line-height: 1.68;
+  color: #8b97a8;
+  margin: 0;
+}
+
+.series {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.seriesItem {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.seriesLink {
+  display: flex;
+  gap: 16px;
+  align-items: baseline;
+  padding: 16px 4px;
+  text-decoration: none;
+  color: #cfd8e5;
+  font-size: 15px;
+  line-height: 1.5;
+  transition: color 0.16s ease, padding-left 0.16s ease;
+}
+
+.seriesLink:hover,
+.seriesLink:focus-visible {
+  color: #c9ff4d;
+  padding-left: 10px;
+}
+
+.seriesNo {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: #55606f;
+  flex: none;
+  min-width: 2.2em;
+}
+
+.seriesMore {
+  display: inline-block;
+  margin-top: 28px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #c9ff4d;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(201, 255, 77, 0.4);
+  padding-bottom: 2px;
+}
+
+.seriesMore:hover,
+.seriesMore:focus-visible {
+  border-bottom-color: #c9ff4d;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .seriesLink {
+    transition: none;
+  }
+  .card:hover,
+  .card:focus-visible {
+    transform: none;
+  }
+  .seriesLink:hover,
+  .seriesLink:focus-visible {
+    padding-left: 4px;
+  }
+}
